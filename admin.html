@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canopy Program - Admin Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .admin-header h2 {
+            margin: 0 0 10px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background-color: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 8px 8px 0 0;
+            transition: background-color 0.3s;
+        }
+        
+        .tab:hover {
+            background-color: #d0d0d0;
+        }
+        
+        .tab.active {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #da190b;
+        }
+
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+
+        /* Student List Table */
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .student-table th,
+        .student-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .student-table th {
+            background-color: #667eea;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        .student-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .student-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .action-link {
+            color: #2196F3;
+            text-decoration: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Class Enrollment Table */
+        .class-enrollment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .class-enrollment-table th,
+        .class-enrollment-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        .class-enrollment-table th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        .enrollment-count {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .enrollment-low {
+            color: #f44336;
+        }
+
+        .enrollment-medium {
+            color: #ff9800;
+        }
+
+        .enrollment-high {
+            color: #4CAF50;
+        }
+
+        /* Student Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .modal-close {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        .modal-close:hover {
+            opacity: 0.8;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .schedule-day-section {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .schedule-day-header {
+            background-color: #667eea;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .schedule-class-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .schedule-class-item:last-child {
+            border-bottom: none;
+        }
+
+        .class-time {
+            font-weight: bold;
+            color: #2196F3;
+            min-width: 120px;
+        }
+
+        .class-info-detail {
+            flex: 1;
+        }
+
+        .class-type-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-commitment {
+            background-color: #fff9c4;
+            color: #856404;
+        }
+
+        .badge-drop-in {
+            background-color: #e3f2fd;
+            color: #0c5460;
+        }
+
+        .badge-private {
+            background-color: #ffebee;
+            color: #721c24;
+        }
+
+        .sync-status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .sync-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .sync-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .sync-status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-select {
+            padding: 8px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .export-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .export-section h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media print {
+            .controls, .tabs, .btn, .admin-header, .export-section {
+                display: none !important;
+            }
+
+            .modal-header {
+                background: white !important;
+                color: black !important;
+                border-bottom: 2px solid #667eea;
+            }
+
+            .student-table, .class-enrollment-table {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="admin-header">
+            <h1>🔐 Admin Dashboard</h1>
+            <h2>Canopy Program Schedule Management</h2>
+            <p>Manage student schedules, view enrollment, and export reports</p>
+        </div>
+
+        <div id="syncStatus" class="sync-status" style="display: none;"></div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Students</div>
+                <div class="stat-number" id="totalStudents">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Enrollments</div>
+                <div class="stat-number" id="totalEnrollments">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Most Popular Class</div>
+                <div class="stat-number" id="popularClass" style="font-size: 16px;">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Classes/Student</div>
+                <div class="stat-number" id="avgClasses">0</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('students')">👥 All Students</button>
+            <button class="tab" onclick="switchTab('enrollment')">📊 Class Enrollment</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- Students Tab -->
+        <div id="students-tab" class="tab-content active">
+            <div class="controls">
+                <input type="text" class="search-box" id="studentSearch" placeholder="🔍 Search students by name..." onkeyup="filterStudents()">
+                <button class="btn btn-primary" onclick="loadAllStudents()">🔄 Refresh Data</button>
+                <button class="btn btn-success" onclick="exportToCSV()">📥 Export to CSV</button>
+            </div>
+
+            <div id="studentListContainer">
+                <div class="loading">Loading student data</div>
+            </div>
+        </div>
+
+        <!-- Enrollment Tab -->
+        <div id="enrollment-tab" class="tab-content">
+            <div class="controls">
+                <div class="filter-group">
+                    <select class="filter-select" id="dayFilter" onchange="filterEnrollment()">
+                        <option value="">All Days</option>
+                        <option value="monday">Monday</option>
+                        <option value="tuesday">Tuesday</option>
+                        <option value="wednesday">Wednesday</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                    </select>
+                    <select class="filter-select" id="typeFilter" onchange="filterEnrollment()">
+                        <option value="">All Types</option>
+                        <option value="commitment">Commitment</option>
+                        <option value="drop-in">Drop-In</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="loadEnrollmentData()">🔄 Refresh Enrollment</button>
+                <button class="btn btn-success" onclick="exportEnrollmentToCSV()">📥 Export Enrollment</button>
+            </div>
+
+            <div id="enrollmentContainer">
+                <div class="loading">Loading enrollment data</div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <h2>⚙️ Google Apps Script Configuration</h2>
+            
+            <div style="margin: 20px 0; padding: 15px; background-color: #d4edda; border-radius: 4px; border: 1px solid #c3e6cb;">
+                <h3 style="margin-top: 0; color: #155724;">✅ Apps Script Configured</h3>
+                <p style="color: #155724;">Your system is configured to use Google Apps Script Web App.</p>
+                <p style="color: #155724; font-family: monospace; font-size: 12px; word-break: break-all;">
+                    <strong>URL:</strong> https://script.google.com/macros/s/AKfycbzB-54jxC7BrC0a6m-tlmxEkphp9FsRMhvpehWmxuLW5y9DloRoKqfs7ojmPYtb02h9/exec
+                </p>
+            </div>
+
+            <button class="btn btn-secondary" onclick="testConnection()">🔌 Test Connection</button>
+
+            <div class="export-section">
+                <h3>📊 Bulk Operations</h3>
+                <div class="export-options">
+                    <button class="btn btn-success" onclick="exportAllData()">Export All Data (JSON)</button>
+                    <button class="btn btn-success" onclick="exportToCSV()">Export Students (CSV)</button>
+                    <button class="btn btn-secondary" onclick="exportClassRosters()">Export Class Rosters</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-radius: 4px;">
+                <h3 style="margin-top: 0;">📝 Quick Links</h3>
+                <ul>
+                    <li><a href="https://docs.google.com/spreadsheets/d/11bgpCgNimTHcnqMWb97TBM6s7tmUofpRkDCBSlM5gMY/edit" target="_blank">Open Google Sheet</a></li>
+                    <li><a href="https://script.google.com/home" target="_blank">Google Apps Script Dashboard</a></li>
+                    <li><a href="schedule.html" target="_blank">Student Schedule Builder</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalStudentName">Student Schedule</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Student schedule details will be loaded here -->
+            </div>
+            <div style="padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+                <button class="btn btn-primary" onclick="editStudentSchedule()">✏️ Edit Schedule</button>
+                <button class="btn btn-secondary" onclick="printStudentSchedule()">🖨️ Print Schedule</button>
+                <button class="btn btn-danger" onclick="deleteStudentSchedule()">🗑️ Delete Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GOOGLE APPS SCRIPT WEB APP CONFIGURATION
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB-54jxC7BrC0a6m-tlmxEkphp9FsRMhvpehWmxuLW5y9DloRoKqfs7ojmPYtb02h9/exec';
+
+        let allStudentsData = [];
+        let currentStudentName = '';
+
+        // Check if config is set
+        function isConfigured() {
+            return true; // Apps Script URL is configured
+        }
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.textContent = message;
+            statusEl.className = `sync-status ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load all students from Google Sheets via Apps Script
+        async function loadAllStudents() {
+            console.log('🔄 loadAllStudents called');
+            console.log('isConfigured:', isConfigured());
+            console.log('APPS_SCRIPT_URL:', APPS_SCRIPT_URL);
+            
+            if (!isConfigured()) {
+                console.error('❌ Not configured!');
+                showStatus('Please configure your Apps Script URL first!', 'warning');
+                switchTab('settings');
+                return;
+            }
+
+            try {
+                console.log('📡 Fetching student data...');
+                document.getElementById('studentListContainer').innerHTML = '<div class="loading">Loading student data</div>';
+                
+                const url = `${APPS_SCRIPT_URL}?action=loadAll`;
+                console.log('Fetch URL:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+                
+                const result = await response.json();
+                console.log('API Result:', result);
+                
+                if (result.success && result.students) {
+                    allStudentsData = result.students;
+                    console.log('✅ Loaded', allStudentsData.length, 'students');
+                    
+                    updateStatistics();
+                    renderStudentTable();
+                    showStatus('✅ Loaded ' + allStudentsData.length + ' students', 'success');
+                } else {
+                    console.log('⚠️ No students found or API returned error');
+                    allStudentsData = [];
+                    renderStudentTable();
+                    showStatus('No student data found', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error loading students:', error);
+                console.error('Error details:', error.message);
+                console.error('Error stack:', error.stack);
+                showStatus('❌ Error loading students: ' + error.message, 'error');
+                document.getElementById('studentListContainer').innerHTML = 
+                    '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Error loading student data</p><p style="font-size: 12px; color: #999;">Check console (F12) for details</p></div>';
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const totalStudents = allStudentsData.length;
+            const totalEnrollments = allStudentsData.reduce((sum, student) => sum + student.totalClasses, 0);
+            const avgClasses = totalStudents > 0 ? (totalEnrollments / totalStudents).toFixed(1) : 0;
+            
+            // Find most popular class
+            const classCount = {};
+            allStudentsData.forEach(student => {
+                try {
+                    const classes = JSON.parse(student.classes);
+                    classes.forEach(cls => {
+                        const key = cls.offeringName;
+                        classCount[key] = (classCount[key] || 0) + 1;
+                    });
+                } catch (e) {
+                    console.error('Error parsing classes:', e);
+                }
+            });
+            
+            let popularClass = '-';
+            let maxCount = 0;
+            for (const [offeringName, count] of Object.entries(classCount)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    popularClass = offeringName;
+                }
+            }
+            
+            document.getElementById('totalStudents').textContent = totalStudents;
+            document.getElementById('totalEnrollments').textContent = totalEnrollments;
+            document.getElementById('popularClass').textContent = popularClass;
+            document.getElementById('avgClasses').textContent = avgClasses;
+        }
+
+        // Render student table
+        function renderStudentTable() {
+            const container = document.getElementById('studentListContainer');
+            
+            if (allStudentsData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Students Found</h3>
+                        <p>No student schedules have been saved yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Total Classes</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            allStudentsData.forEach(student => {
+                const formattedDate = new Date(student.timestamp).toLocaleString();
+                html += `
+                    <tr>
+                        <td><strong>${student.name}</strong></td>
+                        <td>${student.totalClasses}</td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <a href="#" class="action-link" onclick="viewStudentSchedule('${student.name}'); return false;">View Schedule</a>
+                            <a href="#" class="action-link" onclick="openScheduleBuilder('${student.name}'); return false;">Edit</a>
+                            <a href="#" class="action-link" onclick="deleteStudent('${student.name}'); return false;">Delete</a>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Filter students by search
+        function filterStudents() {
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.student-table tbody tr');
+            
+            rows.forEach(row => {
+                const studentName = row.cells[0].textContent.toLowerCase();
+                row.style.display = studentName.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // View student schedule
+        function viewStudentSchedule(studentName) {
+            currentStudentName = studentName;
+            const student = allStudentsData.find(s => s.name === studentName);
+            
+            if (!student) {
+                showStatus('Student not found', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('studentModal');
+            const modalTitle = document.getElementById('modalStudentName');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = studentName + "'s Schedule";
+            
+            try {
+                const classes = JSON.parse(student.classes);
+                
+                // Group classes by day
+                const classesByDay = {};
+                classes.forEach(cls => {
+                    if (!classesByDay[cls.day]) {
+                        classesByDay[cls.day] = [];
+                    }
+                    classesByDay[cls.day].push(cls);
+                });
+                
+                // Sort classes within each day by time
+                for (const day in classesByDay) {
+                    classesByDay[day].sort((a, b) => a.time.localeCompare(b.time));
+                }
+                
+                const dayNames = {
+                    monday: 'Monday',
+                    tuesday: 'Tuesday',
+                    wednesday: 'Wednesday',
+                    thursday: 'Thursday',
+                    friday: 'Friday'
+                };
+                
+                let html = `
+                    <div style="margin-bottom: 20px;">
+                        <strong>Total Classes:</strong> ${student.totalClasses}<br>
+                        <strong>Last Updated:</strong> ${new Date(student.timestamp).toLocaleString()}
+                    </div>
+                `;
+                
+                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+                days.forEach(day => {
+                    if (classesByDay[day] && classesByDay[day].length > 0) {
+                        html += `
+                            <div class="schedule-day-section">
+                                <div class="schedule-day-header">${dayNames[day]}</div>
+                        `;
+                        
+                        classesByDay[day].forEach(cls => {
+                            html += `
+                                <div class="schedule-class-item">
+                                    <div class="class-time">${cls.time}</div>
+                                    <div class="class-info-detail">
+                                        <strong>${cls.offeringName}</strong><br>
+                                        <small>${cls.instructor}</small>
+                                    </div>
+                                    <span class="class-type-badge badge-${cls.type}">${cls.type}</span>
+                                </div>
+                            `;
+                        });
+                        
+                        html += '</div>';
+                    }
+                });
+                
+                modalBody.innerHTML = html;
+                modal.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error parsing student classes:', error);
+                modalBody.innerHTML = '<p>Error loading student schedule</p>';
+                modal.style.display = 'block';
+            }
+        }
+
+        // Delete student
+        async function deleteStudent(studentName) {
+            if (confirm(`Are you sure you want to delete ${studentName}'s schedule?`)) {
+                try {
+                    showStatus('Deleting schedule...', 'warning');
+                    
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        redirect: 'follow',
+                        headers: {
+                            'Content-Type': 'text/plain',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            studentName: studentName
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Reload the data
+                        await loadAllStudents();
+                        showStatus('✅ Schedule deleted successfully!', 'success');
+                    } else {
+                        showStatus('❌ Error: ' + (result.message || 'Failed to delete'), 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error deleting student:', error);
+                    showStatus('❌ Connection error. Make sure your Apps Script is deployed with "Anyone" access.', 'error');
+                }
+            }
+        }
+
+        // Delete student schedule (from modal)
+        function deleteStudentSchedule() {
+            deleteStudent(currentStudentName);
+            closeModal();
+        }
+
+        // Load enrollment data
+        function loadEnrollmentData() {
+            const container = document.getElementById('enrollmentContainer');
+            
+            if (allStudentsData.length === 0) {
+                loadAllStudents().then(() => {
+                    if (allStudentsData.length > 0) {
+                        renderEnrollmentTable();
+                    }
+                });
+                return;
+            }
+            
+            renderEnrollmentTable();
+        }
+
+        // Render enrollment table
+        function renderEnrollmentTable() {
+            const container = document.getElementById('enrollmentContainer');
+            
+            // Build enrollment data structure
+            const enrollmentMap = {};
+            
+            allStudentsData.forEach(student => {
+                try {
+                    const classes = JSON.parse(student.classes);
+                    classes.forEach(cls => {
+                        const key = `${cls.day}-${cls.time}-${cls.offeringName}`;
+                        if (!enrollmentMap[key]) {
+                            enrollmentMap[key] = {
+                                offeringName: cls.offeringName,
+                                instructor: cls.instructor,
+                                type: cls.type,
+                                day: cls.day,
+                                time: cls.time,
+                                students: []
+                            };
+                        }
+                        enrollmentMap[key].students.push(student.name);
+                    });
+                } catch (e) {
+                    console.error('Error parsing student classes:', e);
+                }
+            });
+            
+            // Convert to array and sort
+            const enrollmentArray = Object.values(enrollmentMap).sort((a, b) => {
+                // Sort by day, then time, then offering name
+                const dayOrder = {monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5};
+                if (dayOrder[a.day] !== dayOrder[b.day]) {
+                    return dayOrder[a.day] - dayOrder[b.day];
+                }
+                if (a.time !== b.time) {
+                    return a.time.localeCompare(b.time);
+                }
+                return a.offeringName.localeCompare(b.offeringName);
+            });
+            
+            let html = `
+                <table class="class-enrollment-table">
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Instructor</th>
+                            <th>Type</th>
+                            <th>Day</th>
+                            <th>Time</th>
+                            <th>Enrollment</th>
+                            <th>Students</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            const dayNames = {
+                monday: 'Monday',
+                tuesday: 'Tuesday',
+                wednesday: 'Wednesday',
+                thursday: 'Thursday',
+                friday: 'Friday'
+            };
+            
+            enrollmentArray.forEach(cls => {
+                const count = cls.students.length;
+                let enrollmentClass = 'enrollment-low';
+                if (count >= 5) enrollmentClass = 'enrollment-medium';
+                if (count >= 10) enrollmentClass = 'enrollment-high';
+                
+                html += `
+                    <tr>
+                        <td><strong>${cls.offeringName}</strong></td>
+                        <td>${cls.instructor}</td>
+                        <td><span class="class-type-badge badge-${cls.type}">${cls.type}</span></td>
+                        <td>${dayNames[cls.day]}</td>
+                        <td>${cls.time}</td>
+                        <td class="enrollment-count ${enrollmentClass}">${count}</td>
+                        <td style="font-size: 11px;">${cls.students.join(', ')}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Filter enrollment
+        function filterEnrollment() {
+            const dayFilter = document.getElementById('dayFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const rows = document.querySelectorAll('.class-enrollment-table tbody tr');
+            
+            rows.forEach(row => {
+                let showRow = true;
+                
+                if (dayFilter) {
+                    const dayCell = row.cells[3].textContent.toLowerCase();
+                    if (!dayCell.includes(dayFilter)) showRow = false;
+                }
+                
+                if (typeFilter) {
+                    const typeCell = row.cells[2].textContent.toLowerCase();
+                    if (!typeCell.includes(typeFilter)) showRow = false;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+
+        // Open schedule builder for a student
+        function openScheduleBuilder(studentName) {
+            const url = `schedule.html?student=${encodeURIComponent(studentName)}`;
+            window.open(url, '_blank');
+            showStatus('Opening schedule builder for ' + studentName, 'success');
+        }
+
+        // Edit student schedule
+        function editStudentSchedule() {
+            const studentName = currentStudentName;
+            if (!studentName) {
+                showStatus('No student selected', 'error');
+                return;
+            }
+            
+            // Open the schedule builder with the student's name as a parameter
+            const url = `schedule.html?student=${encodeURIComponent(studentName)}`;
+            window.open(url, '_blank');
+            showStatus('Opening schedule builder for ' + studentName, 'success');
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            const tabMap = {
+                'students': 0,
+                'enrollment': 1,
+                'settings': 2
+            };
+            
+            document.querySelectorAll('.tab')[tabMap[tab]].classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+            
+            // Load data when switching to tabs
+            if (tab === 'students' && allStudentsData.length === 0) {
+                loadAllStudents();
+            } else if (tab === 'enrollment') {
+                loadEnrollmentData();
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('studentModal').style.display = 'none';
+        }
+
+        // Print student schedule
+        function printStudentSchedule() {
+            window.print();
+        }
+
+        // Test connection
+        async function testConnection() {
+            try {
+                showStatus('Testing connection...', 'warning');
+                
+                const url = `${APPS_SCRIPT_URL}?action=loadAll`;
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ Connection successful! Found ' + (result.students?.length || 0) + ' students.', 'success');
+                } else {
+                    showStatus('❌ Connection failed: ' + (result.message || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Connection error: ' + error.message, 'error');
+            }
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (allStudentsData.length === 0) {
+                showStatus('No data to export', 'warning');
+                return;
+            }
+            
+            let csv = 'Student Name,Total Classes,Last Updated,Classes\n';
+            
+            allStudentsData.forEach(student => {
+                const classes = student.classes.replace(/"/g, '""');
+                csv += `"${student.name}",${student.totalClasses},"${student.timestamp}","${classes}"\n`;
+            });
+            
+            downloadFile(csv, 'canopy-students-' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv');
+            showStatus('✅ Exported to CSV', 'success');
+        }
+
+        // Export enrollment to CSV
+        function exportEnrollmentToCSV() {
+            const rows = document.querySelectorAll('.class-enrollment-table tbody tr');
+            
+            if (rows.length === 0) {
+                showStatus('No enrollment data to export', 'warning');
+                return;
+            }
+            
+            let csv = 'Class Name,Instructor,Type,Day,Time,Enrollment,Students\n';
+            
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const cells = row.cells;
+                    const students = cells[6].textContent.replace(/"/g, '""');
+                    csv += `"${cells[0].textContent}","${cells[1].textContent}","${cells[2].textContent}","${cells[3].textContent}","${cells[4].textContent}",${cells[5].textContent},"${students}"\n`;
+                }
+            });
+            
+            downloadFile(csv, 'canopy-enrollment-' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv');
+            showStatus('✅ Exported enrollment to CSV', 'success');
+        }
+
+        // Export all data as JSON
+        function exportAllData() {
+            const data = {
+                exportDate: new Date().toISOString(),
+                students: allStudentsData
+            };
+            
+            const json = JSON.stringify(data, null, 2);
+            downloadFile(json, 'canopy-all-data-' + new Date().toISOString().split('T')[0] + '.json', 'application/json');
+            showStatus('✅ Exported all data', 'success');
+        }
+
+        // Export class rosters
+        function exportClassRosters() {
+            // This would generate individual rosters per class
+            showStatus('Class rosters feature coming soon!', 'warning');
+        }
+
+        // Download file helper
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('studentModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Load configuration on page load
+        function init() {
+            console.log('🚀 Admin Dashboard Initializing...');
+            console.log('Window loaded successfully');
+            console.log('APPS_SCRIPT_URL:', APPS_SCRIPT_URL);
+            
+            // Auto-load student data
+            loadAllStudents();
+            
+            console.log('✅ Init complete');
+        }
+
+        // Initialize on page load
+        window.onload = init;
+    </script>
+</body>
+</html>
