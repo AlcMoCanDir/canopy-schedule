@@ -1,811 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canopy Program - Session 3 Schedule Builder</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            text-align: center;
-            color: #2196F3;
-            margin-bottom: 10px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canopy Program Schedule Builder</title>
 
-        h2 {
-            font-size: 16px;
-            color: #666;
-            text-align: center;
-            margin: 0 0 20px 0;
-        }
-        
-        .student-info {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .student-info input {
-            padding: 8px;
-            font-size: 14px;
-            border: 2px solid #4CAF50;
-            border-radius: 4px;
-            width: 300px;
-        }
+<style>
+body { font-family: Arial; }
+.container { max-width: 1200px; margin:auto; padding:20px; }
 
-        .sync-status {
-            text-align: center;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+.grid-table {
+    width:100%;
+    border-collapse: collapse;
+}
+.grid-table th, .grid-table td {
+    border:1px solid #ddd;
+    padding:6px;
+    vertical-align: top;
+}
+.class-option {
+    font-size:12px;
+    background:#f5f5f5;
+    padding:4px;
+    margin-bottom:4px;
+    border-left:5px solid #2196f3;
+    cursor:pointer;
+}
+.class-option.selected { background:#e6f1ff; border-left-color:#0057c0; }
 
-        .sync-status.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
+.class-option.full-class {
+    background:#ffe7e7;
+    border-left-color:red;
+    opacity:0.6;
+}
 
-        .sync-status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .sync-status.warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-
-        .facilitator-banner {
-            background-color: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .facilitator-banner h3 {
-            margin: 0 0 10px 0;
-            color: #856404;
-        }
-
-        .facilitator-banner button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .facilitator-banner button:hover {
-            background-color: #0056b3;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loading-overlay.active {
-            display: flex;
-        }
-
-        .loading-content {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4CAF50;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #ddd;
-            margin-bottom: 20px;
-        }
-        
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            background-color: #f0f0f0;
-            border: none;
-            border-bottom: 3px solid transparent;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .tab:hover {
-            background-color: #e0e0e0;
-        }
-        
-        .tab.active {
-            background-color: white;
-            border-bottom: 3px solid #2196F3;
-            color: #2196F3;
-            font-weight: bold;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 11px;
-        }
-        
-        .schedule-table th {
-            background-color: #4CAF50;
-            color: white;
-            padding: 8px 4px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        
-        .schedule-table td {
-            padding: 6px 4px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-        }
-        
-        .schedule-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .time-column {
-            width: 110px;
-            font-weight: bold;
-            background-color: #e8f5e9;
-            text-align: center;
-            font-size: 10px;
-            line-height: 1.3;
-        }
-
-        .time-column .block-name {
-            font-weight: bold;
-            color: #2e7d32;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .time-column .time-range {
-            font-size: 9px;
-            color: #666;
-        }
-
-        .lunch-row {
-            background-color: #fff3cd !important;
-            text-align: center;
-            font-weight: bold;
-            color: #856404;
-        }
-
-        .lunch-row td {
-            padding: 8px;
-            font-size: 13px;
-        }
-        
-        .class-option {
-            margin-bottom: 4px;
-            padding: 4px;
-            background-color: #f5f5f5;
-            border-radius: 3px;
-            border-left: 3px solid #2196F3;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 10px;
-        }
-        
-        .class-option:hover {
-            background-color: #e8f4f8;
-            transform: translateX(2px);
-        }
-        
-        .class-option.selected {
-            background-color: #e3f2fd;
-            border-left-width: 6px;
-        }
-        
-        .class-option label {
-            cursor: pointer;
-            display: flex;
-            align-items: flex-start;
-        }
-        
-        .class-option input[type="checkbox"] {
-            margin-right: 4px;
-            margin-top: 1px;
-            cursor: pointer;
-            width: 14px;
-            height: 14px;
-        }
-        
-        .class-details {
-            flex: 1;
-        }
-        
-        .class-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 10px;
-            line-height: 1.2;
-        }
-        
-        .class-instructor {
-            font-size: 9px;
-            color: #666;
-            margin-top: 1px;
-        }
-
-        .class-description {
-            font-size: 9px;
-            color: #555;
-            margin-top: 3px;
-            padding-top: 3px;
-            border-top: 1px solid #ddd;
-            line-height: 1.3;
-            display: none;
-        }
-
-        .class-option.expanded .class-description {
-            display: block;
-        }
-        
-        .class-type {
-            font-size: 8px;
-            padding: 1px 4px;
-            border-radius: 2px;
-            display: inline-block;
-            margin-top: 2px;
-            text-transform: uppercase;
-        }
-        
-        .commitment {
-            background-color: #ffebee;
-            color: #c62828;
-            border-left-color: #f44336;
-        }
-        
-        .drop-in {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-left-color: #4CAF50;
-        }
-        
-        .private {
-            background-color: #fff3e0;
-            color: #e65100;
-            border-left-color: #ff9800;
-        }
-        
-        .class-type.type-commitment {
-            background-color: #ffcdd2;
-            color: #c62828;
-        }
-        
-        .class-type.type-drop-in {
-            background-color: #c8e6c9;
-            color: #2e7d32;
-        }
-        
-        .class-type.type-private {
-            background-color: #ffe0b2;
-            color: #e65100;
-        }
-        
-        .buttons {
-            text-align: center;
-            margin: 15px 0 20px 0;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-        
-        .save-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
-        .save-btn:hover {
-            background-color: #45a049;
-        }
-        
-        .load-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-        
-        .load-btn:hover {
-            background-color: #0b7dda;
-        }
-        
-        .export-btn {
-            background-color: #ff9800;
-            color: white;
-        }
-        
-        .export-btn:hover {
-            background-color: #e68900;
-        }
-        
-        .print-btn {
-            background-color: #9c27b0;
-            color: white;
-        }
-        
-        .print-btn:hover {
-            background-color: #7b1fa2;
-        }
-
-        .pdf-btn {
-            background-color: #f44336;
-            color: white;
-        }
-
-        .pdf-btn:hover {
-            background-color: #da190b;
-        }
-        
-        .my-schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        
-        .my-schedule-table th {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            border: 1px solid #ddd;
-        }
-        
-        .my-schedule-table td {
-            padding: 8px;
-            border: 1px solid #ddd;
-            text-align: center;
-            vertical-align: top;
-            min-height: 80px;
-        }
-        
-        .my-schedule-table .time-cell {
-            background-color: #e8f5e9;
-            font-weight: bold;
-            width: 100px;
-        }
-        
-        .my-schedule-table .class-cell {
-            background-color: white;
-        }
-        
-        .my-schedule-table .class-item {
-            background-color: #e3f2fd;
-            padding: 6px;
-            margin: 4px 0;
-            border-radius: 4px;
-            font-size: 13px;
-            border-left: 3px solid #2196F3;
-        }
-        
-        .my-schedule-table .class-item-name {
-            font-weight: bold;
-            color: #1976d2;
-        }
-        
-        .my-schedule-table .class-item-instructor {
-            font-size: 11px;
-            color: #666;
-            margin-top: 2px;
-        }
-        
-        .empty-schedule {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            font-style: italic;
-        }
-        
-        @media print {
-            body {
-                background-color: white;
-                padding: 0;
-            }
-            
-            .container {
-                box-shadow: none;
-                max-width: 100%;
-            }
-            
-            .buttons, .tabs, .student-info, .sync-status, .facilitator-banner {
-                display: none !important;
-            }
-            
-            .tab-content {
-                display: block !important;
-            }
-            
-            .tab-content:not(.print-target) {
-                display: none !important;
-            }
-            
-            h1 {
-                color: black;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .schedule-table {
-                font-size: 12px;
-            }
-            
-            .schedule-table th, .schedule-table td {
-                padding: 6px;
-            }
-            
-            .class-option {
-                padding: 6px;
-            }
-            
-            button {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
-            
-            .my-schedule-table {
-                font-size: 11px;
-            }
-            
-            .my-schedule-table th, .my-schedule-table td {
-                padding: 4px;
-            }
-        }
-    </style>
+.roster-display {
+    font-size:10px;
+    color:#444;
+    margin-top:4px;
+}
+</style>
 </head>
+
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p id="loadingMessage">Loading...</p>
-        </div>
-    </div>
+<div class="container">
 
-    <div class="container">
-        <h1>🌳 Canopy Program Schedule Builder</h1>
-        <h2>Session 3 (2025-2026)</h2>
-        
-        <div id="facilitatorBanner" style="display: none;" class="facilitator-banner">
-            <h3>👤 Facilitator Mode: Editing schedule for <span id="facilitatorStudentName"></span></h3>
-            <button onclick="returnToDashboard()">← Return to Admin Dashboard</button>
-        </div>
+<h2>🌳 Canopy Schedule — Session 3</h2>
 
-        <div class="student-info">
-            <input type="text" id="studentName" placeholder="Enter your name">
-        </div>
+<div>
+    <input id="studentName" placeholder="Enter your name">
+    <button onclick="saveSchedule()">Save</button>
+    <button onclick="loadSchedule()">Load</button>
+</div>
 
-        <div class="buttons">
-            <button class="save-btn" onclick="saveSchedule()">💾 Save Schedule</button>
-            <button class="load-btn" onclick="loadSchedule()">📥 Load Schedule</button>
-            <button class="print-btn" onclick="printSchedule('my-schedule')">🖨️ Print My Schedule</button>
-        </div>
+<div id="status"></div>
 
-        <div id="syncStatus" class="sync-status" style="display: none;"></div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('full-schedule')">📅 Full Schedule</button>
-            <button class="tab" onclick="switchTab('my-schedule')">⭐ My Schedule</button>
-        </div>
+<table class="grid-table">
+<thead>
+<tr>
+    <th>Time</th>
+    <th id="monday-block1"></th>
+    <th id="tuesday-block1"></th>
+    <th id="wednesday-block1"></th>
+    <th id="thursday-block1"></th>
+    <th id="friday-block1"></th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+    <td><strong>Block 1<br>10:00-10:45</strong></td>
+    <td id="monday-block1"></td>
+    <td id="tuesday-block1"></td>
+    <td id="wednesday-block1"></td>
+    <td id="thursday-block1"></td>
+    <td id="friday-block1"></td>
+</tr>
+
+<tr>
+    <td><strong>Block 2<br>11:00-11:45</strong></td>
+    <td id="monday-block2"></td>
+    <td id="tuesday-block2"></td>
+    <td id="wednesday-block2"></td>
+    <td id="thursday-block2"></td>
+    <td id="friday-block2"></td>
+</tr>
+
+<tr>
+    <td><strong>Block 3<br>1:00-2:00</strong></td>
+    <td id="monday-block3"></td>
+    <td id="tuesday-block3"></td>
+    <td id="wednesday-block3"></td>
+    <td id="thursday-block3"></td>
+    <td id="friday-block3"></td>
+</tr>
+</tbody>
+</table>
+
+</div>
 
 
 
-        <div id="full-schedule" class="tab-content active">
-            <h2 style="text-align: center; color: #4CAF50;">Select your classes for Session 3 (Max 2 per time block)</h2>
-            <p style="text-align: center; color: #666; font-size: 12px;">Click on a class to see its description • Multi-block classes select all blocks together</p>
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Monday</th>
-                        <th>Tuesday</th>
-                        <th>Wednesday</th>
-                        <th>Thursday</th>
-                        <th>Friday</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="time-column">
-                            <span class="block-name">Block 1</span>
-                            <span class="time-range">10:00-10:45 am</span>
-                        </td>
-            <script>
+<script>
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxOHs6TelVM347BqlaydmtiDaNSLeQwJkUCLRruP0HoHmTFSvrof-yA1q4A8wSKLqxt/exec";
 
-let activeOfferingsGlobal = [];
-let studentSelections = {};
+let offerings = [];
+let selected = {}; // keyed by block key → array of offering ids
 
-async function fetchOfferings() {
-  try {
+// --------------------------------------
+// Load offerings from Sheet
+// --------------------------------------
+async function loadOfferings() {
     const res = await fetch(API_URL + "?action=loadOfferings");
     const data = await res.json();
-    if (!data.success) return [];
-    return data.offerings;
-  } catch {
-    return [];
-  }
+
+    if (!data.success) return;
+
+    offerings = data.offerings;
+    drawOfferings();
 }
 
-async function loadScheduleFromServer(studentName) {
-  const res = await fetch(API_URL + "?action=loadStudent&studentName=" + encodeURIComponent(studentName));
-  return await res.json();
+
+function drawOfferings() {
+    clearCells();
+
+    offerings.forEach(o => {
+        const cellId = mapCell(o);
+        if (!cellId) return;
+
+        const cell = document.getElementById(cellId);
+        if (!cell) return;
+
+        const el = document.createElement("div");
+        el.className = "class-option";
+        el.dataset.id = o.id;
+        el.dataset.day = o.day;
+        el.dataset.time = o.time;
+        el.dataset.capacity = o.capacity ?? "";
+
+        el.onclick = () => toggleOffering(el);
+
+        el.innerHTML = `
+            <div><strong>${o.name}</strong></div>
+            <div>👤 ${o.instructor ?? ""}</div>
+            <div class="roster-display">${formatRoster(o)}</div>
+        `;
+
+        cell.appendChild(el);
+    });
+
+    enforceRules();
 }
 
-async function saveScheduleToServer(studentName, offeringIds) {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "saveStudentSchedule",
-      studentName,
-      offeringIds,
-      timestamp: new Date().toISOString()
-    })
-  });
-  return await res.json();
+
+function mapCell(o) {
+    const block = getBlock(o.time);
+    if (!block) return null;
+    return `${o.day.toLowerCase()}-${block}`;
 }
 
-async function buildFullSchedule() {
-  showLoading("Loading schedule...");
-  activeOfferingsGlobal = await fetchOfferings();
-  clearScheduleCells();
-  activeOfferingsGlobal.forEach(renderOfferingIntoCell);
-  refreshAllRules();
-  hideLoading();
+function getBlock(time) {
+    time = time.toLowerCase();
+    if (time.includes("10")) return "block1";
+    if (time.includes("11")) return "block2";
+    if (time.includes("1:")) return "block3";
+    return null;
 }
 
-function renderOfferingIntoCell(o) {
-  const cell = document.getElementById(mapOfferingToCell(o));
-  if (!cell) return;
-  cell.appendChild(createOfferingElement(o));
+
+function clearCells() {
+    document.querySelectorAll("[id*='block']").forEach(el => el.innerHTML = "");
 }
 
-function createOfferingElement(o) {
-  const div = document.createElement("div");
-  div.className = `class-option ${o.type || "drop-in"}`;
-  div.dataset.id = o.id;
-  div.dataset.day = o.day;
-  div.dataset.time = o.time;
 
-  div.onclick = () => toggleClass(div);
+// --------------------------------------
+// Toggling class selection
+// --------------------------------------
+function toggleOffering(el) {
+    const checkboxId = Number(el.dataset.id);
+    const blockKey = blockKeyFor(el.dataset.day, el.dataset.time);
 
-  div.innerHTML = `
-    <label>
-      <input type="checkbox"
-        class="schedule-checkbox"
-        data-id="${o.id}"
-        data-day="${o.day}"
-        data-time="${o.time}"
-        onclick="event.stopPropagation();">
-      <div class="class-details">
-        <div class="class-name">${o.name}</div>
-        <div class="class-instructor">👤 ${o.instructor || ""}</div>
-        <span class="class-type type-${o.type || "drop-in"}">${o.type || "drop-in"}</span>
-        <div class="class-description">${o.description || ""}</div>
-      </div>
-    </label>
-    <div class="roster-display">${formatRoster(o)}</div>
-  `;
-  return div;
+    if (!selected[blockKey]) selected[blockKey] = [];
+
+    let arr = selected[blockKey];
+
+    if (arr.includes(checkboxId)) {
+        selected[blockKey] = arr.filter(x => x !== checkboxId);
+        el.classList.remove("selected");
+    } else {
+        arr.push(checkboxId);
+        el.classList.add("selected");
+    }
+
+    enforceRules();
+}
+
+
+// --------------------------------------
+// Validation + Auto-locking
+// --------------------------------------
+function enforceRules() {
+    enforceBlockLimit();
+    enforceSeatCaps();
+}
+
+function enforceBlockLimit() {
+    Object.keys(selected).forEach(block => {
+        const arr = selected[block];
+        if (arr.length > 2) {
+            // remove extras
+            arr.splice(2);
+            show("Max 2 classes per block");
+        }
+    });
+
+    // Repaint selected states
+    document.querySelectorAll(".class-option").forEach(el => {
+        const key = blockKeyFor(el.dataset.day, el.dataset.time);
+        const id = Number(el.dataset.id);
+        el.classList.toggle("selected", selected[key]?.includes(id));
+    });
+}
+
+function enforceSeatCaps() {
+    offerings.forEach(o => {
+        if (!o.capacity) return;
+
+        const count = (o.roster ?? []).length;
+        const full = count >= Number(o.capacity);
+
+        document.querySelectorAll(`[data-id='${o.id}']`).forEach(el => {
+            if (full) {
+                el.classList.add("full-class");
+            } else {
+                el.classList.remove("full-class");
+            }
+        });
+    });
+}
+
+
+// --------------------------------------
+// Helpers
+// --------------------------------------
+function blockKeyFor(day, time) {
+    return day + "-" + getBlock(time);
 }
 
 function formatRoster(o) {
-  if (!o.roster || o.roster.length === 0) return "No students yet";
-  return "Enrolled: " + o.roster.join(", ");
+    if (!o.roster || !o.roster.length) return "No students yet";
+    return "Enrolled: " + o.roster.join(", ");
 }
 
-function refreshAllRules() {
-  attachAllRosters();
-  enforceAllSeatCaps();
-  enforceAllBlockLimits();
+function show(msg) {
+    const div = document.getElementById("status");
+    div.innerText = msg;
+    setTimeout(() => { div.innerText = ""; }, 2200);
 }
 
-function attachAllRosters() {
-  document.querySelectorAll(".class-option").forEach(opt => {
-    const offering = activeOfferingsGlobal.find(o => o.id == opt.dataset.id);
-    if (!offering) return;
-    const div = opt.querySelector(".roster-display");
-    if (div) div.textContent = formatRoster(offering);
-  });
-}
 
-function enforceAllSeatCaps() {
-  activeOfferingsGlobal.forEach(o => {
-    if (!o.capacity) return;
-    const seatCount = (o.roster || []).length;
-    document.querySelectorAll(`.schedule-checkbox[data-id="${o.id}"]`).forEach(box => {
-      const wrap = box.closest(".class-option");
-      if (seatCount >= Number(o.capacity)) {
-        box.disabled = true;
-        wrap.classList.add("full-class");
-      } else {
-        box.disabled = false;
-        wrap.classList.remove("full-class");
-      }
-    });
-  });
-}
-
-function enforceAllBlockLimits() {
-  studentSelections = {};
-  document.querySelectorAll(".schedule-checkbox:checked").forEach(ch => {
-    const key = computeBlockKey(ch.dataset.day, ch.dataset.time);
-    if (!studentSelections[key]) studentSelections[key] = [];
-    studentSelections[key].push(Number(ch.dataset.id));
-  });
-
-  Object.values(studentSelections).forEach(ids => {
-    if (ids.length > 2) {
-      ids.slice(2).forEach(id => {
-        const box = document.querySelector(`.schedule-checkbox[data-id="${id}"]`);
-        if (!box) return;
-        box.checked = false;
-        box.closest(".class-option").classList.remove("selected");
-      });
-      showStatus("Max 2 classes per block", "warning");
-    }
-  });
-}
-
-function toggleClass(el) {
-  const box = el.querySelector("input[type='checkbox']");
-  box.checked = !box.checked;
-  el.classList.toggle("selected", box.checked);
-  refreshAllRules();
-}
-
-function mapOfferingToCell(o) {
-  const block = convertTimeToBlock(o.time);
-  if (!block) return null;
-  return `${o.day.toLowerCase()}-${block}`;
-}
-
-function computeBlockKey(day, time) {
-  return `${day}-${convertTimeToBlock(time)}`;
-}
-
-function convertTimeToBlock(time) {
-  const t = time.toLowerCase();
-  if (t.includes("10:")) return "block1";
-  if (t.includes("11:")) return "block2";
-  if (t.includes("1:")) return "block3";
-  return null;
-}
-
-function clearScheduleCells() {
-  document.querySelectorAll("[id*='block']").forEach(cell => cell.innerHTML = "");
-}
-
+// --------------------------------------
+// Saving + Loading
+// --------------------------------------
 async function saveSchedule() {
-  const name = document.getElementById("studentName").value.trim();
-  if (!name) return alert("Enter your name first");
-  const ids = [...document.querySelectorAll(".schedule-checkbox:checked")].map(c => Number(c.dataset.id));
-  showLoading("Saving...");
-  const result = await saveScheduleToServer(name, ids);
-  hideLoading();
-  result.success ? showStatus("Saved!", "success") : showStatus("Error saving", "error");
+    const student = document.getElementById("studentName").value.trim();
+    if (!student) return alert("Enter your name first");
+
+    const ids = [];
+    Object.values(selected).forEach(arr => ids.push(...arr));
+
+    const res = await fetch(API_URL, {
+        method:"POST",
+        body: JSON.stringify({
+            action:"saveStudentSchedule",
+            studentName: student,
+            offeringIds: ids
+        })
+    });
+
+    show("Saved");
 }
+
 
 async function loadSchedule() {
-  const name = document.getElementById("studentName").value.trim();
-  if (!name) return alert("Enter your name first");
-  showLoading("Loading...");
-  const result = await loadScheduleFromServer(name);
-  hideLoading();
-  clearUserSelections();
-  if (result.success && result.offerings) {
-    result.offerings.forEach(o => {
-      const box = document.querySelector(`.schedule-checkbox[data-id="${o.id}"]`);
-      if (box) {
-        box.checked = true;
-        box.closest(".class-option").classList.add("selected");
-      }
-    });
-    refreshAllRules();
-    showStatus("Loaded!", "success");
-  } else {
-    showStatus("Not found", "warning");
-  }
+    const student = document.getElementById("studentName").value.trim();
+    if (!student) return alert("Enter your name first");
+
+    const res = await fetch(API_URL + "?action=loadStudent&studentName=" + encodeURIComponent(student));
+    const data = await res.json();
+
+    selected = {};
+
+    document.querySelectorAll(".class-option").forEach(el => el.classList.remove("selected"));
+
+    if (data.success && data.offerings) {
+        data.offerings.forEach(o => {
+            const block = blockKeyFor(o.day, o.time);
+            if (!selected[block]) selected[block] = [];
+            selected[block].push(o.id);
+        });
+    }
+
+    enforceRules();
+    show("Loaded");
 }
 
-function clearUserSelections() {
-  document.querySelectorAll(".schedule-checkbox").forEach(c => {
-    c.checked = false;
-    c.closest(".class-option")?.classList.remove("selected");
-  });
-}
 
-function showStatus(msg, type) {
-  const el = document.getElementById("syncStatus");
-  el.textContent = msg;
-  el.className = "sync-status " + type;
-  el.style.display = "block";
-}
-
-function showLoading(msg) {
-  document.getElementById("loadingOverlay").classList.add("active");
-  document.getElementById("loadingMessage").textContent = msg;
-}
-
-function hideLoading() {
-  document.getElementById("loadingOverlay").classList.remove("active");
-}
-
-document.addEventListener("DOMContentLoaded", buildFullSchedule);
+// --------------------------------------
+document.addEventListener("DOMContentLoaded", loadOfferings);
 </script>
 
+</body>
+</html>
