@@ -521,6 +521,7 @@
                         <option value="">All Times</option>
                         <option value="10:00-10:45">Block 1</option>
                         <option value="10:50-11:35">Block 2</option>
+                        <option value="11:35-12:05">Lunch</option>
                         <option value="12:10-12:55">Block 3</option>
                         <option value="1:00-1:50">Block 4</option>
                         <option value="1:55-2:45">Block 5</option>
@@ -532,6 +533,7 @@
                         <option value="private">Private</option>
                     </select>
                 </div>
+                <button class="btn btn-secondary" onclick="loadOfferings()" title="Refresh data from Google Sheets">🔄 Refresh</button>
                 <button class="btn btn-primary" onclick="showAddOfferingModal()">+ Add Offering</button>
             </div>
 
@@ -562,8 +564,24 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="instructor">Instructor *</label>
-                            <input type="text" id="instructor" required>
+                            <label for="instructor">Facilitators * (select all that apply)</label>
+                            <select id="instructor" multiple size="6" required style="height: auto;">
+                                <option value="Amber">Amber</option>
+                                <option value="Anna">Anna</option>
+                                <option value="Ashlyn">Ashlyn</option>
+                                <option value="Doug">Doug</option>
+                                <option value="Elliott">Elliott</option>
+                                <option value="Geoff">Geoff</option>
+                                <option value="Grace">Grace</option>
+                                <option value="Jamie">Jamie</option>
+                                <option value="Jenique">Jenique</option>
+                                <option value="Lacy">Lacy</option>
+                                <option value="Nancy">Nancy</option>
+                                <option value="Penny">Penny</option>
+                                <option value="Tiff">Tiff</option>
+                                <option value="Travis">Travis</option>
+                            </select>
+                            <small style="color: #666; font-size: 11px;">Hold Ctrl/Cmd to select multiple</small>
                         </div>
                         <div class="form-group">
                             <label for="location">Location</label>
@@ -573,15 +591,29 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="day">Day *</label>
-                            <select id="day" required>
-                                <option value="">Select day</option>
-                                <option value="monday">Monday</option>
-                                <option value="tuesday">Tuesday</option>
-                                <option value="wednesday">Wednesday</option>
-                                <option value="thursday">Thursday</option>
-                                <option value="friday">Friday</option>
-                            </select>
+                            <label>Days * (select all that apply)</label>
+                            <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="days" value="monday" style="width: auto;">
+                                    Monday
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="days" value="tuesday" style="width: auto;">
+                                    Tuesday
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="days" value="wednesday" style="width: auto;">
+                                    Wednesday
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="days" value="thursday" style="width: auto;">
+                                    Thursday
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="days" value="friday" style="width: auto;">
+                                    Friday
+                                </label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Time Blocks * (select all that apply)</label>
@@ -593,6 +625,10 @@
                                 <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
                                     <input type="checkbox" name="timeBlocks" value="10:50-11:35" style="width: auto;">
                                     Block 2 (10:50-11:35 am)
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="timeBlocks" value="11:35-12:05" style="width: auto;">
+                                    🍽️ Lunch (11:35 am-12:05 pm)
                                 </label>
                                 <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
                                     <input type="checkbox" name="timeBlocks" value="12:10-12:55" style="width: auto;">
@@ -621,8 +657,15 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="level">Student Level</label>
-                            <input type="text" id="level" placeholder="e.g., Canopy+, Saplings+">
+                            <label for="level">Student Levels (select all that apply)</label>
+                            <select id="level" multiple size="5" style="height: auto;">
+                                <option value="All">All Ages</option>
+                                <option value="EC">Early Childhood (EC)</option>
+                                <option value="Saplings">Saplings</option>
+                                <option value="Acorns">Acorns</option>
+                                <option value="Canopy">Canopy</option>
+                            </select>
+                            <small style="color: #666; font-size: 11px;">Hold Ctrl/Cmd to select multiple</small>
                         </div>
                     </div>
 
@@ -659,7 +702,7 @@
 
     <script>
         // Apps Script Web App URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB-54jxC7BrC0a6m-tlmxEkphp9FsRMhvpehWmxuLW5y9DloRoKqfs7ojmPYtb02h9/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXj8MxZWU2xJyHDuibHLVsYRXz-BdKlx4fyEPzi0aN6l_f8a6E77Z5jnr3S00xjGcY/exec';
         
         // Data storage
         let allStudents = [];
@@ -1086,8 +1129,19 @@
             document.getElementById('offeringForm').reset();
             document.getElementById('offeringId').value = '';
             
+            // Clear all day checkboxes
+            document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = false);
+            
             // Clear all time block checkboxes
             document.querySelectorAll('input[name="timeBlocks"]').forEach(cb => cb.checked = false);
+            
+            // Clear instructor multi-select
+            const instructorSelect = document.getElementById('instructor');
+            Array.from(instructorSelect.options).forEach(opt => opt.selected = false);
+            
+            // Clear level multi-select
+            const levelSelect = document.getElementById('level');
+            Array.from(levelSelect.options).forEach(opt => opt.selected = false);
             
             document.getElementById('offeringModal').style.display = 'block';
         }
@@ -1100,28 +1154,59 @@
             document.getElementById('offeringModalTitle').textContent = 'Edit Offering';
             document.getElementById('offeringId').value = id;
             document.getElementById('offeringName').value = offering.name;
-            document.getElementById('instructor').value = offering.instructor;
-            document.getElementById('location').value = offering.location || '';
-            document.getElementById('day').value = offering.day;
             
-            // Handle time blocks - check if this offering exists in multiple blocks
+            // Handle instructors - split by ' & ' and select all
+            const instructors = offering.instructor.split(' & ');
+            const instructorSelect = document.getElementById('instructor');
+            Array.from(instructorSelect.options).forEach(opt => {
+                opt.selected = instructors.includes(opt.value);
+            });
+            
+            document.getElementById('location').value = offering.location || '';
+            
+            // Handle days - check if this offering exists on multiple days
             const relatedOfferings = allOfferings.filter(o => 
                 o.name === offering.name && 
-                o.day === offering.day && 
                 o.instructor === offering.instructor
             );
             
-            // Clear all checkboxes first
+            // Get unique days
+            const uniqueDays = [...new Set(relatedOfferings.map(o => o.day))];
+            
+            // Clear all day checkboxes first
+            document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = false);
+            
+            // Check the appropriate days
+            uniqueDays.forEach(day => {
+                const checkbox = document.querySelector(`input[name="days"][value="${day}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            
+            // Handle time blocks
+            const uniqueTimes = [...new Set(relatedOfferings.map(o => o.time))];
+            
+            // Clear all time block checkboxes first
             document.querySelectorAll('input[name="timeBlocks"]').forEach(cb => cb.checked = false);
             
-            // Check the appropriate time block(s)
-            relatedOfferings.forEach(o => {
-                const checkbox = document.querySelector(`input[name="timeBlocks"][value="${o.time}"]`);
+            // Check the appropriate time blocks
+            uniqueTimes.forEach(time => {
+                const checkbox = document.querySelector(`input[name="timeBlocks"][value="${time}"]`);
                 if (checkbox) checkbox.checked = true;
             });
             
             document.getElementById('offeringType').value = offering.type;
-            document.getElementById('level').value = offering.level || '';
+            
+            // Handle levels - split by ', ' and select all
+            const levelSelect = document.getElementById('level');
+            if (offering.level) {
+                const levels = offering.level.split(', ');
+                Array.from(levelSelect.options).forEach(opt => {
+                    opt.selected = levels.includes(opt.value);
+                });
+            } else {
+                Array.from(levelSelect.options).forEach(opt => opt.selected = false);
+            }
+            
             document.getElementById('description').value = offering.description || '';
             
             document.getElementById('offeringModal').style.display = 'block';
@@ -1134,6 +1219,15 @@
                 return;
             }
 
+            // Get selected days
+            const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedDays.length === 0) {
+                showStatus('⚠️ Please select at least one day', 'warning');
+                return;
+            }
+
             // Get selected time blocks
             const selectedTimeBlocks = Array.from(document.querySelectorAll('input[name="timeBlocks"]:checked'))
                 .map(cb => cb.value);
@@ -1143,13 +1237,26 @@
                 return;
             }
 
+            // Get selected instructors
+            const instructorSelect = document.getElementById('instructor');
+            const selectedInstructors = Array.from(instructorSelect.selectedOptions).map(opt => opt.value);
+            
+            if (selectedInstructors.length === 0) {
+                showStatus('⚠️ Please select at least one facilitator', 'warning');
+                return;
+            }
+            
+            // Get selected levels
+            const levelSelect = document.getElementById('level');
+            const selectedLevels = Array.from(levelSelect.selectedOptions).map(opt => opt.value);
+            const levelString = selectedLevels.length > 0 ? selectedLevels.join(', ') : '';
+
             const baseOfferingData = {
                 name: document.getElementById('offeringName').value,
-                instructor: document.getElementById('instructor').value,
+                instructor: selectedInstructors.join(' & '),  // Join multiple instructors
                 location: document.getElementById('location').value,
-                day: document.getElementById('day').value,
                 type: document.getElementById('offeringType').value,
-                level: document.getElementById('level').value,
+                level: levelString,
                 description: document.getElementById('description').value
             };
 
@@ -1158,10 +1265,9 @@
                     // UPDATE EXISTING: Delete all related offerings, then recreate
                     const offering = allOfferings.find(o => o.id === currentOfferingId);
                     if (offering) {
-                        // Find all related offerings (same name, day, instructor)
+                        // Find all related offerings (same name, instructor)
                         const relatedOfferings = allOfferings.filter(o => 
                             o.name === offering.name && 
-                            o.day === offering.day && 
                             o.instructor === offering.instructor
                         );
                         
@@ -1178,29 +1284,34 @@
                     }
                 }
                 
-                // Create offering for each selected time block
-                for (const timeBlock of selectedTimeBlocks) {
-                    const offeringData = {
-                        ...baseOfferingData,
-                        time: timeBlock,
-                        action: 'saveOffering'
-                    };
-                    
-                    const response = await fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(offeringData)
-                    });
-                    
-                    const result = await response.json();
-                    if (!result.success) {
-                        showStatus('❌ Error: ' + result.message, 'error');
-                        return;
+                // Create offering for each combination of day and time block
+                let totalCreated = 0;
+                for (const day of selectedDays) {
+                    for (const timeBlock of selectedTimeBlocks) {
+                        const offeringData = {
+                            ...baseOfferingData,
+                            day: day,
+                            time: timeBlock,
+                            action: 'saveOffering'
+                        };
+                        
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            body: JSON.stringify(offeringData)
+                        });
+                        
+                        const result = await response.json();
+                        if (!result.success) {
+                            showStatus('❌ Error: ' + result.message, 'error');
+                            return;
+                        }
+                        totalCreated++;
                     }
                 }
 
                 const message = currentOfferingId ? '✅ Offering updated!' : '✅ Offering added!';
-                const blocksText = selectedTimeBlocks.length > 1 ? ` (${selectedTimeBlocks.length} blocks)` : '';
-                showStatus(message + blocksText, 'success');
+                const detailsText = ` (${selectedDays.length} days × ${selectedTimeBlocks.length} blocks = ${totalCreated} entries)`;
+                showStatus(message + detailsText, 'success');
                 
                 closeOfferingModal();
                 await loadOfferings();
@@ -1214,16 +1325,21 @@
             const offering = allOfferings.find(o => o.id === id);
             if (!offering) return;
 
-            // Find all related offerings (same name, day, instructor)
+            // Find all related offerings (same name, instructor - across all days and times)
             const relatedOfferings = allOfferings.filter(o => 
                 o.name === offering.name && 
-                o.day === offering.day && 
                 o.instructor === offering.instructor
             );
 
-            const blocksText = relatedOfferings.length > 1 ? ` (${relatedOfferings.length} blocks)` : '';
+            const uniqueDays = [...new Set(relatedOfferings.map(o => o.day))];
+            const uniqueBlocks = [...new Set(relatedOfferings.map(o => o.time))];
             
-            if (confirm(`Delete "${offering.name}"${blocksText}?`)) {
+            let detailsText = '';
+            if (uniqueDays.length > 1 || uniqueBlocks.length > 1) {
+                detailsText = ` (${uniqueDays.length} days × ${uniqueBlocks.length} blocks = ${relatedOfferings.length} entries)`;
+            }
+            
+            if (confirm(`Delete "${offering.name}"${detailsText}?`)) {
                 try {
                     // Delete all related offerings
                     for (const related of relatedOfferings) {
