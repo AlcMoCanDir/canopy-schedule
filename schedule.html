@@ -6,227 +6,227 @@
 <title>Canopy Program Schedule Builder</title>
 
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
+body { font-family: Arial, sans-serif; background:#fafafa; margin:0; padding:0; }
 .container { max-width:1200px; margin:auto; padding:20px; background:white; }
-.grid-table { width:100%; border-collapse:collapse; margin-top:20px; }
-.grid-table th, .grid-table td { border:1px solid #ddd; padding:4px; vertical-align:top; }
-.class-option { font-size:12px; background:#f5f5f5; padding:4px; margin-bottom:4px; cursor:pointer; border-left:4px solid #2196f3; }
-.class-option.selected { background:#e9f3ff; border-left-color:#004da8; }
-.class-option.full-class { opacity:0.55; background:#ffd4d4; border-left-color:#c30000; cursor:not-allowed; }
-.roster-display { font-size:10px; margin-top:5px; color:#444; }
-#status { padding:6px; text-align:center; font-size:13px; }
+
+.tabs {
+    display:flex; gap:10px; margin-bottom:15px;
+}
+.tab {
+    padding:8px 14px; background:#eee; cursor:pointer; border-radius:4px;
+}
+.tab.active {
+    background:#4287f5; color:white;
+}
+
+.grid-table { width:100%; border-collapse:collapse; margin-top:10px; }
+.grid-table th, .grid-table td {
+    border:1px solid #ddd; padding:6px; font-size:14px; vertical-align:top;
+}
+
+.class-option {
+    font-size:12px; padding:6px; border-left:4px solid #2196f3;
+    background:#f7f7f7; margin-bottom:6px; cursor:pointer;
+}
+.class-option.selected {
+    background:#e6f0ff; border-left-color:#003f9a;
+}
+.class-option.full-class {
+    opacity:0.45; border-left-color:#b20000; background:#ffd4d4;
+}
+
+#status { color:black; padding:6px; text-align:center; font-size:13px; }
 </style>
+
 </head>
 
 <body>
+
 <div class="container">
 
-<h2>🌳 Canopy Schedule — Session 3</h2>
+    <h2>🌳 Canopy Schedule — Session 3</h2>
 
-<div style="margin-bottom:10px;">
-    <input id="studentName" placeholder="Enter your name" style="padding:5px;width:250px;">
+    <input id="studentName" placeholder="Enter your name"
+           style="padding:5px;width:250px;margin-bottom:10px;">
     <button onclick="saveSchedule()">Save</button>
     <button onclick="loadSchedule()">Load</button>
-</div>
 
-<div id="status"></div>
+    <div id="status"></div>
 
-<table class="grid-table">
-<thead>
-<tr>
-    <th>Time</th>
-    <th>Monday</th>
-    <th>Tuesday</th>
-    <th>Wednesday</th>
-    <th>Thursday</th>
-    <th>Friday</th>
-</tr>
-</thead>
+    <div class="tabs">
+        <div id="tabMain" class="tab active" onclick="switchTab('main')">Schedule</div>
+        <div id="tabSelected" class="tab" onclick="switchTab('selected')">Your Selections</div>
+    </div>
 
-<tbody>
+    <!-- MAIN SCHEDULE -->
+    <div id="mainPanel">
+        <table class="grid-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>10:00-10:45</strong></td>
+                    <td id="monday-block1"></td><td id="tuesday-block1"></td><td id="wednesday-block1"></td>
+                    <td id="thursday-block1"></td><td id="friday-block1"></td></tr>
 
-<!-- BLOCK 1 -->
-<tr>
-    <td><strong>Block 1<br>10:00-10:45</strong></td>
-    <td id="monday-block1"></td>
-    <td id="tuesday-block1"></td>
-    <td id="wednesday-block1"></td>
-    <td id="thursday-block1"></td>
-    <td id="friday-block1"></td>
-</tr>
+                <tr><td><strong>10:50-11:35</strong></td>
+                    <td id="monday-block2"></td><td id="tuesday-block2"></td><td id="wednesday-block2"></td>
+                    <td id="thursday-block2"></td><td id="friday-block2"></td></tr>
 
-<!-- BLOCK 2 -->
-<tr>
-    <td><strong>Block 2<br>10:50-11:35</strong></td>
-    <td id="monday-block2"></td>
-    <td id="tuesday-block2"></td>
-    <td id="wednesday-block2"></td>
-    <td id="thursday-block2"></td>
-    <td id="friday-block2"></td>
-</tr>
+                <tr><td><strong>11:35-12:05</strong></td>
+                    <td id="monday-lunch"></td><td id="tuesday-lunch"></td><td id="wednesday-lunch"></td>
+                    <td id="thursday-lunch"></td><td id="friday-lunch"></td></tr>
 
-<!-- LUNCH -->
-<tr>
-    <td><strong>Lunch<br>11:35-12:05</strong></td>
-    <td id="monday-lunch"></td>
-    <td id="tuesday-lunch"></td>
-    <td id="wednesday-lunch"></td>
-    <td id="thursday-lunch"></td>
-    <td id="friday-lunch"></td>
-</tr>
+                <tr><td><strong>12:10-12:55</strong></td>
+                    <td id="monday-block3"></td><td id="tuesday-block3"></td><td id="wednesday-block3"></td>
+                    <td id="thursday-block3"></td><td id="friday-block3"></td></tr>
 
-<!-- BLOCK 3 -->
-<tr>
-    <td><strong>Block 3<br>12:10-12:55</strong></td>
-    <td id="monday-block3"></td>
-    <td id="tuesday-block3"></td>
-    <td id="wednesday-block3"></td>
-    <td id="thursday-block3"></td>
-    <td id="friday-block3"></td>
-</tr>
+                <tr><td><strong>1:00-1:50</strong></td>
+                    <td id="monday-block4"></td><td id="tuesday-block4"></td><td id="wednesday-block4"></td>
+                    <td id="thursday-block4"></td><td id="friday-block4"></td></tr>
 
-<!-- BLOCK 4 -->
-<tr>
-    <td><strong>Block 4<br>1:00-1:50</strong></td>
-    <td id="monday-block4"></td>
-    <td id="tuesday-block4"></td>
-    <td id="wednesday-block4"></td>
-    <td id="thursday-block4"></td>
-    <td id="friday-block4"></td>
-</tr>
+                <tr><td><strong>1:55-2:45</strong></td>
+                    <td id="monday-block5"></td><td id="tuesday-block5"></td><td id="wednesday-block5"></td>
+                    <td id="thursday-block5"></td><td id="friday-block5"></td></tr>
+            </tbody>
+        </table>
+    </div>
 
-<!-- BLOCK 5 -->
-<tr>
-    <td><strong>Block 5<br>1:55-2:45</strong></td>
-    <td id="monday-block5"></td>
-    <td id="tuesday-block5"></td>
-    <td id="wednesday-block5"></td>
-    <td id="thursday-block5"></td>
-    <td id="friday-block5"></td>
-</tr>
 
-</tbody>
-</table>
+    <!-- SELECTED SCHEDULE -->
+    <div id="selectedPanel" style="display:none;">
+        <h3>Your Selected Schedule</h3>
+        <div id="selectedSchedule"></div>
+    </div>
 
 </div>
+
 
 <script>
-// ---------------- API ----------------
+// BACKEND URL
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxOHs6TelVM347BqlaydmtiDaNSLeQwJkUCLRruP0HoHmTFSvrof-yA1q4A8wSKLqxt/exec";
 
-// Data structures
 let offerings = [];
-let selected = {};
+let selected = {}; // key: day-block, value: offering IDs
 
 
-// ---------------- Load Data ----------------
+// ---------------- TAB SWITCHER ----------------
+function switchTab(tab) {
+    document.getElementById("tabMain").classList.remove("active");
+    document.getElementById("tabSelected").classList.remove("active");
+    document.getElementById("mainPanel").style.display = "none";
+    document.getElementById("selectedPanel").style.display = "none";
+
+    if (tab === "main") {
+        document.getElementById("tabMain").classList.add("active");
+        document.getElementById("mainPanel").style.display = "block";
+    } else {
+        document.getElementById("tabSelected").classList.add("active");
+        document.getElementById("selectedPanel").style.display = "block";
+        renderSelectedSchedule();
+    }
+}
+
+
+// ---------------- LOAD OFFERINGS ----------------
 async function loadOfferings() {
     const res = await fetch(API_URL + "?action=loadOfferings");
     const data = await res.json();
     if (!data.success) return;
+
     offerings = data.offerings;
     drawOfferings();
 }
 
 
-// ---------------- Render Grid ----------------
+// ---------------- DRAW MAIN GRID ----------------
 function drawOfferings() {
     clearCells();
 
     offerings.forEach(o => {
-        const id = mapCell(o);
-        if (!id) return;
+        const cellId = mapCell(o);
+        if (!cellId) return;
 
-        const div = document.createElement("div");
-        div.className = "class-option";
-        div.dataset.id = o.id;
-        div.dataset.day = o.day;
-        div.dataset.time = o.time;
-        div.dataset.capacity = Number(o.capacity) || null;
+        const card = document.createElement("label");
+        card.className = "class-option";
+        card.dataset.id = o.id;
+        card.dataset.day = o.day;
+        card.dataset.time = o.time;
+        card.dataset.capacity = Number(o.capacity) || null;
 
-        div.onclick = () => toggleOffering(div);
-
-        div.innerHTML = `
+        card.innerHTML = `
+            <input type="checkbox" class="offerCheck" data-id="${o.id}">
             <strong>${o.name}</strong><br>
-            <span style="font-size:11px; color:#333;">👤 ${o.instructor ?? ""}</span><br>
-
-            <span style="font-size:10px; display:block; margin-top:2px;">
-                <strong>Type:</strong> ${o.type ?? ""}
-            </span>
-
-            <span style="font-size:10px; display:block;">
-                <strong>Level:</strong> ${o.level ?? ""}
-            </span>
-
-            <span style="font-size:10px; display:block; margin-top:3px; border-top:1px solid #ddd; padding-top:3px;">
-                ${o.description ?? ""}
-            </span>
-
-            ${o.capacity 
-                ? `<span style="font-size:10px; display:block; margin-top:4px;"><strong>Capacity:</strong> ${o.capacity}</span>` 
-                : `<span style="font-size:10px; display:block; margin-top:4px;"><strong>Capacity:</strong> None listed</span>`
-            }
+            👤 ${o.instructor}<br>
+            <small>
+            Type: ${o.type}<br>
+            Level: ${o.level}<br>
+            ${o.description ?? ""}<br>
+            </small>
+            <small>Capacity: ${o.capacity ?? "N/A"}</small>
         `;
 
-        document.getElementById(id).appendChild(div);
+        card.querySelector(".offerCheck").addEventListener("change", (e) => {
+            toggleOffering(card, e.target.checked);
+        });
+
+        card.onclick = (ev) => {
+            if (ev.target.tagName !== "INPUT") {
+                const check = card.querySelector(".offerCheck");
+                check.checked = !check.checked;
+                toggleOffering(card, check.checked);
+            }
+        };
+
+        document.getElementById(cellId).appendChild(card);
     });
 
     enforceRules();
 }
 
 
-// ---------------- Selection ----------------
-function toggleOffering(el) {
-    if (el.classList.contains("full-class")) return;
-
-    const id = Number(el.dataset.id);
-    const key = blockKey(el.dataset.day, el.dataset.time);
+// ---------------- SELECTION LOGIC ----------------
+function toggleOffering(card, isChecked) {
+    const id = Number(card.dataset.id);
+    const key = blockKey(card.dataset.day, card.dataset.time);
 
     if (!selected[key]) selected[key] = [];
-    const arr = selected[key];
 
-    if (arr.includes(id)) {
-        selected[key] = arr.filter(x => x !== id);
+    if (!isChecked) {
+        selected[key] = selected[key].filter(x => x !== id);
+        card.classList.remove("selected");
     } else {
-        arr.push(id);
+        if (!selected[key].includes(id)) {
+            selected[key].push(id);
+        }
+        card.classList.add("selected");
     }
 
     enforceRules();
-}
-
-function blockKey(day, time) {
-    return day + "-" + getBlock(time);
+    renderSelectedSchedule();
 }
 
 
-// ---------------- Enforcement ----------------
+// ---------------- RULES ----------------
 function enforceRules() {
-    enforceMaxTwo();
-    enforceCapacity();
+
+    // enforce max of 2 per block
+    for (const key in selected) {
+        if (selected[key].length > 2) {
+            selected[key] = selected[key].slice(0, 2);
+            show("Max 2 per block");
+        }
+    }
+
     repaintSelections();
 }
 
-function enforceMaxTwo() {
-    Object.keys(selected).forEach(key => {
-        if (selected[key].length > 2) {
-            selected[key].splice(2);
-            show("Max 2 classes per block reached");
-        }
-    });
-}
 
-function enforceCapacity() {
-    offerings.forEach(o => {
-        if (!o.capacity) return;
-        const overfull = (o.roster?.length ?? 0) >= Number(o.capacity);
-
-        document.querySelectorAll(`[data-id='${o.id}']`).forEach(el => {
-            el.classList.toggle("full-class", overfull);
-        });
-    });
-}
-
+// ---------------- REFRESH VISUAL SELECTION STATE ----------------
 function repaintSelections() {
     document.querySelectorAll(".class-option").forEach(el => {
         const key = blockKey(el.dataset.day, el.dataset.time);
@@ -236,41 +236,90 @@ function repaintSelections() {
 }
 
 
-// ---------------- Helpers ----------------
-function clearCells() {
-    document.querySelectorAll("[id*='block'], [id*='lunch']")
-        .forEach(el => el.innerHTML = "");
+// ---------------- RENDER STUDENT'S VERSION ----------------
+function renderSelectedSchedule() {
+    const out = document.getElementById("selectedSchedule");
+
+    function cell(day, block) {
+        const key = day + "-" + block;
+        const ids = selected[key] || [];
+        if (!ids.length) return "";
+
+        return ids.map(id => {
+            const o = offerings.find(x => x.id === id);
+            if (!o) return "";
+            return `<div class='class-option selected'>
+                    <strong>${o.name}</strong><br>
+                    <small>${o.instructor}</small>
+                </div>`;
+        }).join("");
+    }
+
+    out.innerHTML = `
+    <table class="grid-table">
+      <thead>
+        <tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>10:00-10:45</td>
+            <td>${cell("monday","block1")}</td><td>${cell("tuesday","block1")}</td>
+            <td>${cell("wednesday","block1")}</td><td>${cell("thursday","block1")}</td>
+            <td>${cell("friday","block1")}</td></tr>
+
+        <tr><td>10:50-11:35</td>
+            <td>${cell("monday","block2")}</td><td>${cell("tuesday","block2")}</td>
+            <td>${cell("wednesday","block2")}</td><td>${cell("thursday","block2")}</td>
+            <td>${cell("friday","block2")}</td></tr>
+
+        <tr><td>11:35-12:05</td>
+            <td>${cell("monday","lunch")}</td><td>${cell("tuesday","lunch")}</td>
+            <td>${cell("wednesday","lunch")}</td><td>${cell("thursday","lunch")}</td>
+            <td>${cell("friday","lunch")}</td></tr>
+
+        <tr><td>12:10-12:55</td>
+            <td>${cell("monday","block3")}</td><td>${cell("tuesday","block3")}</td>
+            <td>${cell("wednesday","block3")}</td><td>${cell("thursday","block3")}</td>
+            <td>${cell("friday","block3")}</td></tr>
+
+        <tr><td>1:00-1:50</td>
+            <td>${cell("monday","block4")}</td><td>${cell("tuesday","block4")}</td>
+            <td>${cell("wednesday","block4")}</td><td>${cell("thursday","block4")}</td>
+            <td>${cell("friday","block4")}</td></tr>
+
+        <tr><td>1:55-2:45</td>
+            <td>${cell("monday","block5")}</td><td>${cell("tuesday","block5")}</td>
+            <td>${cell("wednesday","block5")}</td><td>${cell("thursday","block5")}</td>
+            <td>${cell("friday","block5")}</td></tr>
+      </tbody>
+    </table>
+    `;
 }
 
-function formatRoster(o) {
-    if (!o.roster || !o.roster.length) return "No students yet";
-    return "Enrolled: " + o.roster.join(", ");
-}
 
-
-// ---------------- Save & Load ----------------
+// ---------------- SAVE TO SHEETS ----------------
 async function saveSchedule() {
     const name = document.getElementById("studentName").value.trim();
-    if (!name) return alert("Enter your name first");
+    if (!name) return alert("Enter name first");
 
-    const ids = [];
-    Object.values(selected).forEach(arr => ids.push(...arr));
+    const flatIds = Object.values(selected).flat();
 
     await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
+        method:"POST",
+        body:JSON.stringify({
             action:"saveStudentSchedule",
             studentName:name,
-            offeringIds:ids
+            offeringIds:flatIds
         })
     });
 
-    show("Saved!");
+    show("Saved");
 }
 
+
+// ---------------- LOAD FROM SHEETS ----------------
 async function loadSchedule() {
     const name = document.getElementById("studentName").value.trim();
-    if (!name) return alert("Enter your name first");
+    if (!name) return alert("Enter name first");
 
     const res = await fetch(API_URL + "?action=loadStudent&studentName=" + encodeURIComponent(name));
     const data = await res.json();
@@ -283,25 +332,46 @@ async function loadSchedule() {
             if (!selected[key]) selected[key] = [];
             selected[key].push(o.id);
         });
+        show("Loaded");
+    } else show("No schedule found");
 
-        repaintSelections();
-        enforceRules();
-        show("Loaded!");
-    } else {
-        show("No schedule on record");
-    }
+    repaintSelections();
+    renderSelectedSchedule();
 }
 
 
-// ---------------- Status ----------------
+// ---------------- HELPERS ----------------
 function show(msg) {
-    const el = document.getElementById("status");
-    el.textContent = msg;
-    setTimeout(() => el.textContent = "", 2000);
+    document.getElementById("status").textContent = msg;
+    setTimeout(() => document.getElementById("status").textContent="", 2000);
+}
+
+function clearCells() {
+    document.querySelectorAll("[id*='block'], [id*='lunch']")
+        .forEach(el => el.innerHTML = "");
+}
+
+function blockKey(day,time) {
+    return day + "-" + getBlock(time);
+}
+
+function getBlock(time) {
+    const t = time.toLowerCase();
+    if (t.includes("10:00")) return "block1";
+    if (t.includes("10:50")) return "block2";
+    if (t.includes("11:35")) return "lunch";
+    if (t.includes("12:10")) return "block3";
+    if (t.includes("1:00") && !t.includes("55")) return "block4";
+    return "block5";
+}
+
+function mapCell(o) {
+    const b = getBlock(o.time);
+    return b ? `${o.day}-${b}` : null;
 }
 
 
-// Auto-load
+// Initialize
 document.addEventListener("DOMContentLoaded", loadOfferings);
 
 </script>
