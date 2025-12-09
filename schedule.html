@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Session 3 Schedule Builder</title>
-
-<style>
-/* RESET & BASE -------------------------------------------------- */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canopy Program - Session 3 Schedule Builder</title>
+    <style>
+        /* RESET & BASE -------------------------------------------------- */
 * { box-sizing: border-box; }
 
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background: #f6f6f6;
+    background: #f5f5f5;
 }
 
 .container {
     max-width: 1400px;
     margin: auto;
     background: white;
-    border-radius: 8px;
     padding: 20px;
+    border-radius: 8px;
     border: 1px solid #ddd;
 }
 
@@ -31,104 +31,1459 @@ h1 {
     margin-bottom: 10px;
 }
 
-/* STUDENT NAME -------------------------------------------------- */
+/* STUDENT INFO -------------------------------------------------- */
 .student-info {
     text-align: center;
     margin-bottom: 20px;
 }
 
 .student-info input {
-    border: 1px solid #2a6f33;
-    border-radius: 4px;
-    padding: 6px;
-    width: 260px;
+    padding: 8px;
     font-size: 14px;
+    border: 2px solid #4CAF50;
+    border-radius: 4px;
+    width: 300px;
 }
+
+/* STATUS -------------------------------------------------------- */
+.sync-status {
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    display: none;
+    border-radius: 4px;
+}
+
+.sync-status.success { background: #d4edda; color: #155724; }
+.sync-status.error { background: #f8d7da; color: #721c24; }
+.sync-status.warning { background: #fff3cd; color: #856404; }
+
+/* LOADING ------------------------------------------------------- */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    background: rgba(0,0,0,0.75);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.loading-overlay.active { display: flex; }
+
+.loading-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.loading-spinner {
+    border: 4px solid #ddd;
+    border-top: 4px solid #4CAF50;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SYNC ---------------------------------------------------------- */
+.sync-controls {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.sync-btn {
+    padding: 10px 22px;
+    border-radius: 4px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.sync-btn.secondary { background: #2196F3; }
 
 /* TABS ---------------------------------------------------------- */
 .tabs {
     display: flex;
     gap: 10px;
-    border-bottom: 2px solid #2a6f33;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #4CAF50;
+    justify-content: center;
 }
+
 .tab {
-    padding: 10px 20px;
+    padding: 10px 24px;
     border-radius: 6px 6px 0 0;
-    background: #dedede;
+    background: #ddd;
     cursor: pointer;
     border: none;
 }
-.tab.active { background: #2a6f33; color: white; }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab.active { background: #4CAF50; color: white; }
 
-/* SCHEDULE TABLE ------------------------------------------------ */
+/* TABLES -------------------------------------------------------- */
 .schedule-table {
     width: 100%;
     border-collapse: collapse;
 }
-.schedule-table th, .schedule-table td {
+
+.schedule-table th,
+.schedule-table td {
     border: 1px solid #ccc;
     padding: 6px;
     font-size: 11px;
 }
+
 .schedule-table th {
-    background: #2a6f33;
+    background: #4CAF50;
     color: white;
-    font-size: 12px;
-    text-align: center;
 }
+
 .time-col {
-    width: 100px;
-    background: #2274cd;
+    background: #2196F3;
     color: white;
     font-weight: bold;
-    text-align: center;
+    width: 100px;
 }
 
-.lunch-row td {
-    background: #fff3d4;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* CLASS ITEMS --------------------------------------------------- */
-.class-item {
+/* CLASS OPTIONS ------------------------------------------------- */
+.class-option {
     padding: 6px;
+    border-radius: 4px;
     margin-bottom: 4px;
-    border-radius: 4px;
-    font-size: 11px;
+    cursor: pointer;
 }
 
-.commitment { background: #fff7b0; border-left: 4px solid #dac62c; }
-.dropin { background: #daf0ff; border-left: 4px solid #2274cd; }
-.private { background: #ffdede; border-left: 4px solid #c93d3d; }
-
-/* MY SCHEDULE SUMMARY ------------------------------------------ */
-.summary-box {
-    background: #ecf9ec;
-    padding: 15px;
-    border-radius: 4px;
+.class-option.selected {
+    border: 3px solid #ff9800;
+    background: #fff3e0;
 }
 
-.summary-flex {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-}
+.class-option.commitment { background: #fff9c4; border-left: 3px solid #ffeb3b; }
+.class-option.drop-in { background: #e3f2fd; border-left: 3px solid #2196F3; }
+.class-option.private { background: #ffebee; border-left: 3px solid #f44336; }
 
-.stat {
-    text-align: center;
-}
+.class-info .class-name { font-weight: bold; }
 
-.stat-number {
-    font-size: 26px;
-    font-weight: bold;
-    color: #2a6f33;
-}
+/* MY SCHEDULE VIEW*
 
-/* BUTTONS ------------------------------------------------------- */
-.action-buttons {
-    text-a
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 Canopy Program - Session 3 Schedule Builder</h1>
+        
+        <div id="facilitatorMode" style="display: none; text-align: center; margin: 10px 0; padding: 10px; background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 4px;">
+            <strong>👤 Facilitator Mode:</strong> Editing schedule for <span id="editingStudentName"></span>
+            <button onclick="returnToDashboard()" style="margin-left: 15px; padding: 5px 15px; background-color: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                ← Return to Admin Dashboard
+            </button>
+        </div>
+        
+        <div class="student-info">
+            <label for="studentName"><strong>Student Name:</strong></label>
+            <input type="text" id="studentName" placeholder="Enter your name">
+        </div>
+
+        <div id="syncStatus" class="sync-status" style="display: none;"></div>
+
+        <div class="sync-controls">
+            <button class="sync-btn" onclick="saveToGoogleSheets()">💾 Save to Database</button>
+            <button class="sync-btn secondary" onclick="loadFromGoogleSheets()">📥 Load from Database</button>
+            <button class="sync-btn secondary" onclick="testConnection()">🔌 Test Connection</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('master')">📅 Full Schedule</button>
+            <button class="tab" onclick="switchTab('my-schedule')">✅ My Schedule</button>
+        </div>
+        
+        <!-- Full Schedule Tab -->
+        <div id="master-tab" class="tab-content active">
+            <div class="master-schedule">
+                <div id="scheduleContainer"></div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-title">Legend:</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-box commitment"></div>
+                        <span>Commitment Class (ongoing attendance required)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box drop-in"></div>
+                        <span>Drop-In Class (flexible attendance)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box private"></div>
+                        <span>Private Lesson (individual instruction)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box selected"></div>
+                        <span>Selected for My Schedule</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- My Schedule Tab -->
+        <div id="my-schedule-tab" class="tab-content">
+            <div class="my-schedule-container">
+                <div class="schedule-summary">
+                    <h2>📊 Schedule Summary</h2>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalClasses">0</div>
+                            <div class="stat-label">Total Classes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="commitmentCount">0</div>
+                            <div class="stat-label">Commitment Classes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="dropInCount">0</div>
+                            <div class="stat-label">Drop-In Classes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="privateCount">0</div>
+                            <div class="stat-label">Private Lessons</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="selected-classes-list" id="selectedClassesList"></div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn primary" onclick="saveToGoogleSheets()">💾 Save Schedule to Database</button>
+            <button class="action-btn secondary" onclick="printMySchedule()">🖨️ Print My Schedule</button>
+            <button class="action-btn secondary" onclick="printFullSchedule()">🖨️ Print Full Schedule</button>
+            <button class="action-btn danger" onclick="clearSchedule()">🗑️ Clear All Selections</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3 id="loadingMessage">Loading schedule...</h3>
+        </div>
+    </div>
+
+    <!-- Class Description Modal -->
+    <div id="classModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Class Information</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // GOOGLE APPS SCRIPT WEB APP CONFIGURATION
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB-54jxC7BrC0a6m-tlmxEkphp9FsRMhvpehWmxuLW5y9DloRoKqfs7ojmPYtb02h9/exec';
+
+        // Check if config is set
+        function isConfigured() {
+            return true; // Apps Script URL is configured
+        }
+
+        // Return to admin dashboard (for facilitator mode)
+        function returnToDashboard() {
+            if (confirm('Return to Admin Dashboard? Any unsaved changes will be lost.')) {
+                window.close();
+                // If window.close() doesn't work (popup blocker), try to navigate
+                setTimeout(() => {
+                    window.location.href = 'admin_dashboard.html';
+                }, 100);
+            }
+        }
+
+        // Show loading overlay
+        function showLoading(message) {
+            const overlay = document.getElementById('loadingOverlay');
+            const messageEl = document.getElementById('loadingMessage');
+            messageEl.textContent = message || 'Loading...';
+            overlay.classList.add('active');
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.remove('active');
+        }
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.textContent = message;
+            statusEl.className = `sync-status ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Save schedule to Google Sheets via Apps Script
+        async function saveToGoogleSheets() {
+            const studentName = document.getElementById('studentName').value.trim();
+            
+            if (!studentName) {
+                showStatus('Please enter your name first!', 'error');
+                return;
+            }
+
+            if (!isConfigured()) {
+                showStatus('Apps Script not configured.', 'warning');
+                return;
+            }
+
+            try {
+                showStatus('Saving to database...', 'warning');
+                
+                // Prepare data
+                const scheduleData = prepareScheduleData(studentName);
+                console.log('Prepared data:', scheduleData);
+                
+                // Use fetch with redirect: 'follow' to handle Apps Script redirects
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        studentName: scheduleData.studentName,
+                        timestamp: scheduleData.timestamp,
+                        classes: scheduleData.classes,
+                        totalClasses: scheduleData.totalClasses
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ Schedule saved successfully!', 'success');
+                } else {
+                    showStatus('❌ Error: ' + (result.message || 'Failed to save'), 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error saving to Google Sheets:', error);
+                showStatus('❌ Connection error. Make sure your Apps Script is deployed with "Anyone" access.', 'error');
+                console.log('Troubleshooting: Check that your Apps Script deployment settings allow "Anyone" access');
+            }
+        }
+
+        // Load schedule from Google Sheets via Apps Script
+        async function loadFromGoogleSheets() {
+            const studentName = document.getElementById('studentName').value.trim();
+            
+            if (!studentName) {
+                showStatus('Please enter your name first!', 'error');
+                return;
+            }
+
+            if (!isConfigured()) {
+                showStatus('Apps Script not configured.', 'warning');
+                return;
+            }
+
+            try {
+                showStatus('Loading from database...', 'warning');
+                
+                const url = `${APPS_SCRIPT_URL}?action=load&studentName=${encodeURIComponent(studentName)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    loadScheduleData(result.data);
+                    showStatus('✅ Schedule loaded successfully!', 'success');
+                    renderMasterSchedule();
+                    renderMySchedule();
+                } else {
+                    showStatus('No saved schedule found for ' + studentName, 'warning');
+                }
+                
+            } catch (error) {
+                console.error('Error loading from Google Sheets:', error);
+                showStatus('❌ Error loading schedule: ' + error.message, 'error');
+            }
+        }
+
+        // Test connection to Apps Script
+        async function testConnection() {
+            try {
+                showStatus('Testing connection to Google Sheets...', 'warning');
+                
+                const url = `${APPS_SCRIPT_URL}?action=loadAll`;
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ Connection successful! Found ' + (result.students?.length || 0) + ' students.', 'success');
+                } else {
+                    showStatus('❌ Connection failed: ' + (result.message || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Network error: ' + error.message, 'error');
+            }
+        }
+
+        // Get setup instructions
+        function getSetupInstructions() {
+            return `
+GOOGLE APPS SCRIPT SETUP:
+
+The system is now configured to use Google Apps Script Web App.
+Current URL: ${APPS_SCRIPT_URL}
+
+If you need to change the configuration:
+1. Deploy a new Apps Script Web App from your Google Sheet
+2. Update the APPS_SCRIPT_URL in this HTML file
+3. Make sure the Web App is set to "Anyone" access
+
+SECURITY NOTE: For production use, consider implementing user authentication
+in the Apps Script to protect student data.
+            `;
+        }
+
+        // Prepare schedule data for saving
+        function prepareScheduleData(studentName) {
+            const timestamp = new Date().toISOString();
+            const classesArray = [];
+            
+            for (const [key, classInfo] of Object.entries(selectedClasses)) {
+                classesArray.push({
+                    day: classInfo.day,
+                    time: classInfo.time,
+                    offeringName: classInfo.name,
+                    instructor: classInfo.instructor,
+                    type: classInfo.type
+                });
+            }
+            
+            return {
+                studentName: studentName,
+                timestamp: timestamp,
+                classes: JSON.stringify(classesArray),
+                totalClasses: classesArray.length
+            };
+        }
+
+        // Load schedule data into the app
+        function loadScheduleData(data) {
+            try {
+                const classesArray = JSON.parse(data.classes);
+                selectedClasses = {};
+                
+                classesArray.forEach(classInfo => {
+                    // The saved data uses 'offeringName', but our app uses 'name'
+                    // So we need to map it correctly
+                    const key = `${classInfo.day}-${classInfo.time}-${classInfo.offeringName}`;
+                    selectedClasses[key] = {
+                        day: classInfo.day,
+                        time: classInfo.time,
+                        name: classInfo.offeringName,  // Map offeringName to name
+                        instructor: classInfo.instructor,
+                        type: classInfo.type
+                    };
+                });
+                
+                saveToLocalStorage(); // Also save to localStorage as backup
+            } catch (error) {
+                console.error('Error parsing schedule data:', error);
+            }
+        }
+
+        // Store selected classes
+        let selectedClasses = {};
+        
+        // Schedule data structure - Session 3
+        const scheduleData = {
+            monday: {
+                "10:00-10:45": [
+                    {name: "Math(A) (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Chemistry Lab (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Jenique (CR)", instructor: "Jenique", type: "commitment"},
+                    {name: "Intermediate Writing (Canopy+)", instructor: "Elliott (C)", type: "commitment"},
+                    {name: "Journaling/Independent Drawing (Canopy+)", instructor: "Ashlyn (AR)", type: "drop-in"},
+                    {name: "Punk Band Guitar/Bass Practice (CLOSED)", instructor: "Nick (MR)", type: "private"}
+                ],
+                "10:50-11:35": [
+                    {name: "Math(C) (Acorns)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Chemistry Lab (Canopy+)", instructor: "Jenique (CR)", type: "commitment"},
+                    {name: "Coding (Saplings+)", instructor: "Doug (LR)", type: "commitment"},
+                    {name: "ELA Reader's Studio (Canopy+)", instructor: "Lacy (PR)", type: "commitment"},
+                    {name: "D&D (Acorns) FULL", instructor: "Penny (SR)", type: "commitment"},
+                    {name: "Open Art (Saplings+)", instructor: "Ashlyn (AR)", type: "drop-in"},
+                    {name: "Theatre Leads/Soloists Practice (Choose One)", instructor: "Jamie", type: "commitment"},
+                    {name: "Guitar/Bass Lessons (Max 3)", instructor: "Nick (MR)", type: "private"}
+                ],
+                "11:50-12:30": [
+                    {name: "D&D (Acorns) FULL", instructor: "Penny (SR)", type: "commitment"}
+                ],
+                "12:10-12:55": [
+                    {name: "Connection Circles", instructor: "Amber/Anna (June)", type: "drop-in"},
+                    {name: "Jenique/Ashlyn (Cafe)", instructor: "Jenique/Ashlyn", type: "drop-in"},
+                    {name: "Jamie/Doug (CS)", instructor: "Jamie/Doug", type: "drop-in"}
+                ],
+                "1:00-1:50": [
+                    {name: "Crochet, Sewing and Mending (Saplings+)", instructor: "Anna (J)", type: "drop-in"},
+                    {name: "Art Fundamentals (Acorns)", instructor: "Ashlyn (AR)", type: "commitment"},
+                    {name: "Songwriting (Saplings+)", instructor: "Tiff (MR)", type: "commitment"},
+                    {name: "Spirit Squad (Saplings+)", instructor: "Jamie (CS)", type: "commitment"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Active Games", instructor: "Luke (FY)", type: "drop-in"},
+                    {name: "Sensory Lab", instructor: "Lacy (PR)", type: "drop-in"}
+                ],
+                "1:55-2:45": [
+                    {name: "Test Prep (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Character Design (Acorns)", instructor: "Ashlyn (AR)", type: "commitment"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Theatre", instructor: "Jamie & Nancy (CS)", type: "commitment"},
+                    {name: "Debate Club (Canopy+)", instructor: "Jenique/Amber (C)", type: "commitment"}
+                ]
+            },
+            tuesday: {
+                "10:00-10:45": [
+                    {name: "Math(B) (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Civics (Canopy+)", instructor: "Jenique (JR)", type: "commitment"},
+                    {name: "Independent drawing (Saplings+)", instructor: "Tyleen (AR)", type: "drop-in"},
+                    {name: "Science 101", instructor: "Jamie (CS)", type: "commitment"},
+                    {name: "Lesson Thayer: Scott (MR) (Kavi's lesson 9:20-9:50)", instructor: "Scott", type: "private"}
+                ],
+                "10:50-11:35": [
+                    {name: "Math E/Math PIP (Saplings+)", instructor: "Anna (SR)", type: "commitment"},
+                    {name: "Japanese (Canopy+)", instructor: "Jenique (CR)", type: "commitment"},
+                    {name: "Writing Lab (Saplings+)", instructor: "Kirsten (Max 8) (Cafe)", type: "commitment"},
+                    {name: "ELA PIP: Reader's Studio (Saplings+)", instructor: "Lacy (PR)", type: "commitment"},
+                    {name: "Fiber art/Open Art (Saplings+)", instructor: "Tyleen (AR)", type: "drop-in"},
+                    {name: "Lesson Elijah M", instructor: "Scott (MR)", type: "private"}
+                ],
+                "11:50-12:30": [],
+                "12:10-12:55": [
+                    {name: "Film Studies/Anime Club (blocks 3-5) (Acorns)", instructor: "Jenique (JR)", type: "commitment"},
+                    {name: "Dungeons & Dragons", instructor: "Patrick (CR) FULL", type: "commitment"},
+                    {name: "Art Activities (Playard+)", instructor: "Tyleen (AR) (<4)", type: "drop-in"},
+                    {name: "Active Games (FY)", instructor: "Luke", type: "drop-in"},
+                    {name: "History Lab (Saplings+)", instructor: "Jamie (CS)", type: "commitment"},
+                    {name: "Newspaper (Saplings+)", instructor: "Lacy (PR)", type: "commitment"},
+                    {name: "Writing Lab (Canopy+)", instructor: "Kirsten (C) (Max 8)", type: "commitment"}
+                ],
+                "1:00-1:50": [
+                    {name: "Film Studies/Anime Club (blocks 3-5)", instructor: "Jenique", type: "commitment"},
+                    {name: "D&D - Patrick (CR) (cont'd) FULL", instructor: "Patrick", type: "commitment"},
+                    {name: "Mini Murals (Saplings+)", instructor: "Tyleen (AR) (max 8)", type: "commitment"},
+                    {name: "Cooking (Canopy+)", instructor: "Amber (K) (max 5)", type: "drop-in"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Foot Baths & Care (PR)", instructor: "Lacy", type: "drop-in"},
+                    {name: "Group Games (CS)", instructor: "Luke", type: "drop-in"},
+                    {name: "Lil Wizards (Saplings+) FULL", instructor: "Jamie (C)", type: "commitment"}
+                ],
+                "1:55-2:45": [
+                    {name: "Film Studies/Anime Club (blocks 3-5)", instructor: "Jenique", type: "commitment"},
+                    {name: "D&D - Patrick (CR) (cont'd) FULL", instructor: "Patrick", type: "commitment"},
+                    {name: "Cooking (Canopy+)", instructor: "Amber (K) (max 5)", type: "drop-in"},
+                    {name: "Open Art (Saplings+)", instructor: "Tyleen (AR) (max 6)", type: "drop-in"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Lil Wizards (Saplings+) FULL", instructor: "Jamie (C)", type: "commitment"}
+                ]
+            },
+            wednesday: {
+                "10:00-10:45": [
+                    {name: "Math(A) (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Study Art/Homework Help (Canopy+)", instructor: "Jenique", type: "drop-in"},
+                    {name: "Jenique (CR)", instructor: "Jenique", type: "commitment"},
+                    {name: "Open art (Canopy+)", instructor: "Tyleen (AR) (max 8)", type: "drop-in"},
+                    {name: "Intermediate Writing (Canopy+)", instructor: "Elliott (Cafe)", type: "commitment"},
+                    {name: "Guitar/Bass (Max 3) & Band Drummer (Max 1) Practice", instructor: "Heather/Nick (MR)", type: "private"}
+                ],
+                "10:50-11:35": [
+                    {name: "Math(C) (Acorns)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Coding (Saplings+)", instructor: "Lacy (LR)", type: "commitment"},
+                    {name: "Power of the Mind (Saplings+) (max 12)", instructor: "Jenique (CR)", type: "drop-in"},
+                    {name: "ELA PIP: Reader's Studio (Saplings+)", instructor: "Lacy (PR)", type: "commitment"},
+                    {name: "Junk Journals(Canopy+)", instructor: "Tyleen(AR)(max 8)", type: "drop-in"},
+                    {name: "Theatre Leads/Soloists (Choose One)", instructor: "Jamie", type: "commitment"},
+                    {name: "Guitar/Bass (Max 3) Practice", instructor: "Nick (MR)", type: "private"}
+                ],
+                "11:50-12:30": [
+                    {name: "Garden Club", instructor: "Nancy", type: "drop-in"}
+                ],
+                "12:10-12:55": [
+                    {name: "Garden Club", instructor: "Nancy", type: "drop-in"},
+                    {name: "Junk Journal/Art PIP (Canopy+)", instructor: "Tyleen (AR) (max 8)", type: "commitment"},
+                    {name: "Math D/Math PIP (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "ELA PIP (Acorns)", instructor: "Lacy (PR)", type: "commitment"},
+                    {name: "Time Travel (All Ages)", instructor: "Jamie (CS)", type: "commitment"},
+                    {name: "Guitar/Bass (Max 3)Practice", instructor: "Nick (MR)", type: "private"}
+                ],
+                "1:00-1:50": [
+                    {name: "Big Topics (Saplings+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Fiber Art (Saplings+)", instructor: "Tyleen (AR) (max 8)", type: "drop-in"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Spirit Squad (Saplings+)", instructor: "Jamie (CS)", type: "commitment"},
+                    {name: "Punk Band Group Practice (Closed)", instructor: "Heather/Nick/Tiff (MR)", type: "private"},
+                    {name: "Hot Glue Upcycling (PY)", instructor: "Lacy PR", type: "drop-in"}
+                ],
+                "1:55-2:45": [
+                    {name: "Test Prep (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "Murals (Canopy+)", instructor: "Tyleen (AR) (max 8)", type: "commitment"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Rock Band Group Practice (Canopy+)", instructor: "Heather/Nick/Tiff (MR)", type: "commitment"},
+                    {name: "Hip Hop 101 (CS)", instructor: "", type: "drop-in"}
+                ]
+            },
+            thursday: {
+                "10:00-10:45": [
+                    {name: "Math(B) (Canopy+)", instructor: "Anna (JR)", type: "commitment"},
+                    {name: "WW II & WWII: History (Acorns)", instructor: "Jenique (CR)", type: "commitment"},
+                    {name: "Science 101", instructor: "Jamie (CS)", type: "commitment"},
+                    {name: "Astronomy (Saplings+)", instructor: "Doug (LR)", type: "commitment"}
+                ],
+                "10:50-11:35": [
+                    {name: "Math E/ Math PIP (Saplings+)", instructor: "Anna (SR)", type: "commitment"},
+                    {name: "Japanese (Canopy+)", instructor: "Jenique/Larah E. (JR)", type: "commitment"},
+                    {name: "Writing Lab (Saplings+)", instructor: "Kirsten (Max 8) (Cafe)", type: "commitment"},
+                    {name: "ELA PIP: Science Writing (Saplings+)", instructor: "Lacy/Doug (PR)", type: "commitment"}
+                ],
+                "11:50-12:30": [
+                    {name: "Poker (Canopy+) FULL", instructor: "Luke (JR)", type: "commitment"}
+                ],
+                "12:10-12:55": [
+                    {name: "Poker (Canopy+) FULL", instructor: "Luke (JR)", type: "commitment"},
+                    {name: "News filming (Saplings+)", instructor: "Jenique (CR)", type: "commitment"},
+                    {name: "Human Design (Acorns)", instructor: "Ashlyn (AR)", type: "commitment"},
+                    {name: "Zoology (Canopy+)", instructor: "Jamie (?)", type: "commitment"},
+                    {name: "Rollerskating", instructor: "Doug(CS)", type: "drop-in"},
+                    {name: "Cooking group 2 (Canopy+)", instructor: "Amber (K) (max 5)", type: "drop-in"}
+                ],
+                "1:00-1:50": [
+                    {name: "Still Life", instructor: "Ashlyn (AR)", type: "commitment"},
+                    {name: "News Team Editing (Saplings+)", instructor: "Jenique (CR)", type: "commitment"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Rollerskating (Vanessa) (CS)", instructor: "", type: "drop-in"},
+                    {name: "TBD (PR)", instructor: "Lacy", type: "drop-in"},
+                    {name: "Cooking group 2 (Canopy+)", instructor: "Amber (K) (max 5)", type: "drop-in"},
+                    {name: "Hendrix Plushies Movie making PIP", instructor: "Amber (JR)", type: "private"},
+                    {name: "Photography (Canopy+)", instructor: "Jamie", type: "commitment"}
+                ],
+                "1:55-2:45": [
+                    {name: "Still Life (cont)", instructor: "Ashlyn (AR) (Max. 8)", type: "commitment"},
+                    {name: "Art (Saplings+)", instructor: "Tyleen(FY/AR)", type: "drop-in"},
+                    {name: "All things Lego", instructor: "Doug (LR)", type: "drop-in"},
+                    {name: "Theatre - Jamie & Nancy (CS)", instructor: "Jamie & Nancy", type: "drop-in"}
+                ]
+            },
+            friday: {
+                "10:00-10:45": [
+                    {name: "Comic Making Club / Artists Studio (Acorns)", instructor: "Ashlyn (AR) (Max: 6)", type: "commitment"},
+                    {name: "ALC Wilds: Indoor Soccer Practice 11-1pm", instructor: "Mel & Krychun (O)", type: "drop-in"},
+                    {name: "Friday Learning Lab (invite only)", instructor: "", type: "private"}
+                ],
+                "10:50-11:35": [],
+                "11:50-12:30": [],
+                "12:10-12:55": [
+                    {name: "Comic Making Club / Artist Studio (Acorns)", instructor: "Ashlyn(AR)(Max: 6)", type: "commitment"},
+                    {name: "Afternoon Games", instructor: "Luke", type: "drop-in"},
+                    {name: "Friday Learning Lab (invite only)", instructor: "", type: "private"}
+                ],
+                "1:00-1:50": [
+                    {name: "Artist's Studio (Acorns)", instructor: "Ashlyn (AR)", type: "drop-in"},
+                    {name: "Afternoon Games", instructor: "Luke", type: "drop-in"}
+                ],
+                "1:55-2:45": []
+            }
+        };
+
+        // Class descriptions
+        const classDescriptions = {
+            // Monday Block 1 (10:00-10:45)
+            "Math(A) (Canopy+)": "Advanced mathematics curriculum for Canopy+ level students, covering algebra, geometry, and pre-calculus concepts.",
+            "Chemistry Lab (Canopy+)": "Hands-on chemistry experiments and laboratory work introducing fundamental chemistry concepts.",
+            "Jenique (CR)": "Class with instructor Jenique in the Cafe Room.",
+            "Intermediate Writing (Canopy+)": "Develop writing skills including essay composition, creative writing, and research papers.",
+            "Journaling/Independent Drawing (Canopy+)": "Self-directed creative time for personal journaling and artistic expression.",
+            "Punk Band Guitar/Bass Practice (CLOSED)": "Private practice session for punk band members. Enrollment closed.",
+            
+            // Monday Block 2 (10:50-11:35)
+            "Math(C) (Acorns)": "Math curriculum specifically designed for Acorns level students, focusing on fundamental concepts.",
+            "Coding (Saplings+)": "Introduction to computer programming and computational thinking.",
+            "ELA Reader's Studio (Canopy+)": "English Language Arts focused on reading comprehension, literary analysis, and discussion.",
+            "D&D (Acorns) FULL": "Dungeons & Dragons role-playing game promoting creativity, teamwork, and problem-solving. Class is full.",
+            "Open Art (Saplings+)": "Open studio art time for creative exploration.",
+            "Theatre Leads/Soloists Practice (Choose One)": "Practice for lead roles and solo performances in theatrical productions.",
+            "Guitar/Bass Lessons (Max 3)": "Private guitar and bass lessons. Maximum 3 students.",
+            
+            // Monday Block 3 (12:10-12:55)
+            "Connection Circles": "Community building and social-emotional learning in small group settings.",
+            
+            // Monday Block 4 (1:00-1:50)
+            "Crochet, Sewing and Mending (Saplings+)": "Textile crafts including crochet, sewing techniques, and clothing repair.",
+            "Art Fundamentals (Acorns)": "Basic art skills including drawing, color theory, and composition.",
+            "Songwriting (Saplings+)": "Creative music composition including lyrics, melody, and song structure.",
+            "Spirit Squad (Saplings+)": "Cheerleading, performance, and team spirit activities.",
+            "All things Lego": "LEGO building, engineering challenges, and creative construction.",
+            "Active Games": "Physical games and group activities.",
+            "Sensory Lab": "Hands-on sensory exploration activities.",
+            
+            // Monday Block 5 (1:55-2:45)
+            "Test Prep (Canopy+)": "Standardized test preparation and study skills.",
+            "Character Design (Acorns)": "Creating original characters for stories, games, and art.",
+            "Theatre": "Theater arts including acting, stagecraft, and performance.",
+            "Debate Club (Canopy+)": "Formal debate skills, argumentation, and public speaking.",
+            
+            // Tuesday Block 1 (10:00-10:45)
+            "Math(B) (Canopy+)": "Intermediate math curriculum designed for students building foundational mathematical concepts.",
+            "Civics (Canopy+)": "Study of government, citizenship, and civic responsibility in modern society.",
+            "Independent drawing (Saplings+)": "Self-directed drawing practice with guidance from instructor.",
+            "Science 101": "Introduction to scientific concepts, experiments, and inquiry-based learning.",
+            "Lesson Thayer: Scott (MR) (Kavi's lesson 9:20-9:50)": "Private music lesson for Kavi.",
+            
+            // Tuesday Block 2 (10:50-11:35)
+            "Math E/Math PIP (Saplings+)": "Math enrichment and personalized instruction program for skill building.",
+            "Japanese (Canopy+)": "Introduction to Japanese language and culture including basic conversation, writing systems, and customs.",
+            "Writing Lab (Saplings+)": "Writing workshop for developing various writing skills. Maximum 8 students.",
+            "ELA PIP: Reader's Studio (Saplings+)": "Personalized reading instruction and literacy development.",
+            "Fiber art/Open Art (Saplings+)": "Textile arts including weaving, knitting, sewing, and fabric crafts.",
+            "Lesson Elijah M": "Private music lesson for Elijah M.",
+            
+            // Tuesday Block 3 (12:10-12:55)
+            "Film Studies/Anime Club (blocks 3-5) (Acorns)": "Analysis of film and anime as art forms, exploring storytelling techniques and cultural contexts. Spans blocks 3-5.",
+            "Dungeons & Dragons": "Multi-block D&D campaign for collaborative storytelling and strategic thinking.",
+            "Art Activities (Playard+)": "Age-appropriate art activities for younger students. Maximum 4 students.",
+            "Active Games (FY)": "Physical games and activities promoting fitness and teamwork.",
+            "History Lab (Saplings+)": "Hands-on history exploration through projects and research.",
+            "Newspaper (Saplings+)": "Student journalism including writing, editing, and publishing a school newspaper.",
+            "Writing Lab (Canopy+)": "Advanced writing workshop for Canopy+ students. Maximum 8 students.",
+            
+            // Tuesday Block 4 (1:00-1:50)
+            "D&D - Patrick (CR) (cont'd) FULL": "Continuing D&D campaign spanning multiple blocks. Class is full.",
+            "Mini Murals (Saplings+)": "Small-scale mural painting projects. Maximum 8 students.",
+            "Cooking (Canopy+)": "Advanced cooking techniques and recipes. Maximum 5 students.",
+            "Foot Baths & Care (PR)": "Self-care and wellness practices including foot soaks and relaxation.",
+            "Group Games (CS)": "Cooperative and competitive group games for social development.",
+            "Lil Wizards (Saplings+) FULL": "Fantasy role-playing game designed for younger players. Class is full.",
+            
+            // Wednesday Block 1 (10:00-10:45)
+            "Study Art/Homework Help (Canopy+)": "Dedicated time for homework completion and academic support with art focus.",
+            "Open art (Canopy+)": "Open studio time for artistic exploration across various media. Maximum 8 students.",
+            "Guitar/Bass (Max 3) & Band Drummer (Max 1) Practice": "Private music lessons and band practice sessions.",
+            
+            // Wednesday Block 2 (10:50-11:35)
+            "Power of the Mind (Saplings+) (max 12)": "Mindfulness, meditation, and mental wellness practices. Maximum 12 students.",
+            "Junk Journals(Canopy+)": "Create artistic journals using recycled and found materials. Maximum 8 students.",
+            "Guitar/Bass (Max 3) Practice": "Private guitar and bass practice sessions.",
+            
+            // Wednesday Block 3 (12:10-12:55)
+            "Garden Club": "Gardening, plant care, and outdoor environmental education.",
+            "Junk Journal/Art PIP (Canopy+)": "Advanced junk journal creation with personalized instruction. Maximum 8 students.",
+            "Math D/Math PIP (Canopy+)": "Math curriculum with personalized instruction component.",
+            "ELA PIP (Acorns)": "English Language Arts personalized instruction for Acorns level students.",
+            "Time Travel (All Ages)": "Interdisciplinary exploration of different time periods and historical contexts.",
+            
+            // Wednesday Block 4 (1:00-1:50)
+            "Big Topics (Saplings+)": "Discussion and exploration of important social, ethical, and philosophical topics.",
+            "Fiber Art (Saplings+)": "Advanced textile arts and fiber crafts. Maximum 8 students.",
+            "Punk Band Group Practice (Closed)": "Band rehearsal for punk rock group. Closed enrollment.",
+            "Hot Glue Upcycling (PY)": "Creative recycling projects using hot glue and found materials.",
+            
+            // Wednesday Block 5 (1:55-2:45)
+            "Murals (Canopy+)": "Large-scale mural painting projects. Maximum 8 students.",
+            "Rock Band Group Practice (Canopy+)": "Rock band rehearsal and performance preparation.",
+            "Hip Hop 101 (CS)": "Introduction to hip hop culture, music, and dance.",
+            
+            // Thursday Block 1 (10:00-10:45)
+            "WW II & WWII: History (Acorns)": "In-depth study of World War I and World War II including causes, major events, and global impact.",
+            "Astronomy (Saplings+)": "Exploration of space, planets, stars, and the universe.",
+            
+            // Thursday Block 2 (10:50-11:35)
+            "ELA PIP: Science Writing (Saplings+)": "Writing skills focused on scientific communication and technical writing.",
+            
+            // Thursday Block 3 (12:10-12:55)
+            "Poker (Canopy+) FULL": "Strategic card game teaching probability, decision-making, and mathematics. Class is full.",
+            "News filming (Saplings+)": "Video journalism including camera work, interviewing, and broadcast production.",
+            "Human Design (Acorns)": "Exploration of human design system and self-discovery.",
+            "Zoology (Canopy+)": "Study of animals, their behavior, habitats, and biological systems.",
+            "Rollerskating": "Skating for fun and fitness.",
+            "Cooking group 2 (Canopy+)": "Culinary skills, recipes, and food science. Maximum 5 students.",
+            
+            // Thursday Block 4 (1:00-1:50)
+            "Still Life": "Classical art practice focusing on still life drawing and painting. Maximum 8 students.",
+            "News Team Editing (Saplings+)": "Video and written editing for news production.",
+            "Rollerskating (Vanessa) (CS)": "Organized skating sessions and skill development.",
+            "TBD (PR)": "To be determined class session.",
+            "Hendrix Plushies Movie making PIP": "Stop-motion animation project creating movies with plushie characters.",
+            "Photography (Canopy+)": "Photography skills including composition, lighting, and digital editing.",
+            
+            // Thursday Block 5 (1:55-2:45)
+            "Still Life (cont)": "Continuation of Still Life class.",
+            "Art (Saplings+)": "General art activities and creative expression.",
+            "Theatre - Jamie & Nancy (CS)": "Theater arts including acting, stagecraft, and performance.",
+            
+            // Friday
+            "Comic Making Club / Artists Studio (Acorns)": "Create comics and graphic novels while learning storytelling, character design, and sequential art. Maximum 6 students.",
+            "ALC Wilds: Indoor Soccer Practice 11-1pm": "Indoor soccer practice and games.",
+            "Friday Learning Lab (invite only)": "Special invitation-only learning sessions for targeted skill development.",
+            "Afternoon Games": "Recreational games and activities for afternoon energy.",
+            "Artist's Studio (Acorns)": "Open studio time for artistic development and personal projects."
+        };
+        
+        // Show class description modal
+        function showClassDescription(className, instructor, type, days) {
+            const modal = document.getElementById('classModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            const description = classDescriptions[className] || "Description not available for this class.";
+            
+            modalTitle.textContent = className;
+            modalBody.innerHTML = `
+                <p><span class="modal-label">Instructor:</span> ${instructor}</p>
+                <p><span class="modal-label">Type:</span> ${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                <p><span class="modal-label">Days Offered:</span> ${days}</p>
+                <p><span class="modal-label">Description:</span> ${description}</p>
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        // Close modal when clicking X
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('classModal');
+            const closeBtn = document.querySelector('.modal-close');
+            
+            if (closeBtn) {
+                closeBtn.onclick = function() {
+                    modal.style.display = 'none';
+                }
+            }
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        });
+
+        // Initialize the app
+        async function init() {
+            console.log('🚀 Initializing Schedule Builder...');
+            
+            // Check for student name in URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentParam = urlParams.get('student');
+            
+            console.log('URL Parameters:', window.location.search);
+            console.log('Student Parameter:', studentParam);
+            
+            // Always render the master schedule first
+            renderMasterSchedule();
+            renderMySchedule();
+            
+            if (studentParam) {
+                console.log('📝 Facilitator Mode detected for student:', studentParam);
+                
+                // Show facilitator mode indicator
+                const facilitatorModeEl = document.getElementById('facilitatorMode');
+                const editingNameEl = document.getElementById('editingStudentName');
+                
+                if (facilitatorModeEl && editingNameEl) {
+                    facilitatorModeEl.style.display = 'block';
+                    editingNameEl.textContent = studentParam;
+                    console.log('✅ Facilitator banner displayed');
+                } else {
+                    console.error('❌ Facilitator mode elements not found!');
+                }
+                
+                document.getElementById('studentName').value = studentParam;
+                
+                // Show loading overlay
+                showLoading('Loading ' + studentParam + "'s schedule from database...");
+                console.log('🔄 Loading schedule from API...');
+                
+                try {
+                    const url = `${APPS_SCRIPT_URL}?action=load&studentName=${encodeURIComponent(studentParam)}`;
+                    console.log('📡 API URL:', url);
+                    
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    
+                    console.log('📥 API Response:', result);
+                    
+                    if (result.success && result.data) {
+                        loadScheduleData(result.data);
+                        hideLoading();
+                        showStatus('✅ Loaded ' + studentParam + "'s schedule successfully! (" + result.data.totalClasses + " classes)", 'success');
+                        console.log('✅ Schedule loaded successfully');
+                        // Re-render to show the loaded selections
+                        renderMasterSchedule();
+                        renderMySchedule();
+                    } else {
+                        hideLoading();
+                        showStatus('No saved schedule found for ' + studentParam + '. Starting with blank schedule.', 'warning');
+                        console.log('⚠️ No schedule found in database');
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading schedule:', error);
+                    hideLoading();
+                    showStatus('⚠️ Could not load schedule from database. Starting with blank schedule.', 'warning');
+                }
+            } else {
+                console.log('👤 Normal student mode - loading from localStorage');
+                loadFromLocalStorage();
+            }
+            
+            // Auto-save when student name changes
+            document.getElementById('studentName').addEventListener('change', saveToLocalStorage);
+            
+            console.log('✅ Initialization complete');
+        }
+
+        // Sort classes: commitment first, then drop-in, then private, and alphabetically within each type
+        function sortClasses(classes) {
+            const typeOrder = { 'commitment': 1, 'drop-in': 2, 'private': 3 };
+            return classes.sort((a, b) => {
+                // First sort by type
+                if (typeOrder[a.type] !== typeOrder[b.type]) {
+                    return typeOrder[a.type] - typeOrder[b.type];
+                }
+                // Then sort alphabetically by name
+                return a.name.localeCompare(b.name);
+            });
+        }
+
+        // Render full schedule
+        function renderMasterSchedule() {
+            const container = document.getElementById('scheduleContainer');
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            // Get all unique time slots
+            const timeSlots = new Set();
+            days.forEach(day => {
+                Object.keys(scheduleData[day]).forEach(time => timeSlots.add(time));
+            });
+            const sortedTimes = Array.from(timeSlots).sort();
+            
+            let html = '<table class="schedule-table"><thead><tr><th class="time-col">Time</th>';
+            dayNames.forEach(day => {
+                html += `<th>${day}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            // Block 1
+            const block1Time = "10:00-10:45";
+            if (sortedTimes.includes(block1Time)) {
+                html += `<tr><td class="time-col">Block 1<br>${block1Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = sortClasses([...(scheduleData[day][block1Time] || [])]);
+                    classes.forEach(classItem => {
+                        const key = `${day}-${block1Time}-${classItem.name}`;
+                        const isSelected = selectedClasses[key] !== undefined;
+                        const checkboxId = `cb-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        
+                        html += `
+                            <div class="class-option ${classItem.type} ${isSelected ? 'selected' : ''}" id="class-${key.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                <input type="checkbox" 
+                                       class="class-checkbox" 
+                                       id="${checkboxId}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleClass('${day}', '${block1Time}', '${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}')">
+                                <div class="class-info" onclick="showClassDescription('${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}', '${dayNames[days.indexOf(day)]}')">
+                                    <div class="class-name">${classItem.name}</div>
+                                    <div class="class-instructor">${classItem.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 2
+            const block2Time = "10:50-11:35";
+            if (sortedTimes.includes(block2Time)) {
+                html += `<tr><td class="time-col">Block 2<br>${block2Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = sortClasses([...(scheduleData[day][block2Time] || [])]);
+                    classes.forEach(classItem => {
+                        const key = `${day}-${block2Time}-${classItem.name}`;
+                        const isSelected = selectedClasses[key] !== undefined;
+                        const checkboxId = `cb-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        
+                        html += `
+                            <div class="class-option ${classItem.type} ${isSelected ? 'selected' : ''}" id="class-${key.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                <input type="checkbox" 
+                                       class="class-checkbox" 
+                                       id="${checkboxId}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleClass('${day}', '${block2Time}', '${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}')">
+                                <div class="class-info" onclick="showClassDescription('${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}', '${dayNames[days.indexOf(day)]}')">
+                                    <div class="class-name">${classItem.name}</div>
+                                    <div class="class-instructor">${classItem.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // LUNCH
+            html += '<tr class="lunch-row"><td class="time-col">LUNCH<br>11:35-12:05</td>';
+            for (let i = 0; i < 5; i++) {
+                html += '<td>🍽️ Lunch Break</td>';
+            }
+            html += '</tr>';
+            
+            // Optional lunch period
+            const lunchTime = "11:50-12:30";
+            if (sortedTimes.includes(lunchTime)) {
+                html += `<tr><td class="time-col">Optional<br>${lunchTime}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = sortClasses([...(scheduleData[day][lunchTime] || [])]);
+                    classes.forEach(classItem => {
+                        const key = `${day}-${lunchTime}-${classItem.name}`;
+                        const isSelected = selectedClasses[key] !== undefined;
+                        const checkboxId = `cb-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        
+                        html += `
+                            <div class="class-option ${classItem.type} ${isSelected ? 'selected' : ''}" id="class-${key.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                <input type="checkbox" 
+                                       class="class-checkbox" 
+                                       id="${checkboxId}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleClass('${day}', '${lunchTime}', '${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}')">
+                                <div class="class-info" onclick="showClassDescription('${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}', '${dayNames[days.indexOf(day)]}')">
+                                    <div class="class-name">${classItem.name}</div>
+                                    <div class="class-instructor">${classItem.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 3
+            const block3Time = "12:10-12:55";
+            if (sortedTimes.includes(block3Time)) {
+                html += `<tr><td class="time-col">Block 3<br>${block3Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = sortClasses([...(scheduleData[day][block3Time] || [])]);
+                    classes.forEach(classItem => {
+                        const key = `${day}-${block3Time}-${classItem.name}`;
+                        const isSelected = selectedClasses[key] !== undefined;
+                        const checkboxId = `cb-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        
+                        html += `
+                            <div class="class-option ${classItem.type} ${isSelected ? 'selected' : ''}" id="class-${key.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                <input type="checkbox" 
+                                       class="class-checkbox" 
+                                       id="${checkboxId}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleClass('${day}', '${block3Time}', '${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}')">
+                                <div class="class-info" onclick="showClassDescription('${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}', '${dayNames[days.indexOf(day)]}')">
+                                    <div class="class-name">${classItem.name}</div>
+                                    <div class="class-instructor">${classItem.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 4
+            const block4Time = "1:00-1:50";
+            if (sortedTimes.includes(block4Time)) {
+                html += `<tr><td class="time-col">Block 4<br>${block4Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = sortClasses([...(scheduleData[day][block4Time] || [])]);
+                    classes.forEach(classItem => {
+                        const key = `${day}-${block4Time}-${classItem.name}`;
+                        const isSelected = selectedClasses[key] !== undefined;
+                        const checkboxId = `cb-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        
+                        html += `
+                            <div class="class-option ${classItem.type} ${isSelected ? 'selected' : ''}" id="class-${key.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                <input type="checkbox" 
+                                       class="class-checkbox" 
+                                       id="${checkboxId}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleClass('${day}', '${block4Time}', '${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}')">
+                                <div class="class-info" onclick="showClassDescription('${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}', '${dayNames[days.indexOf(day)]}')">
+                                    <div class="class-name">${classItem.name}</div>
+                                    <div class="class-instructor">${classItem.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 5
+            const block5Time = "1:55-2:45";
+            if (sortedTimes.includes(block5Time)) {
+                html += `<tr><td class="time-col">Block 5<br>${block5Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = sortClasses([...(scheduleData[day][block5Time] || [])]);
+                    classes.forEach(classItem => {
+                        const key = `${day}-${block5Time}-${classItem.name}`;
+                        const isSelected = selectedClasses[key] !== undefined;
+                        const checkboxId = `cb-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                        
+                        html += `
+                            <div class="class-option ${classItem.type} ${isSelected ? 'selected' : ''}" id="class-${key.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                <input type="checkbox" 
+                                       class="class-checkbox" 
+                                       id="${checkboxId}"
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="toggleClass('${day}', '${block5Time}', '${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}')">
+                                <div class="class-info" onclick="showClassDescription('${classItem.name.replace(/'/g, "\\'")}', '${classItem.instructor}', '${classItem.type}', '${dayNames[days.indexOf(day)]}')">
+                                    <div class="class-name">${classItem.name}</div>
+                                    <div class="class-instructor">${classItem.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Toggle class selection
+        function toggleClass(day, time, className, instructor, type) {
+            const key = `${day}-${time}-${className}`;
+            
+            if (selectedClasses[key]) {
+                delete selectedClasses[key];
+            } else {
+                selectedClasses[key] = {
+                    day: day,
+                    time: time,
+                    name: className,
+                    instructor: instructor,
+                    type: type
+                };
+            }
+            
+            saveToLocalStorage();
+            renderMasterSchedule();
+            renderMySchedule();
+        }
+
+        // Render My Schedule tab
+        function renderMySchedule() {
+            const container = document.getElementById('selectedClassesList');
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const dayNames = {
+                'monday': 'Monday',
+                'tuesday': 'Tuesday',
+                'wednesday': 'Wednesday',
+                'thursday': 'Thursday',
+                'friday': 'Friday'
+            };
+            
+            // Calculate statistics
+            let totalClasses = 0;
+            let commitmentCount = 0;
+            let dropInCount = 0;
+            let privateCount = 0;
+            
+            for (const classInfo of Object.values(selectedClasses)) {
+                totalClasses++;
+                if (classInfo.type === 'commitment') commitmentCount++;
+                if (classInfo.type === 'drop-in') dropInCount++;
+                if (classInfo.type === 'private') privateCount++;
+            }
+            
+            document.getElementById('totalClasses').textContent = totalClasses;
+            document.getElementById('commitmentCount').textContent = commitmentCount;
+            document.getElementById('dropInCount').textContent = dropInCount;
+            document.getElementById('privateCount').textContent = privateCount;
+            
+            if (totalClasses === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><h3>No classes selected yet</h3><p>Go to the Full Schedule tab to select classes</p></div>';
+                return;
+            }
+            
+            // Group classes by day and time
+            const classesByDay = {};
+            days.forEach(day => {
+                classesByDay[day] = {};
+            });
+            
+            for (const classInfo of Object.values(selectedClasses)) {
+                if (!classesByDay[classInfo.day][classInfo.time]) {
+                    classesByDay[classInfo.day][classInfo.time] = [];
+                }
+                classesByDay[classInfo.day][classInfo.time].push(classInfo);
+            }
+            
+            // Get all time slots from selected classes
+            const timeSlots = new Set();
+            for (const day in classesByDay) {
+                Object.keys(classesByDay[day]).forEach(time => timeSlots.add(time));
+            }
+            const sortedTimes = Array.from(timeSlots).sort();
+            
+            // Build table HTML
+            let html = '<table class="schedule-table"><thead><tr><th class="time-col">Time</th>';
+            Object.values(dayNames).forEach(day => {
+                html += `<th>${day}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            // Block 1
+            const block1Time = "10:00-10:45";
+            if (sortedTimes.includes(block1Time)) {
+                html += `<tr><td class="time-col">Block 1<br>${block1Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = classesByDay[day][block1Time] || [];
+                    classes.forEach(classInfo => {
+                        html += `
+                            <div class="class-option ${classInfo.type} selected">
+                                <div class="class-info">
+                                    <div class="class-name">${classInfo.name}</div>
+                                    <div class="class-instructor">${classInfo.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 2
+            const block2Time = "10:50-11:35";
+            if (sortedTimes.includes(block2Time)) {
+                html += `<tr><td class="time-col">Block 2<br>${block2Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = classesByDay[day][block2Time] || [];
+                    classes.forEach(classInfo => {
+                        html += `
+                            <div class="class-option ${classInfo.type} selected">
+                                <div class="class-info">
+                                    <div class="class-name">${classInfo.name}</div>
+                                    <div class="class-instructor">${classInfo.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // LUNCH
+            html += '<tr class="lunch-row"><td class="time-col">LUNCH<br>11:35-12:05</td>';
+            for (let i = 0; i < 5; i++) {
+                html += '<td>🍽️ Lunch Break</td>';
+            }
+            html += '</tr>';
+            
+            // Optional lunch period
+            const lunchTime = "11:50-12:30";
+            if (sortedTimes.includes(lunchTime)) {
+                html += `<tr><td class="time-col">Optional<br>${lunchTime}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = classesByDay[day][lunchTime] || [];
+                    classes.forEach(classInfo => {
+                        html += `
+                            <div class="class-option ${classInfo.type} selected">
+                                <div class="class-info">
+                                    <div class="class-name">${classInfo.name}</div>
+                                    <div class="class-instructor">${classInfo.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 3
+            const block3Time = "12:10-12:55";
+            if (sortedTimes.includes(block3Time)) {
+                html += `<tr><td class="time-col">Block 3<br>${block3Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = classesByDay[day][block3Time] || [];
+                    classes.forEach(classInfo => {
+                        html += `
+                            <div class="class-option ${classInfo.type} selected">
+                                <div class="class-info">
+                                    <div class="class-name">${classInfo.name}</div>
+                                    <div class="class-instructor">${classInfo.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 4
+            const block4Time = "1:00-1:50";
+            if (sortedTimes.includes(block4Time)) {
+                html += `<tr><td class="time-col">Block 4<br>${block4Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = classesByDay[day][block4Time] || [];
+                    classes.forEach(classInfo => {
+                        html += `
+                            <div class="class-option ${classInfo.type} selected">
+                                <div class="class-info">
+                                    <div class="class-name">${classInfo.name}</div>
+                                    <div class="class-instructor">${classInfo.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            // Block 5
+            const block5Time = "1:55-2:45";
+            if (sortedTimes.includes(block5Time)) {
+                html += `<tr><td class="time-col">Block 5<br>${block5Time}</td>`;
+                days.forEach(day => {
+                    html += '<td>';
+                    const classes = classesByDay[day][block5Time] || [];
+                    classes.forEach(classInfo => {
+                        html += `
+                            <div class="class-option ${classInfo.type} selected">
+                                <div class="class-info">
+                                    <div class="class-name">${classInfo.name}</div>
+                                    <div class="class-instructor">${classInfo.instructor}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</td>';
+                });
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Remove a class
+        function removeClass(key) {
+            delete selectedClasses[key];
+            saveToLocalStorage();
+            renderMasterSchedule();
+            renderMySchedule();
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Clear all selections
+        function clearSchedule() {
+            if (confirm('Are you sure you want to clear all your class selections?')) {
+                selectedClasses = {};
+                saveToLocalStorage();
+                renderMasterSchedule();
+                renderMySchedule();
+            }
+        }
+
+        // Print My Schedule
+        function printMySchedule() {
+            switchTab('my-schedule');
+            setTimeout(() => window.print(), 100);
+        }
+
+        // Print Full Schedule
+        function printFullSchedule() {
+            switchTab('master');
+            setTimeout(() => window.print(), 100);
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            const studentName = document.getElementById('studentName').value.trim();
+            localStorage.setItem('canopy-student-name', studentName);
+            localStorage.setItem('canopy-selected-classes', JSON.stringify(selectedClasses));
+        }
+
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            const savedName = localStorage.getItem('canopy-student-name');
+            const savedClasses = localStorage.getItem('canopy-selected-classes');
+            
+            if (savedName) {
+                document.getElementById('studentName').value = savedName;
+            }
+            
+            if (savedClasses) {
+                try {
+                    selectedClasses = JSON.parse(savedClasses);
+                } catch (e) {
+                    console.error('Error loading saved classes:', e);
+                    selectedClasses = {};
+                }
+            }
+        }
+
+        // Log setup instructions on load
+        console.log(getSetupInstructions());
+
+        // Initialize when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
