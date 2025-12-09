@@ -5,299 +5,378 @@
 <title>Session 3 Schedule Builder</title>
 
 <style>
-/* BASE ------------------------------------------------- */
 * { box-sizing: border-box; }
 
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background: #f6f6f6;
+  font-family: Arial, sans-serif;
+  background: #f6f6f6;
+  padding: 20px;
+  margin: 0;
 }
 
 .container {
-    max-width: 1400px;
-    margin: auto;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  max-width: 1400px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.14);
 }
 
-/* HEADER ---------------------------------------------- */
+/* HEADER */
 h1 {
-    text-align: center;
-    color: #2196F3;
-    margin-bottom: 10px;
+  text-align: center;
+  color: #2196F3;
+  margin-bottom: 20px;
 }
 
-/* STUDENT ENTRY --------------------------------------- */
+/* STUDENT NAME */
 .student-info {
-    text-align: center;
-    margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .student-info input {
-    padding: 8px;
-    width: 280px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 2px solid #4CAF50;
+  padding: 8px;
+  width: 280px;
+  font-size: 14px;
+  border: 2px solid #4CAF50;
+  border-radius: 6px;
 }
 
-/* TABS ------------------------------------------------- */
+/* TABS */
 .tabs {
-    display: flex;
-    gap: 10px;
-    border-bottom: 2px solid #4CAF50;
-    margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #4CAF50;
+  margin-bottom: 10px;
 }
 
 .tab {
-    padding: 10px 18px;
-    cursor: pointer;
-    background: #ddd;
-    border-radius: 8px 8px 0 0;
+  padding: 10px 20px;
+  cursor: pointer;
+  background: #ddd;
+  border-radius: 8px 8px 0 0;
 }
 
 .tab.active {
-    background: #4CAF50;
-    color: white;
+  background: #4CAF50;
+  color: white;
 }
 
-/* TAB CONTENT ----------------------------------------- */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* FULL TABLE ------------------------------------------ */
+/* TABLES */
 .schedule-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.schedule-table th, .schedule-table td {
-    border: 1px solid #ddd;
-    padding: 7px;
-    font-size: 11px;
-    vertical-align: top;
+.schedule-table th,
+.schedule-table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  font-size: 11px;
+  vertical-align: top;
 }
 
 .schedule-table th {
-    background: #4CAF50;
-    color: white;
+  background: #4CAF50;
+  color: white;
+  text-align: center;
 }
 
 .time-col {
-    background: #2196F3;
-    color: white;
-    font-weight: bold;
-    width: 110px;
-    text-align: center;
+  background: #2196F3;
+  color: white;
+  font-weight: bold;
+  width: 120px;
+  text-align: center;
 }
 
 .lunch-row td {
-    text-align: center;
-    background: #fff3cd;
-    font-weight: bold;
+  background: #fff8cf;
+  text-align: center;
+  font-weight: bold;
 }
 
-/* SELECTION ITEMS ------------------------------------- */
+/* CLASS OPTIONS */
 .class-option {
-    padding: 6px;
-    margin-bottom: 3px;
-    border-radius: 4px;
-    display: flex;
-    gap: 6px;
+  padding: 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  display: flex;
+  gap: 4px;
 }
 
 .class-option.commitment {
-    background: #fff7ad;
-    border-left: 4px solid gold;
+  background: #fff9b4;
+  border-left: 4px solid goldenrod;
 }
 
 .class-option.drop-in {
-    background: #daf0ff;
-    border-left: 4px solid #2196F3;
+  background: #daf0ff;
+  border-left: 4px solid #2196F3;
 }
 
 .class-option.private {
-    background: #ffdede;
-    border-left: 4px solid #d94b4b;
+  background: #ffdede;
+  border-left: 4px solid #cc3e3e;
 }
 
-.class-checkbox {
-    margin-top: 2px;
+.class-option.selected {
+  border: 3px solid orange;
+  background: #ffefcf;
 }
 
-/* SELECTED LOOK */
-.selected {
-    border: 3px solid orange;
-    background: #fff2d6;
-}
-
-/* ACTION BUTTONS -------------------------------------- */
+/* BUTTONS */
 .action-buttons {
-    text-align: center;
-    margin-top: 20px;
+  text-align: center;
+  margin-top: 25px;
 }
 
 .action-btn {
-    padding: 10px 22px;
-    border: none;
-    cursor: pointer;
-    border-radius: 6px;
-    margin: 0 6px;
-    font-size: 15px;
+  padding: 10px 25px;
+  border-radius: 6px;
+  border: none;
+  margin: 6px;
+  cursor: pointer;
+  color: white;
+  font-size: 14px;
 }
 
-.primary { background: #4CAF50; color: white; }
-.secondary { background: #2196F3; color: white; }
-.danger { background: #e53935; color: white; }
+.primary { background: #4CAF50; }
+.secondary { background: #2196F3; }
+.danger { background: #e53935; }
 
-/* PRINT AREA FOR MY SCHEDULE -------------------------- */
-.print-meta {
-    font-size: 11px;
-    text-align: right;
-    margin-top: 6px;
-    color: #444;
+/* PRINT FOOTER */
+#printFooter {
+  display:none;
 }
 
-/* PRINT SETTINGS -------------------------------------- */
+/* PRINT */
 @media print {
 
-    body { padding: 0; background: white; }
+  body { background: white !important; zoom: 93%; }
 
-    .tabs,
-    .action-buttons,
-    .student-info,
-    .legend,
-    .sync-controls,
-    .sync-status {
-        display: none !important;
-    }
+  .tabs,
+  .action-buttons,
+  .student-info {
+    display: none !important;
+  }
 
-    .class-checkbox {
-        display: none !important;
-    }
+  .tab-content {
+    display: block !important;
+  }
 
-    .container {
-        box-shadow: none;
-        border: none;
-        padding: 0;
-        margin: 0;
-    }
+  input[type="checkbox"] {
+    display: none !important;
+  }
 
-    table {
-        width: 100%;
-        zoom: 0.90; /* fits on letter page */
-    }
+  #printFooter {
+    display: block !important;
+    position: fixed;
+    bottom: 5px;
+    right: 10px;
+    font-size: 11px;
+    color: #333;
+  }
 
-    #footerPrintMeta {
-        display: block !important;
-        position: fixed;
-        bottom: 10px;
-        right: 20px;
-        font-size: 11px;
-    }
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-    <h1>🌳 Canopy Program - Session 3 Schedule Builder</h1>
 
-    <div class="student-info">
-        <label><strong>Name:</strong></label>
-        <input type="text" id="studentName" placeholder="Enter student name">
-    </div>
+  <h1>🌳 Session 3 Schedule Builder</h1>
 
-    <div class="tabs">
-        <button class="tab active" onclick="switchTab('full')">📅 Full Schedule</button>
-        <button class="tab" onclick="switchTab('mine')">✔ My Schedule</button>
-    </div>
+  <div class="student-info">
+      <input id="studentName" placeholder="Student Name">
+  </div>
 
-    <!-- FULL SCHEDULE -->
-    <div id="tab-full" class="tab-content active">
-        <div id="scheduleContainer"></div>
-    </div>
+  <div class="tabs">
+      <div class="tab active" onclick="switchTab(event,'full')">📅 Full Schedule</div>
+      <div class="tab" onclick="switchTab(event,'mine')">✔ My Schedule</div>
+  </div>
 
-    <!-- MY SCHEDULE -->
-    <div id="tab-mine" class="tab-content">
-        <div id="selectedClassesList"></div>
-        <div id="footerPrintMeta" style="display:none;"></div>
-    </div>
+  <div id="fullTab" class="tab-content active"></div>
+  <div id="myTab" class="tab-content"></div>
 
-    <div class="action-buttons">
-        <button class="action-btn primary" onclick="saveToLocalStorage()">💾 Save</button>
-        <button class="action-btn secondary" onclick="printMySchedule()">🖨 Print My Schedule</button>
-        <button class="action-btn secondary" onclick="printFullSchedule()">🖨 Print Full Schedule</button>
-        <button class="action-btn danger" onclick="clearSchedule()">🗑 Reset All</button>
-    </div>
+  <div class="action-buttons">
+    <button class="action-btn primary" onclick="saveAll()">💾 Save</button>
+    <button class="action-btn secondary" onclick="printMySchedule()">🖨 Print My Schedule</button>
+    <button class="action-btn secondary" onclick="printFullSchedule()">🖨 Print Full Schedule</button>
+    <button class="action-btn danger" onclick="resetAll()">🗑 Reset</button>
+  </div>
+
+  <div id="printFooter"></div>
+
 </div>
 
-
 <script>
-/* Holds user selections */
+/* LIVE GOOGLE SCRIPT ENDPOINT */
+const SCRIPT_URL =
+ "https://script.google.com/macros/s/AKfycbx5e6r3_wPmvRcpHwcCiEy2zBAzGsNQcpRWQAApimGEKi6OdXZgDyz0SwllCZ-SUtk9/exec";
+
+/* TIME BLOCKS */
+const TIMES = [
+  "9:00-10:00","10:00-11:00","11:00-12:00",
+  "12:00-1:00 (Lunch)","1:00-2:00","2:00-3:00"
+];
+
+/* MASTER SCHEDULE DATA */
+const offerings = {
+ "9:00-10:00":[
+   {name:"Morning Work",type:"commitment"},
+   {name:"Free Create",type:"drop-in"},
+ ],
+ "10:00-11:00":[
+   {name:"Art Studio",type:"drop-in"},
+   {name:"Independent Reading",type:"commitment"},
+ ],
+ "11:00-12:00":[
+   {name:"Math Lab",type:"commitment"},
+   {name:"Open Play",type:"drop-in"},
+ ],
+ "12:00-1:00 (Lunch)":[ ],
+ "1:00-2:00":[
+   {name:"Writing Workshop",type:"commitment"},
+   {name:"Music Exploration",type:"drop-in"},
+ ],
+ "2:00-3:00":[
+   {name:"Outdoor Sports",type:"drop-in"},
+   {name:"Science Block",type:"commitment"},
+ ]
+};
+
 let selected = {};
 
-/* Fake rendering so the UI builds */
+/* BUILD FULL SCHEDULE */
+function renderFullSchedule() {
+
+  let html = `<table class="schedule-table"><thead><tr>
+      <th class="time-col">Time</th><th>Offerings</th></tr></thead><tbody>`;
+
+  TIMES.forEach(time=>{
+
+    if(time.includes("Lunch")){
+      html+= `<tr><td class="time-col">${time}</td><td class="lunch-row">Lunch</td></tr>`;
+      return;
+    }
+
+    html += `<tr><td class="time-col">${time}</td><td>`;
+
+    offerings[time].forEach(item=>{
+      const isSelected = selected[time] === item.name;
+      html+=`
+        <div class="class-option ${item.type} ${isSelected?"selected":""}">
+          <input type="checkbox"
+            onchange="togglePick('${time}','${item.name}')"
+            ${isSelected?"checked":""}>
+          <span>${item.name}</span>
+        </div>`;
+    });
+
+    html+= `</td></tr>`;
+  });
+
+  html += "</tbody></table>";
+
+  document.getElementById("fullTab").innerHTML = html;
+}
+
+/* BUILD MY SCHEDULE VIEW */
+function renderMySchedule() {
+  let html = `<table class="schedule-table"><thead><tr>
+        <th class="time-col">Time</th><th>Selected</th></tr></thead><tbody>`;
+
+  TIMES.forEach(time=>{
+    html += `<tr><td class="time-col">${time}</td><td>`;
+    html += selected[time] ? selected[time] : "";
+    html += `</td></tr>`;
+  });
+
+  html+="</tbody></table>";
+
+  document.getElementById("myTab").innerHTML = html;
+}
+
+/* SELECTION TOGGLE */
+function togglePick(time,name){
+ selected[time] = name;
+ renderFullSchedule();
+ renderMySchedule();
+}
+
+/* SAVE TO LOCAL + SHEETS */
+function saveAll(){
+
+  const student = document.getElementById("studentName").value.trim();
+  localStorage.setItem("studentName",student);
+  localStorage.setItem("scheduleData",JSON.stringify(selected));
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    mode:"no-cors",
+    body: JSON.stringify({student:student,schedule:selected})
+  });
+
+  alert("Saved to device + server.");
+}
+
+/* LOAD FROM LOCAL */
+function restoreSaved(){
+  const sn = localStorage.getItem("studentName");
+  if(sn) document.getElementById("studentName").value = sn;
+
+  const stored = localStorage.getItem("scheduleData");
+  if(stored) selected = JSON.parse(stored);
+}
+
+/* RESET EVERYTHING */
+function resetAll(){
+  if(!confirm("Reset schedule selections?")) return;
+  selected = {};
+  saveAll();
+  renderFullSchedule();
+  renderMySchedule();
+}
+
+/* TABS */
+function switchTab(ev,target){
+ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+ ev.target.classList.add("active");
+
+ document.getElementById("fullTab").classList.remove("active");
+ document.getElementById("myTab").classList.remove("active");
+
+ if(target==="full") document.getElementById("fullTab").classList.add("active");
+ if(target==="mine") document.getElementById("myTab").classList.add("active");
+}
+
+/* PRINT */
+function printMySchedule(){
+ switchTab({target:document.querySelectorAll(".tab")[1]},"mine");
+
+ const dt = new Date().toLocaleDateString();
+ document.getElementById("printFooter").textContent = `Created ${dt}`;
+
+ setTimeout(()=>window.print(),300);
+}
+
+function printFullSchedule(){
+ switchTab({target:document.querySelectorAll(".tab")[0]},"full");
+ document.getElementById("printFooter").style.display="none";
+ setTimeout(()=>window.print(),300);
+}
+
+/* INIT */
+restoreSaved();
 renderFullSchedule();
 renderMySchedule();
 
-/* TAB SWITCHING */
-function switchTab(which) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-
-    document.getElementById('tab-' + which).classList.add('active');
-    event.target.classList.add('active');
-}
-
-/* PRINT FULL */
-function printFullSchedule() {
-    switchTab('full');
-    setTimeout(() => window.print(), 150);
-}
-
-/* PRINT MINE */
-function printMySchedule() {
-    switchTab('mine');
-
-    const name = document.getElementById('studentName').value.trim();
-    const dateStr = new Date().toLocaleDateString();
-
-    const meta = (name ? name + " " : "") + "Created " + dateStr;
-
-    document.getElementById('footerPrintMeta').innerText = meta;
-
-    setTimeout(() => window.print(), 150);
-}
-
-/* Save selections */
-function saveToLocalStorage() {
-    localStorage.setItem('studentName', document.getElementById('studentName').value);
-}
-
-/* Reset */
-function clearSchedule() {
-    if (!confirm('Clear all selections?')) return;
-    selected = {};
-    renderFullSchedule();
-    renderMySchedule();
-}
-
-/* Stub so page loads */
-function renderFullSchedule() {
-    document.getElementById('scheduleContainer').innerHTML =
-        "<div style='padding:20px;text-align:center;color:#555'>Schedule loads here...</div>";
-}
-
-function renderMySchedule() {
-    document.getElementById('selectedClassesList').innerHTML =
-        "<div style='padding:20px;text-align:center;color:#777'>No classes selected yet</div>";
-}
 </script>
 </body>
 </html>
