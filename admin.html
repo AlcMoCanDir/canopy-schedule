@@ -584,15 +584,29 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="time">Time Block *</label>
-                            <select id="time" required>
-                                <option value="">Select time</option>
-                                <option value="10:00-10:45">Block 1 (10:00-10:45 am)</option>
-                                <option value="10:50-11:35">Block 2 (10:50-11:35 am)</option>
-                                <option value="12:10-12:55">Block 3 (12:10-12:55 pm)</option>
-                                <option value="1:00-1:50">Block 4 (1:00-1:50 pm)</option>
-                                <option value="1:55-2:45">Block 5 (1:55-2:45 pm)</option>
-                            </select>
+                            <label>Time Blocks * (select all that apply)</label>
+                            <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 2px solid #ddd; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="timeBlocks" value="10:00-10:45" style="width: auto;">
+                                    Block 1 (10:00-10:45 am)
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="timeBlocks" value="10:50-11:35" style="width: auto;">
+                                    Block 2 (10:50-11:35 am)
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="timeBlocks" value="12:10-12:55" style="width: auto;">
+                                    Block 3 (12:10-12:55 pm)
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="timeBlocks" value="1:00-1:50" style="width: auto;">
+                                    Block 4 (1:00-1:50 pm)
+                                </label>
+                                <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" name="timeBlocks" value="1:55-2:45" style="width: auto;">
+                                    Block 5 (1:55-2:45 pm)
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -800,6 +814,14 @@
             
             html += '</div>';
             document.getElementById('studentModalBody').innerHTML = html;
+            
+            // Restore normal modal footer
+            document.querySelector('#studentModal .modal-footer').innerHTML = `
+                <button class="btn btn-danger" onclick="deleteStudent()">Delete Student</button>
+                <button class="btn btn-secondary" onclick="editStudentSchedule()">✏️ Edit Schedule</button>
+                <button class="btn btn-primary" onclick="closeStudentModal()">Close</button>
+            `;
+            
             document.getElementById('studentModal').style.display = 'block';
         }
 
@@ -849,6 +871,11 @@
 
         async function loadOfferings() {
             try {
+                // Load students first if not already loaded (needed for enrollment counts)
+                if (allStudents.length === 0) {
+                    await loadStudents();
+                }
+                
                 document.getElementById('offeringsContainer').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading offerings...</p></div>';
                 
                 const response = await fetch(`${APPS_SCRIPT_URL}?action=loadOfferings`);
@@ -873,6 +900,93 @@
             }
         }
 
+        // Get students enrolled in a specific offering
+        function getEnrolledStudents(offering) {
+            const enrolled = [];
+            
+            allStudents.forEach(student => {
+                try {
+                    const classes = JSON.parse(student.classes || '[]');
+                    const isEnrolled = classes.some(cls => {
+                        const className = cls.name || cls.offeringName;
+                        return className === offering.name && 
+                               cls.day === offering.day && 
+                               cls.time === offering.time;
+                    });
+                    
+                    if (isEnrolled) {
+                        enrolled.push(student.name);
+                    }
+                } catch (e) {
+                    console.error('Error parsing student classes:', e);
+                }
+            });
+            
+            return enrolled;
+        }
+
+        // View enrollment modal
+        function viewEnrollment(offeringId) {
+            const offering = allOfferings.find(o => o.id === offeringId);
+            if (!offering) return;
+            
+            const enrolledStudents = getEnrolledStudents(offering);
+            const dayName = offering.day.charAt(0).toUpperCase() + offering.day.slice(1);
+            
+            document.getElementById('studentModalTitle').textContent = `Enrollment: ${offering.name}`;
+            
+            let html = `
+                <div class="student-detail">
+                    <p><strong>Class:</strong> ${offering.name}</p>
+                    <p><strong>Instructor:</strong> ${offering.instructor}</p>
+                    <p><strong>When:</strong> ${dayName}, ${offering.time}</p>
+                    <p><strong>Type:</strong> <span class="type-badge type-${offering.type}">${offering.type}</span></p>
+                    <p><strong>Total Enrolled:</strong> ${enrolledStudents.length} students</p>
+                </div>
+                <h3>Enrolled Students:</h3>
+                <div class="class-list">
+            `;
+            
+            if (enrolledStudents.length === 0) {
+                html += '<p style="color: #999; text-align: center; padding: 20px;">No students enrolled yet</p>';
+            } else {
+                enrolledStudents.sort().forEach(studentName => {
+                    html += `
+                        <div class="class-item" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>${studentName}</strong></span>
+                            <button class="btn btn-secondary btn-small" onclick="viewStudentFromEnrollment('${studentName}')">
+                                View Schedule
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            document.getElementById('studentModalBody').innerHTML = html;
+            
+            // Hide delete button, show close only
+            document.querySelector('#studentModal .modal-footer').innerHTML = `
+                <button class="btn btn-primary" onclick="closeStudentModal()">Close</button>
+            `;
+            
+            document.getElementById('studentModal').style.display = 'block';
+        }
+
+        function viewStudentFromEnrollment(studentName) {
+            closeStudentModal();
+            // Switch to students tab
+            document.getElementById('offerings').classList.remove('active');
+            document.getElementById('students').classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            
+            // View the student
+            setTimeout(() => {
+                viewStudent(studentName);
+            }, 100);
+        }
+
         function renderOfferingsTable() {
             const container = document.getElementById('offeringsContainer');
             
@@ -890,8 +1004,9 @@
                             <th style="width: 80px;">Day</th>
                             <th style="width: 100px;">Time</th>
                             <th style="width: 80px;">Type</th>
+                            <th style="width: 80px;">Enrolled</th>
                             <th style="width: 60px;">Loc</th>
-                            <th style="width: 120px;">Actions</th>
+                            <th style="width: 150px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -899,6 +1014,9 @@
 
             filteredOfferings.forEach(offering => {
                 const dayName = offering.day.charAt(0).toUpperCase() + offering.day.slice(1);
+                const enrolledStudents = getEnrolledStudents(offering);
+                const enrollmentCount = enrolledStudents.length;
+                
                 html += `
                     <tr>
                         <td><strong>${offering.name}</strong></td>
@@ -906,6 +1024,12 @@
                         <td>${dayName}</td>
                         <td style="font-size: 11px;">${offering.time}</td>
                         <td><span class="type-badge type-${offering.type}">${offering.type}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-small" onclick="viewEnrollment(${offering.id})" 
+                                    style="background: ${enrollmentCount > 0 ? '#4CAF50' : '#999'};">
+                                ${enrollmentCount} 👥
+                            </button>
+                        </td>
                         <td>${offering.location || '-'}</td>
                         <td>
                             <div class="action-buttons">
@@ -961,6 +1085,10 @@
             document.getElementById('offeringModalTitle').textContent = 'Add New Offering';
             document.getElementById('offeringForm').reset();
             document.getElementById('offeringId').value = '';
+            
+            // Clear all time block checkboxes
+            document.querySelectorAll('input[name="timeBlocks"]').forEach(cb => cb.checked = false);
+            
             document.getElementById('offeringModal').style.display = 'block';
         }
 
@@ -975,7 +1103,23 @@
             document.getElementById('instructor').value = offering.instructor;
             document.getElementById('location').value = offering.location || '';
             document.getElementById('day').value = offering.day;
-            document.getElementById('time').value = offering.time;
+            
+            // Handle time blocks - check if this offering exists in multiple blocks
+            const relatedOfferings = allOfferings.filter(o => 
+                o.name === offering.name && 
+                o.day === offering.day && 
+                o.instructor === offering.instructor
+            );
+            
+            // Clear all checkboxes first
+            document.querySelectorAll('input[name="timeBlocks"]').forEach(cb => cb.checked = false);
+            
+            // Check the appropriate time block(s)
+            relatedOfferings.forEach(o => {
+                const checkbox = document.querySelector(`input[name="timeBlocks"][value="${o.time}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            
             document.getElementById('offeringType').value = offering.type;
             document.getElementById('level').value = offering.level || '';
             document.getElementById('description').value = offering.description || '';
@@ -990,12 +1134,20 @@
                 return;
             }
 
-            const offeringData = {
+            // Get selected time blocks
+            const selectedTimeBlocks = Array.from(document.querySelectorAll('input[name="timeBlocks"]:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedTimeBlocks.length === 0) {
+                showStatus('⚠️ Please select at least one time block', 'warning');
+                return;
+            }
+
+            const baseOfferingData = {
                 name: document.getElementById('offeringName').value,
                 instructor: document.getElementById('instructor').value,
                 location: document.getElementById('location').value,
                 day: document.getElementById('day').value,
-                time: document.getElementById('time').value,
                 type: document.getElementById('offeringType').value,
                 level: document.getElementById('level').value,
                 description: document.getElementById('description').value
@@ -1003,26 +1155,56 @@
 
             try {
                 if (currentOfferingId) {
-                    offeringData.id = currentOfferingId;
-                    offeringData.action = 'updateOffering';
-                } else {
-                    offeringData.action = 'saveOffering';
+                    // UPDATE EXISTING: Delete all related offerings, then recreate
+                    const offering = allOfferings.find(o => o.id === currentOfferingId);
+                    if (offering) {
+                        // Find all related offerings (same name, day, instructor)
+                        const relatedOfferings = allOfferings.filter(o => 
+                            o.name === offering.name && 
+                            o.day === offering.day && 
+                            o.instructor === offering.instructor
+                        );
+                        
+                        // Delete all related offerings
+                        for (const related of relatedOfferings) {
+                            await fetch(APPS_SCRIPT_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    action: 'deleteOffering',
+                                    offeringId: related.id
+                                })
+                            });
+                        }
+                    }
                 }
                 
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(offeringData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus(currentOfferingId ? '✅ Offering updated!' : '✅ Offering added!', 'success');
-                    closeOfferingModal();
-                    loadOfferings();
-                } else {
-                    showStatus('❌ Error: ' + result.message, 'error');
+                // Create offering for each selected time block
+                for (const timeBlock of selectedTimeBlocks) {
+                    const offeringData = {
+                        ...baseOfferingData,
+                        time: timeBlock,
+                        action: 'saveOffering'
+                    };
+                    
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(offeringData)
+                    });
+                    
+                    const result = await response.json();
+                    if (!result.success) {
+                        showStatus('❌ Error: ' + result.message, 'error');
+                        return;
+                    }
                 }
+
+                const message = currentOfferingId ? '✅ Offering updated!' : '✅ Offering added!';
+                const blocksText = selectedTimeBlocks.length > 1 ? ` (${selectedTimeBlocks.length} blocks)` : '';
+                showStatus(message + blocksText, 'success');
+                
+                closeOfferingModal();
+                await loadOfferings();
+                
             } catch (error) {
                 showStatus('❌ Error saving: ' + error.message, 'error');
             }
@@ -1032,23 +1214,36 @@
             const offering = allOfferings.find(o => o.id === id);
             if (!offering) return;
 
-            if (confirm(`Delete "${offering.name}"?`)) {
+            // Find all related offerings (same name, day, instructor)
+            const relatedOfferings = allOfferings.filter(o => 
+                o.name === offering.name && 
+                o.day === offering.day && 
+                o.instructor === offering.instructor
+            );
+
+            const blocksText = relatedOfferings.length > 1 ? ` (${relatedOfferings.length} blocks)` : '';
+            
+            if (confirm(`Delete "${offering.name}"${blocksText}?`)) {
                 try {
-                    const response = await fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'deleteOffering',
-                            offeringId: id
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success) {
-                        showStatus('✅ Offering deleted!', 'success');
-                        loadOfferings();
-                    } else {
-                        showStatus('❌ Error: ' + result.message, 'error');
+                    // Delete all related offerings
+                    for (const related of relatedOfferings) {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: 'deleteOffering',
+                                offeringId: related.id
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        if (!result.success) {
+                            showStatus('❌ Error: ' + result.message, 'error');
+                            return;
+                        }
                     }
+                    
+                    showStatus('✅ Offering deleted!', 'success');
+                    await loadOfferings();
                 } catch (error) {
                     showStatus('❌ Error deleting: ' + error.message, 'error');
                 }
