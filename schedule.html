@@ -185,18 +185,20 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 11px;
         }
         
         .schedule-table th {
             background-color: #4CAF50;
             color: white;
-            padding: 12px;
-            text-align: left;
+            padding: 8px 4px;
+            text-align: center;
             font-weight: bold;
+            font-size: 12px;
         }
         
         .schedule-table td {
-            padding: 10px;
+            padding: 6px 4px;
             border: 1px solid #ddd;
             vertical-align: top;
         }
@@ -206,19 +208,47 @@
         }
         
         .time-column {
-            width: 120px;
+            width: 110px;
             font-weight: bold;
             background-color: #e8f5e9;
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.3;
+        }
+
+        .time-column .block-name {
+            font-weight: bold;
+            color: #2e7d32;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .time-column .time-range {
+            font-size: 9px;
+            color: #666;
+        }
+
+        .lunch-row {
+            background-color: #fff3cd !important;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .lunch-row td {
+            padding: 8px;
+            font-size: 13px;
         }
         
         .class-option {
-            margin-bottom: 8px;
-            padding: 8px;
+            margin-bottom: 4px;
+            padding: 4px;
             background-color: #f5f5f5;
-            border-radius: 4px;
-            border-left: 4px solid #2196F3;
+            border-radius: 3px;
+            border-left: 3px solid #2196F3;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 10px;
         }
         
         .class-option:hover {
@@ -238,11 +268,11 @@
         }
         
         .class-option input[type="checkbox"] {
-            margin-right: 8px;
-            margin-top: 2px;
+            margin-right: 4px;
+            margin-top: 1px;
             cursor: pointer;
-            width: 18px;
-            height: 18px;
+            width: 14px;
+            height: 14px;
         }
         
         .class-details {
@@ -252,21 +282,23 @@
         .class-name {
             font-weight: bold;
             color: #333;
+            font-size: 10px;
+            line-height: 1.2;
         }
         
         .class-instructor {
-            font-size: 12px;
+            font-size: 9px;
             color: #666;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .class-description {
-            font-size: 12px;
+            font-size: 9px;
             color: #555;
-            margin-top: 6px;
-            padding-top: 6px;
+            margin-top: 3px;
+            padding-top: 3px;
             border-top: 1px solid #ddd;
-            line-height: 1.4;
+            line-height: 1.3;
             display: none;
         }
 
@@ -275,11 +307,12 @@
         }
         
         .class-type {
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 3px;
+            font-size: 8px;
+            padding: 1px 4px;
+            border-radius: 2px;
             display: inline-block;
-            margin-top: 4px;
+            margin-top: 2px;
+            text-transform: uppercase;
         }
         
         .commitment {
@@ -317,7 +350,7 @@
         
         .buttons {
             text-align: center;
-            margin-top: 30px;
+            margin: 15px 0 20px 0;
             display: flex;
             gap: 10px;
             justify-content: center;
@@ -325,12 +358,13 @@
         }
         
         button {
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 10px 20px;
+            font-size: 14px;
             cursor: pointer;
             border: none;
             border-radius: 4px;
             transition: all 0.3s;
+            font-weight: 600;
         }
         
         .save-btn {
@@ -515,6 +549,12 @@
             <input type="text" id="studentName" placeholder="Enter your name">
         </div>
 
+        <div class="buttons">
+            <button class="save-btn" onclick="saveSchedule()">💾 Save Schedule</button>
+            <button class="load-btn" onclick="loadSchedule()">📥 Load Schedule</button>
+            <button class="print-btn" onclick="printSchedule('my-schedule')">🖨️ Print My Schedule</button>
+        </div>
+
         <div id="syncStatus" class="sync-status" style="display: none;"></div>
         
         <div class="tabs">
@@ -522,9 +562,11 @@
             <button class="tab" onclick="switchTab('my-schedule')">⭐ My Schedule</button>
         </div>
 
+
+
         <div id="full-schedule" class="tab-content active">
             <h2 style="text-align: center; color: #4CAF50;">Select your classes for Session 3 (Max 2 per time block)</h2>
-            <p style="text-align: center; color: #666; font-size: 14px;">Click on a class to see its description</p>
+            <p style="text-align: center; color: #666; font-size: 12px;">Click on a class to see its description • Multi-block classes select all blocks together</p>
             <table class="schedule-table">
                 <thead>
                     <tr>
@@ -538,7 +580,10 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="time-column">10:00-10:45</td>
+                        <td class="time-column">
+                            <span class="block-name">Block 1</span>
+                            <span class="time-range">10:00-10:45 am</span>
+                        </td>
                         <td>
                             <div class="class-option commitment" style="border-left-color: #f44336;" onclick="toggleClass(this, 'monday', '10:00-10:45')">
                                 <label>
@@ -553,7 +598,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math(A) (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Early middle school math topics with focus on geometry, relationships between area and perimeter, and algebraic equations.</div>
                                     </div>
                                 </label>
@@ -571,7 +616,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Chemistry (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Foundations of Chemistry including elements, Periodic Table, matter, molecules, and reactions. Ideal for 4th-9th grade.</div>
                                     </div>
                                 </label>
@@ -589,7 +634,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Intermediate Writing (Canopy+)</div>
                                         <div class="class-instructor">👤 Elliott</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Intermediate writing class for Canopy+ students with assignments and work outside of offering time.</div>
                                     </div>
                                 </label>
@@ -607,7 +652,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Journaling/Independent Drawing (Canopy+)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Quiet space for mindful journaling and drawing.</div>
                                     </div>
                                 </label>
@@ -625,7 +670,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Punk Band Guitar/Bass Practice (CLOSED)</div>
                                         <div class="class-instructor">👤 Nick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Closed practice for punk band members.</div>
                                     </div>
                                 </label>
@@ -645,7 +690,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math(B) (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Early middle school math topics with focus on geometry, relationships between area and perimeter, and algebraic equations.</div>
                                     </div>
                                 </label>
@@ -663,7 +708,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Civics (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Analyze how people gain and use power through case studies, current events, and historical turning points.</div>
                                     </div>
                                 </label>
@@ -681,7 +726,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Independent drawing (Saplings+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Open time for independent art projects and drawing.</div>
                                     </div>
                                 </label>
@@ -699,7 +744,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Science 101</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Exploring science through hands-on experiments including physics, environmental impacts, chemistry, and biology.</div>
                                     </div>
                                 </label>
@@ -717,7 +762,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Lesson Thayer</div>
                                         <div class="class-instructor">👤 Scott</div>
-                                        <span class="class-type type-private">PRIVATE</span>
+                                        <span class="class-type type-private">private</span>
                                         <div class="class-description">Private music lesson for Thayer.</div>
                                     </div>
                                 </label>
@@ -737,7 +782,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math(A) (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Early middle school math topics with focus on geometry, relationships between area and perimeter, and algebraic equations.</div>
                                     </div>
                                 </label>
@@ -755,7 +800,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Study Hall/Homework Help (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Dedicated time and space for homework and research related to your offerings.</div>
                                     </div>
                                 </label>
@@ -773,7 +818,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Open art (Canopy+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Drop-in art studio time for personal projects.</div>
                                     </div>
                                 </label>
@@ -791,7 +836,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Intermediate Writing (Canopy+)</div>
                                         <div class="class-instructor">👤 Elliott</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Intermediate writing class for Canopy+ students with assignments and work outside of offering time.</div>
                                     </div>
                                 </label>
@@ -809,7 +854,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Guitar/Bass (Max 3) & Band Drummer (Max 1) Practice</div>
                                         <div class="class-instructor">👤 Heather/Nick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Band practice for guitar, bass, and drummer.</div>
                                     </div>
                                 </label>
@@ -829,7 +874,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math(B) (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Early middle school math topics with focus on geometry, relationships between area and perimeter, and algebraic equations.</div>
                                     </div>
                                 </label>
@@ -847,7 +892,7 @@
                                     <div class="class-details">
                                         <div class="class-name">WWI & WWII History (Acorns)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Study World War I and World War II history.</div>
                                     </div>
                                 </label>
@@ -865,7 +910,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Science 101</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Exploring science through hands-on experiments including physics, environmental impacts, chemistry, and biology.</div>
                                     </div>
                                 </label>
@@ -883,7 +928,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Astronomy (Saplings+)</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Watch space-themed videos, explore big questions about stars and planets, experiment with Universe Sandbox, build LEGO Mars rover.</div>
                                     </div>
                                 </label>
@@ -903,7 +948,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Comic Making Club / Artists Studio (Acorns)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Collaborate to create full comics. Learn paneling, pacing, world building, and storytelling.</div>
                                     </div>
                                 </label>
@@ -921,7 +966,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ALC Wilds: Indoor Soccer Practice 11-1pm</div>
                                         <div class="class-instructor">👤 Mel & Gretchen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Indoor soccer practice session.</div>
                                     </div>
                                 </label>
@@ -934,12 +979,12 @@
                                            data-time="10:00-10:45" 
                                            data-name="Friday Learning Lab" 
                                            data-instructor="Jenique"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Friday_Learning_Lab_friday_Jenique"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Friday Learning Lab</div>
+                                        <div class="class-name">Friday Learning Lab 🔗</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Invite-only learning lab on Fridays.</div>
                                     </div>
                                 </label>
@@ -947,7 +992,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="time-column">10:50-11:35</td>
+                        <td class="time-column">
+                            <span class="block-name">Block 2</span>
+                            <span class="time-range">10:50-11:35 am</span>
+                        </td>
                         <td>
                             <div class="class-option commitment" style="border-left-color: #f44336;" onclick="toggleClass(this, 'monday', '10:50-11:35')">
                                 <label>
@@ -962,7 +1010,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math(C) (Acorns)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Early middle school math topics with focus on geometry, relationships between area and perimeter, and algebraic equations.</div>
                                     </div>
                                 </label>
@@ -980,7 +1028,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Chemistry Lab (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Hands-on lab experiments for chemistry concepts. Second block after Chemistry instruction.</div>
                                     </div>
                                 </label>
@@ -998,7 +1046,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Coding (Saplings+)</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Game design and coding using Scratch. Create interactive games with code.</div>
                                     </div>
                                 </label>
@@ -1016,7 +1064,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ELA: Reader's Studio (Canopy+)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Reading workshop focusing on reading skills and comprehension for Canopy+ students.</div>
                                     </div>
                                 </label>
@@ -1034,7 +1082,7 @@
                                     <div class="class-details">
                                         <div class="class-name">D&D (Acorns) (FULL)</div>
                                         <div class="class-instructor">👤 Penny</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Dungeons & Dragons role-playing game. Currently full.</div>
                                     </div>
                                 </label>
@@ -1052,7 +1100,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Open Art (Saplings+)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Drop-in art studio time for personal projects.</div>
                                     </div>
                                 </label>
@@ -1070,7 +1118,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Theatre Leads/Soloists Practice (Choose One)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Practice time for theatre leads and musical soloists.</div>
                                     </div>
                                 </label>
@@ -1088,7 +1136,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Guitar/Bass Lessons (Max 3)</div>
                                         <div class="class-instructor">👤 Nick</div>
-                                        <span class="class-type type-private">PRIVATE</span>
+                                        <span class="class-type type-private">private</span>
                                         <div class="class-description">Individual guitar and bass lessons.</div>
                                     </div>
                                 </label>
@@ -1108,7 +1156,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math E/Math PIP (Saplings+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Formal math practice starting with multiplication, patterns and shortcuts. Includes discussion and games.</div>
                                     </div>
                                 </label>
@@ -1126,7 +1174,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Japanese (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique/Sarah E.</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Introductory Japanese covering speaking, listening, reading, and writing in hiragana and katakana. Meets 2x per week.</div>
                                     </div>
                                 </label>
@@ -1144,7 +1192,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Writing Lab (Saplings+)</div>
                                         <div class="class-instructor">👤 Kirsten</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Build foundational long-form writing skills using Pattern Based Writing approach. For learners who can write basic sentences.</div>
                                     </div>
                                 </label>
@@ -1162,7 +1210,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ELA PIP: Reader's Studio (Saplings+)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Personalized English Language Arts focusing on reading skills.</div>
                                     </div>
                                 </label>
@@ -1180,7 +1228,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Fiber art/Open Art (Saplings+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Needle felting, hand sewing, knitting, crochet with loom, and weaving.</div>
                                     </div>
                                 </label>
@@ -1198,7 +1246,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Lesson Elijah M</div>
                                         <div class="class-instructor">👤 Scott</div>
-                                        <span class="class-type type-private">PRIVATE</span>
+                                        <span class="class-type type-private">private</span>
                                         <div class="class-description">Private music lesson for Elijah M.</div>
                                     </div>
                                 </label>
@@ -1218,7 +1266,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math(C) (Acorns)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Early middle school math topics with focus on geometry, relationships between area and perimeter, and algebraic equations.</div>
                                     </div>
                                 </label>
@@ -1236,7 +1284,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Coding (Saplings+)</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Game design and coding using Scratch. Create interactive games with code.</div>
                                     </div>
                                 </label>
@@ -1254,7 +1302,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Power of the Mind (Saplings+) (max 12)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Explore mindfulness, relaxation, visualization, and energy-based techniques to manipulate energy.</div>
                                     </div>
                                 </label>
@@ -1272,7 +1320,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ELA PIP: Reader's Studio (Saplings+)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Personalized English Language Arts focusing on reading skills.</div>
                                     </div>
                                 </label>
@@ -1290,7 +1338,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Junk Journals (Canopy+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Create one-of-a-kind journals using scraps, stickers, fabric, and found paper. Mixed media and collage techniques.</div>
                                     </div>
                                 </label>
@@ -1308,7 +1356,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Theatre Leads/Soloists Practice (Choose One)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Practice time for theatre leads and musical soloists.</div>
                                     </div>
                                 </label>
@@ -1326,7 +1374,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Guitar/Bass (Max 3) Practice</div>
                                         <div class="class-instructor">👤 Nick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Band practice for guitar and bass players.</div>
                                     </div>
                                 </label>
@@ -1346,7 +1394,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math E/ Math PIP (Saplings+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                     </div>
                                 </label>
                             </div>
@@ -1363,7 +1411,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Japanese (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique/Sarah E.</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Introductory Japanese covering speaking, listening, reading, and writing in hiragana and katakana. Meets 2x per week.</div>
                                     </div>
                                 </label>
@@ -1381,7 +1429,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Writing Lab (Saplings+)</div>
                                         <div class="class-instructor">👤 Kirsten</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Build foundational long-form writing skills using Pattern Based Writing approach. For learners who can write basic sentences.</div>
                                     </div>
                                 </label>
@@ -1399,7 +1447,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ELA PIP: Science Writing (Saplings+)</div>
                                         <div class="class-instructor">👤 Lacy/Doug</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Science writing focus combining ELA skills with scientific content.</div>
                                     </div>
                                 </label>
@@ -1417,7 +1465,7 @@
                                     <div class="class-details">
                                         <div class="class-name">D&D (Acorns) (FULL)</div>
                                         <div class="class-instructor">👤 Penny</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Dungeons & Dragons role-playing game. Currently full.</div>
                                     </div>
                                 </label>
@@ -1437,7 +1485,7 @@
                                     <div class="class-details">
                                         <div class="class-name">D&D (Acorns) (FULL)</div>
                                         <div class="class-instructor">👤 Penny</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Dungeons & Dragons role-playing game. Currently full.</div>
                                     </div>
                                 </label>
@@ -1455,7 +1503,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Garden Club</div>
                                         <div class="class-instructor">👤 Nancy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Work on garden planting, weeding, harvesting, and tending through the seasons.</div>
                                     </div>
                                 </label>
@@ -1473,15 +1521,25 @@
                                     <div class="class-details">
                                         <div class="class-name">Poker (Canopy+) FULL</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn and play poker. Currently full.</div>
                                     </div>
                                 </label>
                             </div>
                         </td>
                     </tr>
+                    <tr class="lunch-row">
+                        <td class="time-column">
+                            <span class="block-name">🍽️ LUNCH</span>
+                            <span class="time-range">11:35 am-12:05 pm</span>
+                        </td>
+                        <td colspan="5">Lunch Break</td>
+                    </tr>
                     <tr>
-                        <td class="time-column">12:10-12:55</td>
+                        <td class="time-column">
+                            <span class="block-name">Block 3</span>
+                            <span class="time-range">12:10-12:55 pm</span>
+                        </td>
                         <td>
                             <div class="class-option commitment" style="border-left-color: #f44336;" onclick="toggleClass(this, 'monday', '12:10-12:55')">
                                 <label>
@@ -1496,7 +1554,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Connection Circles (Amber/Anna)</div>
                                         <div class="class-instructor">👤 Amber/Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Community building circle time.</div>
                                     </div>
                                 </label>
@@ -1514,7 +1572,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Connection Circles (Jenique/Ashlyn)</div>
                                         <div class="class-instructor">👤 Jenique/Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Community building circle time.</div>
                                     </div>
                                 </label>
@@ -1532,7 +1590,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Connection Circles (Jamie/Doug)</div>
                                         <div class="class-instructor">👤 Jamie/Doug</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Community building circle time.</div>
                                     </div>
                                 </label>
@@ -1550,7 +1608,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Film Studies/Anime Club (blocks 3-5) (Acorns)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Watch, discuss, and celebrate anime shows. Screen episodes, explore Japanese culture, share theories. Meets every other week for 3 blocks.</div>
                                     </div>
                                 </label>
@@ -1568,7 +1626,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Dungeons & Dragons (FULL)</div>
                                         <div class="class-instructor">👤 Patrick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Dungeons & Dragons role-playing game. Currently full.</div>
                                     </div>
                                 </label>
@@ -1586,7 +1644,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Art Activities (Playyard+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Art activities designed for younger students.</div>
                                     </div>
                                 </label>
@@ -1599,12 +1657,12 @@
                                            data-time="12:10-12:55" 
                                            data-name="Active Games" 
                                            data-instructor="Luke"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="Active_Games_monday_Luke"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Active Games</div>
+                                        <div class="class-name">Active Games 🔗</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Outdoor games including baseball, capture the flag, and variations of tag.</div>
                                     </div>
                                 </label>
@@ -1622,7 +1680,7 @@
                                     <div class="class-details">
                                         <div class="class-name">History Lab (Saplings+)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Deep dive into historical eras explored in Time Travel with additional content and discussions.</div>
                                     </div>
                                 </label>
@@ -1640,7 +1698,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Newspaper (Saplings+)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Create school newspaper content through writing, editing, and layout.</div>
                                     </div>
                                 </label>
@@ -1658,7 +1716,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Writing Lab (Canopy+)</div>
                                         <div class="class-instructor">👤 Kirsten</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Advanced writing workshop with assignments between sessions.</div>
                                     </div>
                                 </label>
@@ -1678,7 +1736,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Garden Club</div>
                                         <div class="class-instructor">👤 Nancy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Work on garden planting, weeding, harvesting, and tending through the seasons.</div>
                                     </div>
                                 </label>
@@ -1696,7 +1754,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Junk Journals/Art PIP (Canopy+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Personal Interest Project time for junk journal creation.</div>
                                     </div>
                                 </label>
@@ -1714,7 +1772,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Math D/Math PIP (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Algebra and coordinate geometry for students who have done some algebra.</div>
                                     </div>
                                 </label>
@@ -1732,7 +1790,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ELA PIP (Acorns)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Personalized English Language Arts learning plans based on student needs and interests.</div>
                                     </div>
                                 </label>
@@ -1750,7 +1808,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Time Travel (All Ages)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Explore history, civics, cultural diversity, and economics through games, immersive experiences, and crafts.</div>
                                     </div>
                                 </label>
@@ -1768,7 +1826,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Guitar/Bass (Max 3) Practice</div>
                                         <div class="class-instructor">👤 Nick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Band practice for guitar and bass players.</div>
                                     </div>
                                 </label>
@@ -1788,7 +1846,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Poker (Canopy+) (FULL)</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn and play poker. Currently full.</div>
                                     </div>
                                 </label>
@@ -1806,7 +1864,7 @@
                                     <div class="class-details">
                                         <div class="class-name">News Team Filming (Saplings+)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Gather news and footage relevant to Mosaic for weekly news video.</div>
                                     </div>
                                 </label>
@@ -1824,7 +1882,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Human Design (Acorns)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn about your Body Graph combining Western Astrology, I Ching, Kabbalah, Vedic Philosophy, and Physics.</div>
                                     </div>
                                 </label>
@@ -1842,7 +1900,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Zoology (Canopy+)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Study of animals and their biology.</div>
                                     </div>
                                 </label>
@@ -1860,7 +1918,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Rollerskating</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Rollerskating activity.</div>
                                     </div>
                                 </label>
@@ -1878,7 +1936,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Cooking grp 2 (Canopy+)</div>
                                         <div class="class-instructor">👤 Amber</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Second cooking group. Learn practical cooking skills with simple, budget-friendly recipes.</div>
                                     </div>
                                 </label>
@@ -1898,7 +1956,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Garden Club</div>
                                         <div class="class-instructor">👤 Nancy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Work on garden planting, weeding, harvesting, and tending through the seasons.</div>
                                     </div>
                                 </label>
@@ -1918,7 +1976,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Comic Making Club / Artist Studio (Acorns)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Comic creation collaboration time.</div>
                                     </div>
                                 </label>
@@ -1931,12 +1989,12 @@
                                            data-time="12:10-12:55" 
                                            data-name="Afternoon Games" 
                                            data-instructor="Luke"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="Afternoon_Games_friday_Luke"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Afternoon Games</div>
+                                        <div class="class-name">Afternoon Games 🔗</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Various games and activities.</div>
                                     </div>
                                 </label>
@@ -1949,12 +2007,12 @@
                                            data-time="12:10-12:55" 
                                            data-name="Friday Learning Lab" 
                                            data-instructor="Jenique"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Friday_Learning_Lab_friday_Jenique"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Friday Learning Lab</div>
+                                        <div class="class-name">Friday Learning Lab 🔗</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Invite-only learning lab on Fridays.</div>
                                     </div>
                                 </label>
@@ -1962,7 +2020,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="time-column">1:00-1:50</td>
+                        <td class="time-column">
+                            <span class="block-name">Block 4</span>
+                            <span class="time-range">1:00-1:50 pm</span>
+                        </td>
                         <td>
                             <div class="class-option commitment" style="border-left-color: #f44336;" onclick="toggleClass(this, 'monday', '1:00-1:50')">
                                 <label>
@@ -1977,7 +2038,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Crochet, Sewing and Mending (Saplings+) (max 4)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn basics of crochet with help teaching available for advanced students.</div>
                                     </div>
                                 </label>
@@ -1995,7 +2056,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Art Fundamentals (Acorns)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Master pencil control, inking, shading, perspective, and composition. Focus on composition and interpretation.</div>
                                     </div>
                                 </label>
@@ -2013,7 +2074,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Songwriting (Saplings+)</div>
                                         <div class="class-instructor">👤 Tiff</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn songwriting techniques and create original songs.</div>
                                     </div>
                                 </label>
@@ -2031,7 +2092,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Spirit Squad (Saplings+)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Spirit squad activities and performances.</div>
                                     </div>
                                 </label>
@@ -2044,12 +2105,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_monday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2062,12 +2123,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="Active Games" 
                                            data-instructor="Luke"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="Active_Games_monday_Luke"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Active Games</div>
+                                        <div class="class-name">Active Games 🔗</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Outdoor games including baseball, capture the flag, and variations of tag.</div>
                                     </div>
                                 </label>
@@ -2085,7 +2146,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Sensory Lab</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Get messy with chia seed slime, cloud play dough, oobleck, kinetic sand and more.</div>
                                     </div>
                                 </label>
@@ -2098,12 +2159,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="Film Studies/Anime Club (blocks 3-5)" 
                                            data-instructor="Jenique"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Film_Studies_Anime_Club_blocks_35_monday_Jenique"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Film Studies/Anime Club (blocks 3-5)</div>
+                                        <div class="class-name">Film Studies/Anime Club (blocks 3-5) 🔗</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Film analysis or anime club (alternating weeks).</div>
                                     </div>
                                 </label>
@@ -2116,12 +2177,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="D&D (cont'd) (FULL)" 
                                            data-instructor="Patrick"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="DandD_contd_FULL_monday_Patrick"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">D&D (cont'd) (FULL)</div>
+                                        <div class="class-name">D&D (cont'd) (FULL) 🔗</div>
                                         <div class="class-instructor">👤 Patrick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Continuation of D&D session.</div>
                                     </div>
                                 </label>
@@ -2141,7 +2202,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Mini Murals (Canopy+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Design and paint mural-sized masterpieces on smaller panels. Explore composition, color, and storytelling through art.</div>
                                     </div>
                                 </label>
@@ -2154,12 +2215,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="Cooking (Canopy+) (FULL)" 
                                            data-instructor="Amber"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Cooking_Canopyplus_FULL_tuesday_Amber"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Cooking (Canopy+) (FULL)</div>
+                                        <div class="class-name">Cooking (Canopy+) (FULL) 🔗</div>
                                         <div class="class-instructor">👤 Amber</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn practical cooking skills with simple, budget-friendly recipes under one hour. Currently full.</div>
                                     </div>
                                 </label>
@@ -2172,12 +2233,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_tuesday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2195,7 +2256,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Foot Baths & Care</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Relaxing foot baths and foot care.</div>
                                     </div>
                                 </label>
@@ -2213,7 +2274,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Group Games</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Collaborative games including Night at the Museum, Froggie, Man from Mars, and more.</div>
                                     </div>
                                 </label>
@@ -2226,12 +2287,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="Lil Wizards (Saplings+) (FULL)" 
                                            data-instructor="Jamie"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Lil_Wizards_Saplingsplus_FULL_tuesday_Jamie"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Lil Wizards (Saplings+) (FULL)</div>
+                                        <div class="class-name">Lil Wizards (Saplings+) (FULL) 🔗</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Wizard-themed role-playing game. Currently full.</div>
                                     </div>
                                 </label>
@@ -2251,7 +2312,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Big Topics (Saplings+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">This session explores Senses and Perception including echolocation, mind's eye, synesthesia, and perception differences.</div>
                                     </div>
                                 </label>
@@ -2269,7 +2330,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Open Art (Canopy+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Drop-in art studio time for personal projects.</div>
                                     </div>
                                 </label>
@@ -2282,12 +2343,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_wednesday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2305,7 +2366,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Spirit Squad (All Ages)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Spirit squad for all ages.</div>
                                     </div>
                                 </label>
@@ -2323,7 +2384,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Punk Band Group Practice (Closed)</div>
                                         <div class="class-instructor">👤 Heather/Nick/Tiff</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Closed punk band practice session.</div>
                                     </div>
                                 </label>
@@ -2341,7 +2402,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Hot Glue Upcycling (PY)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Create art projects using hot glue and upcycled materials.</div>
                                     </div>
                                 </label>
@@ -2361,7 +2422,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Still Life</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Draw provided subjects using graphite, charcoal, and paint.</div>
                                     </div>
                                 </label>
@@ -2379,7 +2440,7 @@
                                     <div class="class-details">
                                         <div class="class-name">NewsTeam Editing (Saplings+)</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Edit filmed footage into engaging 5-minute news video to share with school.</div>
                                     </div>
                                 </label>
@@ -2392,12 +2453,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_thursday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2415,7 +2476,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Rollerskating</div>
                                         <div class="class-instructor">👤 Vanessa</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Rollerskating activity.</div>
                                     </div>
                                 </label>
@@ -2433,7 +2494,7 @@
                                     <div class="class-details">
                                         <div class="class-name">TBD (PR)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Activity to be determined.</div>
                                     </div>
                                 </label>
@@ -2451,7 +2512,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Cooking grp2 (Canopy+)</div>
                                         <div class="class-instructor">👤 Amber</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Second cooking group for practical cooking skills.</div>
                                     </div>
                                 </label>
@@ -2469,7 +2530,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Hendrix Plushies Movie PIP</div>
                                         <div class="class-instructor">👤 Amber</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Personal Interest Project for plushie creation.</div>
                                     </div>
                                 </label>
@@ -2487,7 +2548,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Active Games</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Outdoor games including baseball, capture the flag, and variations of tag.</div>
                                     </div>
                                 </label>
@@ -2507,7 +2568,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Geometry Through Art and Design (Acorns)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn geometry through artistic projects and design.</div>
                                     </div>
                                 </label>
@@ -2520,12 +2581,12 @@
                                            data-time="1:00-1:50" 
                                            data-name="Afternoon Games" 
                                            data-instructor="Luke"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="Afternoon_Games_friday_Luke"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Afternoon Games</div>
+                                        <div class="class-name">Afternoon Games 🔗</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Various games and activities.</div>
                                     </div>
                                 </label>
@@ -2533,7 +2594,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="time-column">1:55-2:45</td>
+                        <td class="time-column">
+                            <span class="block-name">Block 5</span>
+                            <span class="time-range">1:55-2:45 pm</span>
+                        </td>
                         <td>
                             <div class="class-option commitment" style="border-left-color: #f44336;" onclick="toggleClass(this, 'monday', '1:55-2:45')">
                                 <label>
@@ -2548,7 +2612,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Test Prep (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Practice test-taking skills with CAT and ACT sample questions. Work on punctuation, fractions, and test strategies.</div>
                                     </div>
                                 </label>
@@ -2566,7 +2630,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Character Design (Acorns)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Create character designs through anatomy, shape language, expressions, and world building. Focus on human anatomy for artists.</div>
                                     </div>
                                 </label>
@@ -2579,12 +2643,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_monday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2602,7 +2666,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Theatre</div>
                                         <div class="class-instructor">👤 Jamie & Nancy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Theatre performance class with Jamie & Nancy.</div>
                                     </div>
                                 </label>
@@ -2620,7 +2684,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Debate Club (Canopy+)</div>
                                         <div class="class-instructor">👤 Jenique/Amber</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn debate skills and practice structured debates.</div>
                                     </div>
                                 </label>
@@ -2633,12 +2697,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="Film Studies/Anime Club (blocks 3-5)" 
                                            data-instructor="Jenique"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Film_Studies_Anime_Club_blocks_35_monday_Jenique"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Film Studies/Anime Club (blocks 3-5)</div>
+                                        <div class="class-name">Film Studies/Anime Club (blocks 3-5) 🔗</div>
                                         <div class="class-instructor">👤 Jenique</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Film analysis or anime club (alternating weeks).</div>
                                     </div>
                                 </label>
@@ -2651,12 +2715,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="D&D (cont'd) (FULL)" 
                                            data-instructor="Patrick"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="DandD_contd_FULL_monday_Patrick"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">D&D (cont'd) (FULL)</div>
+                                        <div class="class-name">D&D (cont'd) (FULL) 🔗</div>
                                         <div class="class-instructor">👤 Patrick</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Continuation of D&D session.</div>
                                     </div>
                                 </label>
@@ -2671,12 +2735,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="Cooking (Canopy+) (FULL)" 
                                            data-instructor="Amber"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Cooking_Canopyplus_FULL_tuesday_Amber"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Cooking (Canopy+) (FULL)</div>
+                                        <div class="class-name">Cooking (Canopy+) (FULL) 🔗</div>
                                         <div class="class-instructor">👤 Amber</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn practical cooking skills with simple, budget-friendly recipes under one hour. Currently full.</div>
                                     </div>
                                 </label>
@@ -2694,7 +2758,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Open Art (Saplings+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Drop-in art studio time for personal projects.</div>
                                     </div>
                                 </label>
@@ -2707,12 +2771,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_tuesday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2725,12 +2789,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="Lil Wizards (Saplings+) (FULL)" 
                                            data-instructor="Jamie"
-                                           data-type="commitment"
+                                           data-type="commitment" data-offering-group="Lil_Wizards_Saplingsplus_FULL_tuesday_Jamie"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">Lil Wizards (Saplings+) (FULL)</div>
+                                        <div class="class-name">Lil Wizards (Saplings+) (FULL) 🔗</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Wizard-themed role-playing game. Currently full.</div>
                                     </div>
                                 </label>
@@ -2750,7 +2814,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Test Prep (Canopy+)</div>
                                         <div class="class-instructor">👤 Anna</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Practice test-taking skills with CAT and ACT sample questions. Work on punctuation, fractions, and test strategies.</div>
                                     </div>
                                 </label>
@@ -2768,7 +2832,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Murals (Canopy+)</div>
                                         <div class="class-instructor">👤 Tyleen</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Create large-scale murals in art room and around campus. Advanced techniques in layout, lettering, and visual storytelling.</div>
                                     </div>
                                 </label>
@@ -2781,12 +2845,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_wednesday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2804,7 +2868,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Rock Band Group Practice (Canopy+)</div>
                                         <div class="class-instructor">👤 Heather/Nick/Tiff</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Full rock band group practice.</div>
                                     </div>
                                 </label>
@@ -2822,7 +2886,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Hip Hop</div>
                                         <div class="class-instructor">👤 Mel</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Hip hop dance class.</div>
                                     </div>
                                 </label>
@@ -2840,7 +2904,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Photography (PY)</div>
                                         <div class="class-instructor">👤 Jamie</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Photography class for playyard students.</div>
                                     </div>
                                 </label>
@@ -2860,7 +2924,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Still Life (cont)</div>
                                         <div class="class-instructor">👤 Ashlyn</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Continuation of Still Life drawing session.</div>
                                     </div>
                                 </label>
@@ -2878,7 +2942,7 @@
                                     <div class="class-details">
                                         <div class="class-name">ASL (Saplings+)</div>
                                         <div class="class-instructor">👤 Lacy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Learn American Sign Language together through deaf culture, vocabulary practice, and conversation.</div>
                                     </div>
                                 </label>
@@ -2891,12 +2955,12 @@
                                            data-time="1:55-2:45" 
                                            data-name="All things Lego" 
                                            data-instructor="Doug"
-                                           data-type="drop-in"
+                                           data-type="drop-in" data-offering-group="All_things_Lego_thursday_Doug"
                                            onclick="event.stopPropagation();">
                                     <div class="class-details">
-                                        <div class="class-name">All things Lego</div>
+                                        <div class="class-name">All things Lego 🔗</div>
                                         <div class="class-instructor">👤 Doug</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Free play in Lego room, brick films, and Lego robotics.</div>
                                     </div>
                                 </label>
@@ -2914,7 +2978,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Card games/board games</div>
                                         <div class="class-instructor">👤 Luke</div>
-                                        <span class="class-type type-drop-in">DROP-IN</span>
+                                        <span class="class-type type-drop-in">drop-in</span>
                                         <div class="class-description">Various card and board games.</div>
                                     </div>
                                 </label>
@@ -2932,7 +2996,7 @@
                                     <div class="class-details">
                                         <div class="class-name">Theatre</div>
                                         <div class="class-instructor">👤 Jamie & Nancy</div>
-                                        <span class="class-type type-commitment">COMMITMENT</span>
+                                        <span class="class-type type-commitment">commitment</span>
                                         <div class="class-description">Theatre performance class with Jamie & Nancy.</div>
                                     </div>
                                 </label>
@@ -2944,7 +3008,6 @@
                 </tbody>
             </table>
         </div>
-
         <div id="my-schedule" class="tab-content">
             <h2 style="text-align: center; color: #4CAF50;">Your Selected Classes</h2>
             <div id="myScheduleContent">
@@ -2954,13 +3017,6 @@
             </div>
         </div>
         
-        <div class="buttons">
-            <button class="save-btn" onclick="saveSchedule()">💾 Save Schedule to Database</button>
-            <button class="load-btn" onclick="loadSchedule()">📥 Load from Database</button>
-            <button class="export-btn" onclick="exportSchedule()">📄 Export as Text</button>
-            <button class="pdf-btn" onclick="exportPDF()">📕 Export as PDF</button>
-            <button class="print-btn" onclick="printSchedule('my-schedule')">🖨️ Print My Schedule</button>
-        </div>
     </div>
 
     <script>
@@ -2993,7 +3049,9 @@
             const checkbox = element.querySelector('input[type="checkbox"]');
             if (event.target !== checkbox) {
                 // If not clicking the checkbox itself, toggle it
-                const canSelect = checkSelectionLimit(day, time, checkbox.checked);
+                // Pass the CURRENT state (not the future state) to check if we're trying to check it
+                const isCurrentlyChecked = checkbox.checked;
+                const canSelect = checkSelectionLimit(day, time, isCurrentlyChecked);
                 if (canSelect) {
                     checkbox.checked = !checkbox.checked;
                     element.classList.toggle('selected', checkbox.checked);
@@ -3002,17 +3060,18 @@
             }
         }
 
-        // Check if selection limit is reached (max 2 per time block)
+        // Check if selection limit is reached (max 2 per time block per day)
         function checkSelectionLimit(day, time, isCurrentlyChecked) {
             if (isCurrentlyChecked) {
                 // Unchecking is always allowed
                 return true;
             }
             
-            // Count current selections for this time block on this day
+            // Count current selections for this specific time block on this specific day
             const selector = `input[type="checkbox"][data-day="${day}"][data-time="${time}"]:checked`;
             const checked = document.querySelectorAll(selector);
             
+            // Allow up to 2 selections (so block when trying to add the 3rd)
             if (checked.length >= 2) {
                 showStatus('⚠️ Maximum 2 classes per time block. Uncheck a class first.', 'warning');
                 return false;
@@ -3027,11 +3086,56 @@
                 const day = e.target.dataset.day;
                 const time = e.target.dataset.time;
                 const isChecked = e.target.checked;
+                const offeringGroup = e.target.dataset.offeringGroup;
                 
                 if (isChecked) {
-                    if (!checkSelectionLimit(day, time, false)) {
-                        e.target.checked = false;
-                        return;
+                    // Check if this is part of a multi-block offering
+                    if (offeringGroup) {
+                        // Select all blocks of this offering
+                        const groupCheckboxes = document.querySelectorAll(`input[data-offering-group="${offeringGroup}"]`);
+                        let canSelectAll = true;
+                        
+                        // Check if we can select all blocks (respect 2-per-block limit)
+                        groupCheckboxes.forEach(cb => {
+                            if (!cb.checked) {
+                                const cbDay = cb.dataset.day;
+                                const cbTime = cb.dataset.time;
+                                const selector = `input[type="checkbox"][data-day="${cbDay}"][data-time="${cbTime}"]:checked`;
+                                const checkedInBlock = document.querySelectorAll(selector).length;
+                                if (checkedInBlock >= 2) {
+                                    canSelectAll = false;
+                                }
+                            }
+                        });
+                        
+                        if (!canSelectAll) {
+                            e.target.checked = false;
+                            showStatus('⚠️ Cannot select this multi-block class - some blocks are full (max 2 per block)', 'warning');
+                            return;
+                        }
+                        
+                        // Select all blocks
+                        groupCheckboxes.forEach(cb => {
+                            cb.checked = true;
+                            cb.closest('.class-option').classList.add('selected');
+                        });
+                        
+                        showStatus(`✅ Selected all ${groupCheckboxes.length} blocks of this class`, 'success');
+                    } else {
+                        // Single block offering - check limit
+                        if (!checkSelectionLimit(day, time, false)) {
+                            e.target.checked = false;
+                            return;
+                        }
+                    }
+                } else {
+                    // Unchecking - if part of multi-block, uncheck all
+                    if (offeringGroup) {
+                        const groupCheckboxes = document.querySelectorAll(`input[data-offering-group="${offeringGroup}"]`);
+                        groupCheckboxes.forEach(cb => {
+                            cb.checked = false;
+                            cb.closest('.class-option').classList.remove('selected');
+                        });
                     }
                 }
                 
@@ -3132,11 +3236,11 @@
             }
             
             const timeBlocks = [
-                "10:00-10:45",
-                "10:50-11:35",
-                "12:10-12:55",
-                "1:00-1:50",
-                "1:55-2:45"
+                {time: "10:00-10:45", display: "Block 1<br>10:00-10:45 am"},
+                {time: "10:50-11:35", display: "Block 2<br>10:50-11:35 am"},
+                {time: "12:10-12:55", display: "Block 3<br>12:10-12:55 pm"},
+                {time: "1:00-1:50", display: "Block 4<br>1:00-1:50 pm"},
+                {time: "1:55-2:45", display: "Block 5<br>1:55-2:45 pm"}
             ];
             
             const days = {
@@ -3162,16 +3266,16 @@
                     <tbody>
             `;
             
-            timeBlocks.forEach(time => {
+            timeBlocks.forEach(block => {
                 tableHTML += '<tr>';
-                tableHTML += `<td class="time-cell">${time}</td>`;
+                tableHTML += `<td class="time-cell">${block.display}</td>`;
                 
                 Object.keys(days).forEach(day => {
                     tableHTML += '<td class="class-cell">';
                     
                     // Get all classes for this day/time
                     const dayClasses = Object.values(selectedClasses).filter(c => 
-                        c.day === day && c.time === time
+                        c.day === day && c.time === block.time
                     );
                     
                     dayClasses.forEach(cls => {
