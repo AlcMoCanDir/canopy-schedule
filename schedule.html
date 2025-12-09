@@ -1,402 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Session 3 Schedule Builder</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Session 3 Schedule Builder</title>
 
-<style>
-* { box-sizing: border-box; }
-
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background: #f6f6f6;
-}
-
-.container {
-    max-width: 1400px;
-    margin: auto;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #ddd;
-}
-
-/* HEADER -------------------------------------------------------- */
-h1 {
-    text-align: center;
-    color: #2a6f33;
-    margin-bottom: 10px;
-}
-
-/* STUDENT NAME -------------------------------------------------- */
-.student-info {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.student-info input {
-    border: 1px solid #2a6f33;
-    border-radius: 4px;
-    padding: 6px;
-    width: 260px;
-    font-size: 14px;
-}
-
-/* TABS ---------------------------------------------------------- */
-.tabs {
-    display: flex;
-    gap: 10px;
-    border-bottom: 2px solid #2a6f33;
-    margin-bottom: 10px;
-}
-.tab {
-    padding: 10px 20px;
-    border-radius: 6px 6px 0 0;
-    background: #dedede;
-    cursor: pointer;
-    border: none;
-}
-.tab.active { background: #2a6f33; color: white; }
-
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-/* SCHEDULE TABLE ------------------------------------------------ */
-.schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.schedule-table th, .schedule-table td {
-    border: 1px solid #ccc;
-    padding: 6px;
-    font-size: 11px;
-}
-.schedule-table th {
-    background: #2a6f33;
-    color: white;
-    font-size: 12px;
-    text-align: center;
-}
-.time-col {
-    width: 100px;
-    background: #2274cd;
-    color: white;
-    font-weight: bold;
-    text-align: center;
-}
-
-.lunch-row td {
-    background: #fff3d4;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* CLASS ITEMS --------------------------------------------------- */
-.class-option {
-    padding: 6px;
-    margin-bottom: 4px;
-    border-radius: 4px;
-    font-size: 11px;
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    cursor: pointer;
-}
-
-.commitment { background: #fff7b0; border-left: 4px solid #dac62c; }
-.dropin { background: #daf0ff; border-left: 4px solid #2274cd; }
-.private { background: #ffdede; border-left: 4px solid #c93d3d; }
-
-.class-option.selected {
-    border: 2px solid orange;
-    background: #fff2d5;
-}
-
-/* BUTTONS ------------------------------------------------------- */
-.action-buttons {
-    text-align: center;
-    margin-top: 25px;
-}
-
-.action-btn {
-    display: inline-block;
-    background: #2a6f33;
-    color: white;
-    padding: 10px 22px;
-    border-radius: 4px;
-    border: none;
-    font-size: 15px;
-    cursor: pointer;
-    margin: 0 6px;
-}
-
-.action-btn.secondary { background: #2274cd; }
-.action-btn.danger { background: #c93d3d; }
-
-/* PRINT FOOTER --------------------------------------------------- */
-#printMeta {
-    display:none;
-    font-size: 10px;
-    text-align: right;
-    margin-top: 10px;
-}
-
-/* PRINT MODE ---------------------------------------------------- */
-@media print {
-
-    body { background: white; padding: 0; zoom: 92%; }
-
-    .student-info,
-    .tabs,
-    .action-buttons {
-        display: none !important;
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f6f6f6;
     }
-
     .container {
-        border: none;
-        padding: 0;
-        box-shadow: none;
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid #ddd;
+    }
+    h1 { text-align: center; color: #2a6f33; margin-bottom: 10px; }
+
+    .student-info { text-align: center; margin-bottom: 20px; }
+    .student-info input {
+      border: 1px solid #2a6f33;
+      border-radius: 4px;
+      padding: 6px;
+      width: 260px;
+      font-size: 14px;
     }
 
+    .filters {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .filters label {
+      margin: 0 10px;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 2px solid #2a6f33;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+    .tab {
+      padding: 10px 20px;
+      border-radius: 6px 6px 0 0;
+      background: #dedede;
+      cursor: pointer;
+      border: none;
+    }
+    .tab.active { background: #2a6f33; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .schedule-table th, .schedule-table td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      font-size: 11px;
+    }
+    .schedule-table th {
+      background: #2a6f33;
+      color: white;
+      font-size: 12px;
+      text-align: center;
+    }
+    .time-col {
+      width: 100px;
+      background: #2274cd;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+    }
+    .lunch-row td {
+      background: #fff3d4;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .class-option {
+      padding: 6px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      font-size: 11px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .class-option.commitment { background: #fff7b0; border-left: 4px solid #dac62c; }
+    .class-option.dropin     { background: #daf0ff; border-left: 4px solid #2274cd; }
+    .class-option.private    { background: #ffdede; border-left: 4px solid #c93d3d; }
+    .class-option.selected   { border: 2px solid orange; background: #fff2d5; }
+
+    /* Tooltip styling */
+    .class-option .tooltip {
+      visibility: hidden;
+      background-color: rgba(0,0,0,0.8);
+      color: #fff;
+      text-align: left;
+      padding: 4px 8px;
+      border-radius: 4px;
+      position: absolute;
+      top: -5px;
+      left: 105%;
+      z-index: 10;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .class-option:hover .tooltip {
+      visibility: visible;
+    }
+
+    .action-buttons {
+      text-align: center;
+      margin-top: 25px;
+    }
+    .action-btn {
+      display: inline-block;
+      background: #2a6f33;
+      color: white;
+      padding: 10px 22px;
+      border-radius: 4px;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      margin: 0 6px;
+    }
+    .action-btn.secondary { background: #2274cd; }
+    .action-btn.danger { background: #c93d3d; }
+
+    #undo-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #555;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* PRINT FOOTER */
     #printMeta {
+      display:none;
+      font-size: 10px;
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    @media print {
+      body { background: white; padding: 0; zoom: 92%; }
+      .student-info, .tabs, .filters, .action-buttons, #undo-btn { display: none !important; }
+      .container { border: none; padding: 0; box-shadow: none; }
+      #printMeta {
         display: block !important;
         position: fixed;
         bottom: 10px;
         right: 20px;
         font-size: 10px;
         color: #444;
+      }
+      input[type="checkbox"] {
+        display: none !important;
+      }
     }
 
-    input[type="checkbox"] {
-        display: none !important;
+    /* Responsive */
+    @media (max-width: 600px) {
+      .tabs { flex-direction: column; }
+      .tab { width: 100%; text-align: center; }
+      .schedule-table th, .schedule-table td { font-size: 10px; padding: 4px; }
+      .time-col { width: 80px; }
     }
-}
-</style>
+  </style>
+
+  <!-- jsPDF + AutoTable from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 
 <body>
+  <button id="undo-btn" onclick="undo()">Undo</button>
 
-<div class="container">
-
+  <div class="container">
     <h1>Session 3 Schedule Builder</h1>
 
     <div class="student-info">
-        <input id="studentName" placeholder="Enter student name...">
+      <input id="studentName" placeholder="Enter student name...">
+    </div>
+
+    <div class="filters">
+      <label><input type="checkbox" class="filter-type" value="commitment" checked> Commitment</label>
+      <label><input type="checkbox" class="filter-type" value="dropin" checked> Drop‑in</label>
+      <label><input type="checkbox" class="filter-type" value="private" checked> Private</label>
     </div>
 
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('full')">Full Schedule</button>
-        <button class="tab" onclick="switchTab('my')">My Schedule</button>
+      <button class="tab active" onclick="switchTab('full')">Full Schedule</button>
+      <button class="tab" onclick="switchTab('my')">My Schedule</button>
     </div>
 
-    <!-- FULL SCHEDULE TAB -->
     <div id="full-tab" class="tab-content active"></div>
-
-    <!-- MY SCHEDULE TAB -->
     <div id="my-tab" class="tab-content">
-        <div id="myScheduleList"></div>
+      <div id="myScheduleList"></div>
     </div>
 
     <div class="action-buttons">
-        <button class="action-btn secondary" onclick="printSchedule()">Print Schedule</button>
-        <button class="action-btn danger" onclick="clearSchedule()">Clear My Schedule</button>
+      <button class="action-btn secondary" onclick="exportPDF()">Export PDF</button>
+      <button class="action-btn secondary" onclick="printSchedule()">Print Schedule</button>
+      <button class="action-btn danger" onclick="clearSchedule()">Clear My Schedule</button>
     </div>
 
-    <!-- PRINT FOOTER -->
     <div id="printMeta"></div>
+  </div>
 
-</div>
-
-<script>
-/* YOUR GOOGLE SCRIPT URL */
-const SCRIPT_URL =
- "https://script.google.com/macros/s/AKfycbx5e6r3_wPmvRcpHwcCiEy2zBAzGsNQcpRWQAApimGEKi6OdXZgDyz0SwllCZ-SUtk9/exec";
-
-
-/* MASTER DATA */
-const TIMES = ["10:00-10:45","10:50-11:35","11:35-12:05","12:10-12:55","1:00-1:50","1:55-2:45"];
-
-const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
-
-const classes = {
-    "10:00-10:45": {
-        Monday:"Chemistry Lab|commitment",
-        Tuesday:"Art Room|dropin",
-        Wednesday:"Math Group A|commitment",
-        Thursday:"1:1 Music Lesson|private",
+  <script>
+    /* MASTER DATA */
+    const TIMES = ["10:00-10:45","10:50-11:35","11:35-12:05","12:10-12:55","1:00-1:50","1:55-2:45"];
+    const DAYS  = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+    const classes = {
+      "10:00-10:45": {
+        Monday:"Chemistry Lab|commitment|Anna (JR)",
+        Tuesday:"Art Room|dropin|Tyleen (AR)",
+        Wednesday:"Math Group A|commitment|Anna (JR)",
+        Thursday:"1:1 Music Lesson|private|Music Teacher (MR)",
         Friday:""
-    },
-    "10:50-11:35": {
-        Monday:"Open Drawing|dropin",
-        Tuesday:"Civics|commitment",
-        Wednesday:"Writing Lab|commitment",
-        Thursday:"Free Reading|dropin",
-        Friday:"Piano Lesson|private"
-    },
-    "11:35-12:05": "Lunch",
-    "12:10-12:55": {
-        Monday:"Connection Circle|commitment",
-        Tuesday:"Active Games|dropin",
-        Wednesday:"Garden Club|dropin",
-        Thursday:"Japanese|commitment",
+      },
+      "10:50-11:35": {
+        Monday:"Open Drawing|dropin|Ashlyn (AR)",
+        Tuesday:"Civics|commitment|Jenique (CR)",
+        Wednesday:"Writing Lab|commitment|Elliott (Cafe)",
+        Thursday:"Free Reading|dropin|---",
+        Friday:"Piano Lesson|private|Piano Teacher (LR)"
+      },
+      "11:35-12:05": "Lunch",
+      "12:10-12:55": {
+        Monday:"Connection Circle|commitment|Anna (JR)",
+        Tuesday:"Active Games|dropin|---",
+        Wednesday:"Garden Club|dropin|Garden Teacher (max 8)",
+        Thursday:"Japanese|commitment|Japanese Teacher",
         Friday:""
-    },
-    "1:00-1:50": {
-        Monday:"Songwriting|commitment",
-        Tuesday:"Cooking|dropin",
-        Wednesday:"Open Art|dropin",
-        Thursday:"Photography|commitment",
+      },
+      "1:00-1:50": {
+        Monday:"Songwriting|commitment|Music Teacher",
+        Tuesday:"Cooking|dropin|Kitchen Teacher",
+        Wednesday:"Open Art|dropin|Art Teacher",
+        Thursday:"Photography|commitment|Photo Teacher",
         Friday:""
-    },
-    "1:55-2:45": {
-        Monday:"Sensory Lab|dropin",
-        Tuesday:"Test Prep|commitment",
-        Wednesday:"Theatre|commitment",
-        Thursday:"Debate Club|commitment",
+      },
+      "1:55-2:45": {
+        Monday:"Sensory Lab|dropin|Lab Teacher",
+        Tuesday:"Test Prep|commitment|Test Teacher",
+        Wednesday:"Theatre|commitment|Drama Teacher",
+        Thursday:"Debate Club|commitment|Debate Teacher",
         Friday:""
+      }
+    };
+
+    let selected = {};
+    let undoStack = [];
+
+    // Get filter state
+    function getFilterState() {
+      return Array.from(document.querySelectorAll('.filter-type'))
+        .filter(ch => ch.checked)
+        .map(ch => ch.value);
     }
-};
 
-/* STORED SELECTIONS */
-let selected = {};
+    /* RENDER FULL DISPLAY ---------------------------------------- */
+    function renderFull() {
+      const filters = getFilterState();
+      let html = `<table class="schedule-table">
+        <thead><tr>
+          <th class="time-col">Time</th>
+          ${DAYS.map(d=>`<th>${d}</th>`).join("")}
+        </tr></thead><tbody>`;
 
-/* RENDER FULL DISPLAY ---------------------------------------- */
-function renderFull() {
-    let html = `<table class="schedule-table">
-    <thead><tr>
-        <th class="time-col">Time</th>
-        ${DAYS.map(d=>`<th>${d}</th>`).join("")}
-    </tr></thead><tbody>`;
-
-    TIMES.forEach(time=>{
-        
-        if(time==="11:35-12:05"){
-            html += `<tr class="lunch-row">
-                    <td class="time-col">${time}</td>
-                    <td colspan="5">Lunch</td>
-                </tr>`;
-            return;
+      TIMES.forEach(time => {
+        if (time === "11:35-12:05") {
+          html += `<tr class="lunch-row"><td class="time-col">${time}</td><td colspan="5">Lunch</td></tr>`;
+          return;
         }
-
         html += `<tr><td class="time-col">${time}</td>`;
-        
-        DAYS.forEach(day=>{
-            const entry = classes[time][day];
-            if(!entry){
-                html+=`<td></td>`;
-                return;
-            }
-
-            const [name,type] = entry.split("|");
-            const key = `${time}-${day}`;
-            const isSel = selected[key]===name;
-
-            html += `<td>
-                <div class="class-option ${type} ${isSel?"selected":""}"
-                    onclick="choose('${key}','${name}')">
-                    <input type="checkbox" ${isSel?"checked":""} onchange="choose('${key}','${name}')">
-                    ${name}
+        DAYS.forEach(day => {
+          const entry = classes[time][day] || "";
+          if (!entry) {
+            html += `<td></td>`;
+          } else {
+            const [name, type, teacher] = entry.split("|");
+            if (!filters.includes(type)) {
+              html += `<td></td>`;
+            } else {
+              const key = `${time}-${day}`;
+              const isSel = selected[key] === name;
+              html += `<td>
+                <div class="class-option ${type} ${isSel?'selected':''}"
+                    onclick="choose('${key}','${name}')" >
+                  <input type="checkbox" ${isSel?'checked':''} onchange="choose('${key}','${name}')">
+                  ${name}
+                  <span class="tooltip">${teacher} · ${type.charAt(0).toUpperCase()+type.slice(1)}</span>
                 </div>
-            </td>`;
-        });
-
-        html += `</tr>`;
-    });
-
-    html+="</tbody></table>";
-    document.getElementById("full-tab").innerHTML = html;
-}
-
-
-/* RENDER MY CHOICES ---------------------------------------- */
-function renderMine() {
-    let html = `<table class="schedule-table">
-        <thead><tr><th>Time</th><th>Class</th></tr></thead>
-        <tbody>`;
-
-    TIMES.forEach(time=>{
-        html+=`<tr><td class="time-col">${time}</td><td>`;
-
-        let match = "";
-        Object.keys(selected).forEach(key=>{
-            if(key.startsWith(time)){
-                match = selected[key];
+              </td>`;
             }
+          }
         });
+        html += `</tr>`;
+      });
 
+      html += `</tbody></table>`;
+      document.getElementById("full-tab").innerHTML = html;
+    }
+
+    /* RENDER MY CHOICES ---------------------------------------- */
+    function renderMine() {
+      let html = `<table class="schedule-table">
+        <thead><tr><th>Time</th><th>Class</th></tr></thead><tbody>`;
+      TIMES.forEach(time => {
+        html += `<tr><td class="time-col">${time}</td><td>`;
+        let match = "";
+        Object.keys(selected).forEach(key => {
+          if (key.startsWith(time)) match = selected[key];
+        });
         html += match || "";
-        html+="</td></tr>";
+        html += `</td></tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById("myScheduleList").innerHTML = html;
+    }
+
+    /* SELECTION LOGIC + UNDO ----------------------------------- */
+    function choose(key, name) {
+      // record undo state
+      const prev = selected[key];
+      undoStack.push({ key, prevName: prev || null });
+      document.getElementById("undo-btn").style.display = 'inline-block';
+
+      selected[key] = name;
+      saveLocal();
+      renderFull();
+      renderMine();
+    }
+
+    function undo() {
+      const last = undoStack.pop();
+      if (!last) return;
+      if (last.prevName === null) {
+        delete selected[last.key];
+      } else {
+        selected[last.key] = last.prevName;
+      }
+      if (undoStack.length === 0) {
+        document.getElementById("undo-btn").style.display = 'none';
+      }
+      saveLocal();
+      renderFull();
+      renderMine();
+    }
+
+    /* TAB SWITCHING */
+    function switchTab(tab) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add("active");
+      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+      document.getElementById(`${tab}-tab`).classList.add("active");
+    }
+
+    /* SAVE TO LOCAL */
+    function saveLocal() {
+      localStorage.setItem("MY_SCHEDULE_DATA", JSON.stringify(selected));
+      localStorage.setItem("STUDENT_NAME", document.getElementById("studentName").value.trim());
+    }
+
+    /* RESTORE */
+    function restore() {
+      const stored = localStorage.getItem("MY_SCHEDULE_DATA");
+      if (stored) selected = JSON.parse(stored);
+      const sn = localStorage.getItem("STUDENT_NAME");
+      if (sn) document.getElementById("studentName").value = sn;
+    }
+
+    /* PRINT */
+    function printSchedule() {
+      const today = new Date().toLocaleDateString();
+      const footer = document.getElementById("printMeta");
+      footer.textContent = `Created ${today}`;
+      footer.style.display = "block";
+      setTimeout(() => window.print(), 200);
+    }
+
+    /* EXPORT PDF using jsPDF + AutoTable ------------------------ */
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'pt', 'a4');
+      const name = document.getElementById("studentName").value.trim() || "Schedule";
+
+      doc.text(`${name} — My Schedule`, 40, 40);
+      // Prepare data from current "My Schedule" table
+      const body = TIMES.map(time => {
+        const cls = (Object.keys(selected).find(k => k.startsWith(time)) || "").slice(time.length+1);
+        return [time, selected[time + "-" + cls] || ""];
+      });
+
+      doc.autoTable({
+        head: [['Time', 'Class']],
+        body: body,
+        startY: 60,
+        styles: { fontSize: 10 }
+      });
+      doc.save(`${name.replace(/\s+/g, "_")}_schedule.pdf`);
+    }
+
+    /* CLEAR */
+    function clearSchedule() {
+      if (!confirm("Clear your selected schedule?")) return;
+      selected = {};
+      undoStack = [];
+      document.getElementById("undo-btn").style.display = 'none';
+      saveLocal();
+      renderFull();
+      renderMine();
+    }
+
+    /* INIT */
+    restore();
+    renderFull();
+    renderMine();
+    document.querySelectorAll('.filter-type').forEach(cb => {
+      cb.addEventListener('change', renderFull);
     });
-
-    html+="</tbody></table>";
-    document.getElementById("myScheduleList").innerHTML = html;
-}
-
-
-/* SELECTION LOGIC ---------------------------------------- */
-function choose(key,name){
-    selected[key] = name;
-    saveLocal();
-    renderFull();
-    renderMine();
-}
-
-
-/* TAB SWITCHING */
-function switchTab(tab){
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add("active");
-    
-    document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
-    document.getElementById(`${tab}-tab`).classList.add("active");
-}
-
-
-/* SAVE TO LOCAL */
-function saveLocal(){
-    localStorage.setItem("MY_SCHEDULE_DATA",JSON.stringify(selected));
-    localStorage.setItem("STUDENT_NAME",document.getElementById("studentName").value.trim());
-}
-
-/* RESTORE */
-function restore(){
-    const stored = localStorage.getItem("MY_SCHEDULE_DATA");
-    if(stored) selected = JSON.parse(stored);
-
-    const sn = localStorage.getItem("STUDENT_NAME");
-    if(sn) document.getElementById("studentName").value = sn;
-}
-
-
-/* PRINT */
-function printSchedule(){
-    const today = new Date().toLocaleDateString();
-    const footer = document.getElementById("printMeta");
-    footer.textContent = `Created ${today}`;
-    footer.style.display = "block";
-
-    setTimeout(()=>window.print(),200);
-}
-
-
-/* RESET */
-function clearSchedule(){
-    if(!confirm("Clear your selected schedule?")) return;
-    selected = {};
-    saveLocal();
-    renderFull();
-    renderMine();
-}
-
-
-/* INIT */
-restore();
-renderFull();
-renderMine();
-
-</script>
+  </script>
 
 </body>
 </html>
