@@ -78,7 +78,7 @@ body { font-family: Arial; }
 </tr>
 
 <tr>
-    <td><strong>Block 2<br>11:00-11:45</strong></td>
+    <td><strong>Block 2<br>10:50-11:35</strong></td>
     <td id="monday-block2"></td>
     <td id="tuesday-block2"></td>
     <td id="wednesday-block2"></td>
@@ -86,13 +86,40 @@ body { font-family: Arial; }
     <td id="friday-block2"></td>
 </tr>
 
+ <tr>
+    <td><strong>Lunch<br>11:35-12:05</strong></td>
+    <td id="monday-lunch"></td>
+    <td id="tuesday-lunch"></td>
+    <td id="wednesday-lunch"></td>
+    <td id="thursday-lunch"></td>
+    <td id="friday-lunch"></td>
+</tr>
+
 <tr>
-    <td><strong>Block 3<br>1:00-2:00</strong></td>
+    <td><strong>Block 3<br>12:10-12:55</strong></td>
     <td id="monday-block3"></td>
     <td id="tuesday-block3"></td>
     <td id="wednesday-block3"></td>
     <td id="thursday-block3"></td>
     <td id="friday-block3"></td>
+</tr>
+    
+<tr>
+    <td><strong>Block 4<br>1:00-1:50</strong></td>
+    <td id="monday-block4"></td>
+    <td id="tuesday-block4"></td>
+    <td id="wednesday-block4"></td>
+    <td id="thursday-block4"></td>
+    <td id="friday-block4"></td>
+</tr>
+
+<tr>
+    <td><strong>Block 5<br>1:55-2:45</strong></td>
+    <td id="monday-block5"></td>
+    <td id="tuesday-block5"></td>
+    <td id="wednesday-block5"></td>
+    <td id="thursday-block5"></td>
+    <td id="friday-block5"></td>
 </tr>
 </tbody>
 </table>
@@ -164,7 +191,10 @@ function getBlock(time) {
     time = time.toLowerCase();
     if (time.includes("10")) return "block1";
     if (time.includes("11")) return "block2";
-    if (time.includes("1:")) return "block3";
+    if (time.includes("1:")) return "lunch";
+    if (time.includes("10")) return "block3";
+    if (time.includes("11")) return "block4";
+    if (time.includes("1:")) return "block5";
     return null;
 }
 
