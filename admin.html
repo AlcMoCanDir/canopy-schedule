@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canopy Program - Admin Dashboard</title>
+    <title>Unified Admin - Canopy Program</title>
     <style>
         * {
             box-sizing: border-box;
@@ -31,69 +31,40 @@
             margin-bottom: 10px;
         }
 
-        .admin-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .admin-header h2 {
-            margin: 0 0 10px 0;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 36px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin: 10px 0;
-        }
-
-        .stat-label {
+        h2 {
+            font-size: 18px;
             color: #666;
-            font-size: 14px;
+            text-align: center;
+            margin: 0 0 20px 0;
         }
 
         .tabs {
             display: flex;
-            gap: 10px;
+            border-bottom: 2px solid #ddd;
             margin-bottom: 20px;
-            border-bottom: 2px solid #667eea;
+            gap: 5px;
         }
         
         .tab {
-            padding: 10px 20px;
-            background-color: #e0e0e0;
-            border: none;
+            padding: 12px 24px;
             cursor: pointer;
+            background-color: #f0f0f0;
+            border: none;
+            border-bottom: 3px solid transparent;
             font-size: 16px;
+            transition: all 0.3s;
             border-radius: 8px 8px 0 0;
-            transition: background-color 0.3s;
         }
         
         .tab:hover {
-            background-color: #d0d0d0;
+            background-color: #e0e0e0;
         }
         
         .tab.active {
-            background-color: #667eea;
-            color: white;
+            background-color: white;
+            border-bottom: 3px solid #2196F3;
+            color: #2196F3;
+            font-weight: bold;
         }
         
         .tab-content {
@@ -104,57 +75,112 @@
             display: block;
         }
 
-        .controls {
-            display: flex;
-            gap: 10px;
+        .status-message {
+            padding: 12px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .stat-card p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .search-box {
+            display: flex;
+            gap: 10px;
             flex: 1;
-            min-width: 250px;
-            padding: 10px;
-            border: 2px solid #667eea;
+            max-width: 600px;
+            flex-wrap: wrap;
+        }
+
+        .search-box input,
+        .search-box select {
+            padding: 8px;
+            border: 2px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box select {
+            min-width: 120px;
         }
 
         .btn {
             padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
             transition: all 0.3s;
+            font-weight: 600;
         }
 
         .btn-primary {
-            background-color: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #5568d3;
-        }
-
-        .btn-success {
             background-color: #4CAF50;
             color: white;
         }
 
-        .btn-success:hover {
+        .btn-primary:hover {
             background-color: #45a049;
-        }
-
-        .btn-danger {
-            background-color: #f44336;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #da190b;
         }
 
         .btn-secondary {
@@ -166,86 +192,76 @@
             background-color: #0b7dda;
         }
 
-        /* Student List Table */
-        .student-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .student-table th,
-        .student-table td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        .student-table th {
-            background-color: #667eea;
+        .btn-danger {
+            background-color: #f44336;
             color: white;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
         }
 
-        .student-table tr:hover {
-            background-color: #f5f5f5;
+        .btn-danger:hover {
+            background-color: #da190b;
         }
 
-        .student-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .action-link {
-            color: #2196F3;
-            text-decoration: none;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        .action-link:hover {
-            text-decoration: underline;
-        }
-
-        /* Class Enrollment Table */
-        .class-enrollment-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .class-enrollment-table th,
-        .class-enrollment-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+        .btn-small {
+            padding: 6px 12px;
             font-size: 12px;
         }
 
-        .class-enrollment-table th {
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .data-table th {
             background-color: #4CAF50;
             color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
             position: sticky;
             top: 0;
+            z-index: 10;
         }
 
-        .enrollment-count {
-            text-align: center;
+        .data-table td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .data-table tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
             font-weight: bold;
+            text-transform: uppercase;
         }
 
-        .enrollment-low {
-            color: #f44336;
+        .type-commitment {
+            background-color: #ffcdd2;
+            color: #c62828;
         }
 
-        .enrollment-medium {
-            color: #ff9800;
+        .type-drop-in {
+            background-color: #c8e6c9;
+            color: #2e7d32;
         }
 
-        .enrollment-high {
-            color: #4CAF50;
+        .type-private {
+            background-color: #ffe0b2;
+            color: #e65100;
         }
 
-        /* Student Detail Modal */
         .modal {
             display: none;
             position: fixed;
@@ -254,152 +270,113 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.4);
-            overflow-y: auto;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
         }
-        
+
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
+            background-color: #fefefe;
+            margin: 2% auto;
             padding: 0;
             border-radius: 8px;
             width: 90%;
-            max-width: 900px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 800px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
-        
+
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #4CAF50;
             color: white;
             border-radius: 8px 8px 0 0;
         }
-        
-        .modal-title {
-            font-size: 24px;
+
+        .modal-header h2 {
             margin: 0;
-        }
-        
-        .modal-close {
-            font-size: 28px;
-            font-weight: bold;
             color: white;
-            cursor: pointer;
-            background: none;
-            border: none;
+            text-align: left;
         }
-        
-        .modal-close:hover {
-            opacity: 0.8;
-        }
-        
+
         .modal-body {
             padding: 20px;
-            line-height: 1.6;
         }
 
-        .schedule-day-section {
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .schedule-day-header {
-            background-color: #667eea;
-            color: white;
-            padding: 10px;
-            font-weight: bold;
-        }
-
-        .schedule-class-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+        .modal-footer {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 8px 8px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
         }
 
-        .schedule-class-item:last-child {
-            border-bottom: none;
-        }
-
-        .class-time {
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
             font-weight: bold;
-            color: #2196F3;
-            min-width: 120px;
+            cursor: pointer;
         }
 
-        .class-info-detail {
-            flex: 1;
+        .close:hover {
+            opacity: 0.8;
         }
 
-        .class-type-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
-        }
-
-        .badge-commitment {
-            background-color: #fff9c4;
-            color: #856404;
-        }
-
-        .badge-drop-in {
-            background-color: #e3f2fd;
-            color: #0c5460;
-        }
-
-        .badge-private {
-            background-color: #ffebee;
-            color: #721c24;
-        }
-
-        .sync-status {
-            text-align: center;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
+            color: #333;
             font-size: 14px;
         }
 
-        .sync-status.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
         }
 
-        .sync-status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
         }
 
-        .sync-status.warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
         .loading {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: #999;
         }
 
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
 
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .empty-state {
@@ -413,108 +390,126 @@
             margin-bottom: 20px;
         }
 
-        .filter-group {
+        .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
         }
 
-        .filter-select {
-            padding: 8px;
-            border: 2px solid #667eea;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .export-section {
+        .student-detail {
             background-color: #f8f9fa;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-bottom: 15px;
         }
 
-        .export-section h3 {
-            margin-top: 0;
-            color: #667eea;
+        .student-detail h3 {
+            margin: 0 0 10px 0;
+            color: #2196F3;
         }
 
-        .export-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .class-list {
+            margin-top: 10px;
         }
 
-        @media print {
-            .controls, .tabs, .btn, .admin-header, .export-section {
-                display: none !important;
+        .class-item {
+            background-color: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 3px solid #2196F3;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
             }
 
-            .modal-header {
-                background: white !important;
-                color: black !important;
-                border-bottom: 2px solid #667eea;
+            .header-actions {
+                flex-direction: column;
             }
 
-            .student-table, .class-enrollment-table {
-                font-size: 10px;
+            .search-box {
+                max-width: 100%;
+                flex-direction: column;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="admin-header">
-            <h1>🔐 Admin Dashboard</h1>
-            <h2>Canopy Program Schedule Management</h2>
-            <p>Manage student schedules, view enrollment, and export reports</p>
-        </div>
+        <h1>🎓 Canopy Program - Admin Dashboard</h1>
+        <h2>Session 3 (2025-2026)</h2>
 
-        <div id="syncStatus" class="sync-status" style="display: none;"></div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Students</div>
-                <div class="stat-number" id="totalStudents">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Enrollments</div>
-                <div class="stat-number" id="totalEnrollments">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Most Popular Class</div>
-                <div class="stat-number" id="popularClass" style="font-size: 16px;">-</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Avg Classes/Student</div>
-                <div class="stat-number" id="avgClasses">0</div>
-            </div>
-        </div>
+        <div id="statusMessage" class="status-message"></div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('students')">👥 All Students</button>
-            <button class="tab" onclick="switchTab('enrollment')">📊 Class Enrollment</button>
-            <button class="tab" onclick="switchTab('settings')">⚙️ Settings</button>
+            <button class="tab active" onclick="switchTab('students')">👥 Students</button>
+            <button class="tab" onclick="switchTab('offerings')">📚 Offerings</button>
         </div>
 
-        <!-- Students Tab -->
-        <div id="students-tab" class="tab-content active">
-            <div class="controls">
-                <input type="text" class="search-box" id="studentSearch" placeholder="🔍 Search students by name..." onkeyup="filterStudents()">
-                <button class="btn btn-primary" onclick="loadAllStudents()">🔄 Refresh Data</button>
-                <button class="btn btn-success" onclick="exportToCSV()">📥 Export to CSV</button>
+        <!-- STUDENTS TAB -->
+        <div id="students" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="totalStudents">0</h3>
+                    <p>Total Students</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h3 id="totalEnrollments">0</h3>
+                    <p>Total Enrollments</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <h3 id="avgClasses">0</h3>
+                    <p>Avg Classes/Student</p>
+                </div>
             </div>
 
-            <div id="studentListContainer">
-                <div class="loading">Loading student data</div>
+            <div class="header-actions">
+                <div class="search-box">
+                    <input type="text" id="searchStudents" placeholder="Search students...">
+                </div>
+                <button class="btn btn-secondary" onclick="loadStudents()">🔄 Refresh</button>
+            </div>
+
+            <div id="studentsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading students...</p>
+                </div>
             </div>
         </div>
 
-        <!-- Enrollment Tab -->
-        <div id="enrollment-tab" class="tab-content">
-            <div class="controls">
-                <div class="filter-group">
-                    <select class="filter-select" id="dayFilter" onchange="filterEnrollment()">
+        <!-- OFFERINGS TAB -->
+        <div id="offerings" class="tab-content">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="totalOfferings">0</h3>
+                    <p>Total Offerings</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h3 id="totalInstructors">0</h3>
+                    <p>Instructors</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <h3 id="commitmentCount">0</h3>
+                    <p>Commitment Classes</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <h3 id="dropInCount">0</h3>
+                    <p>Drop-in Classes</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="search-box">
+                    <input type="text" id="searchOfferings" placeholder="Search offerings...">
+                    <select id="filterDay">
                         <option value="">All Days</option>
                         <option value="monday">Monday</option>
                         <option value="tuesday">Tuesday</option>
@@ -522,52 +517,110 @@
                         <option value="thursday">Thursday</option>
                         <option value="friday">Friday</option>
                     </select>
-                    <select class="filter-select" id="typeFilter" onchange="filterEnrollment()">
+                    <select id="filterTime">
+                        <option value="">All Times</option>
+                        <option value="10:00-10:45">Block 1</option>
+                        <option value="10:50-11:35">Block 2</option>
+                        <option value="12:10-12:55">Block 3</option>
+                        <option value="1:00-1:50">Block 4</option>
+                        <option value="1:55-2:45">Block 5</option>
+                    </select>
+                    <select id="filterType">
                         <option value="">All Types</option>
                         <option value="commitment">Commitment</option>
-                        <option value="drop-in">Drop-In</option>
+                        <option value="drop-in">Drop-in</option>
                         <option value="private">Private</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" onclick="loadEnrollmentData()">🔄 Refresh Enrollment</button>
-                <button class="btn btn-success" onclick="exportEnrollmentToCSV()">📥 Export Enrollment</button>
+                <button class="btn btn-primary" onclick="showAddOfferingModal()">+ Add Offering</button>
             </div>
 
-            <div id="enrollmentContainer">
-                <div class="loading">Loading enrollment data</div>
-            </div>
-        </div>
-
-        <!-- Settings Tab -->
-        <div id="settings-tab" class="tab-content">
-            <h2>⚙️ Google Apps Script Configuration</h2>
-            
-            <div style="margin: 20px 0; padding: 15px; background-color: #d4edda; border-radius: 4px; border: 1px solid #c3e6cb;">
-                <h3 style="margin-top: 0; color: #155724;">✅ Apps Script Configured</h3>
-                <p style="color: #155724;">Your system is configured to use Google Apps Script Web App.</p>
-                <p style="color: #155724; font-family: monospace; font-size: 12px; word-break: break-all;">
-                    <strong>URL:</strong> https://script.google.com/macros/s/AKfycbzB-54jxC7BrC0a6m-tlmxEkphp9FsRMhvpehWmxuLW5y9DloRoKqfs7ojmPYtb02h9/exec
-                </p>
-            </div>
-
-            <button class="btn btn-secondary" onclick="testConnection()">🔌 Test Connection</button>
-
-            <div class="export-section">
-                <h3>📊 Bulk Operations</h3>
-                <div class="export-options">
-                    <button class="btn btn-success" onclick="exportAllData()">Export All Data (JSON)</button>
-                    <button class="btn btn-success" onclick="exportToCSV()">Export Students (CSV)</button>
-                    <button class="btn btn-secondary" onclick="exportClassRosters()">Export Class Rosters</button>
+            <div id="offeringsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading offerings...</p>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border-radius: 4px;">
-                <h3 style="margin-top: 0;">📝 Quick Links</h3>
-                <ul>
-                    <li><a href="https://docs.google.com/spreadsheets/d/11bgpCgNimTHcnqMWb97TBM6s7tmUofpRkDCBSlM5gMY/edit" target="_blank">Open Google Sheet</a></li>
-                    <li><a href="https://script.google.com/home" target="_blank">Google Apps Script Dashboard</a></li>
-                    <li><a href="schedule.html" target="_blank">Student Schedule Builder</a></li>
-                </ul>
+    <!-- Offering Modal -->
+    <div id="offeringModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeOfferingModal()">&times;</span>
+                <h2 id="offeringModalTitle">Add New Offering</h2>
+            </div>
+            <div class="modal-body">
+                <form id="offeringForm">
+                    <input type="hidden" id="offeringId">
+                    
+                    <div class="form-group">
+                        <label for="offeringName">Offering Name *</label>
+                        <input type="text" id="offeringName" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="instructor">Instructor *</label>
+                            <input type="text" id="instructor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" placeholder="e.g., JR, AR, CS">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="day">Day *</label>
+                            <select id="day" required>
+                                <option value="">Select day</option>
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="time">Time Block *</label>
+                            <select id="time" required>
+                                <option value="">Select time</option>
+                                <option value="10:00-10:45">Block 1 (10:00-10:45 am)</option>
+                                <option value="10:50-11:35">Block 2 (10:50-11:35 am)</option>
+                                <option value="12:10-12:55">Block 3 (12:10-12:55 pm)</option>
+                                <option value="1:00-1:50">Block 4 (1:00-1:50 pm)</option>
+                                <option value="1:55-2:45">Block 5 (1:55-2:45 pm)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="offeringType">Type *</label>
+                            <select id="offeringType" required>
+                                <option value="">Select type</option>
+                                <option value="commitment">Commitment</option>
+                                <option value="drop-in">Drop-in</option>
+                                <option value="private">Private</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="level">Student Level</label>
+                            <input type="text" id="level" placeholder="e.g., Canopy+, Saplings+">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" placeholder="What is this class about?"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeOfferingModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveOffering()">Save</button>
             </div>
         </div>
     </div>
@@ -576,607 +629,468 @@
     <div id="studentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="modalStudentName">Student Schedule</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <span class="close" onclick="closeStudentModal()">&times;</span>
+                <h2 id="studentModalTitle">Student Details</h2>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Student schedule details will be loaded here -->
+            <div class="modal-body" id="studentModalBody">
+                <!-- Student details will be inserted here -->
             </div>
-            <div style="padding: 20px; text-align: center; border-top: 1px solid #ddd;">
-                <button class="btn btn-primary" onclick="editStudentSchedule()">✏️ Edit Schedule</button>
-                <button class="btn btn-secondary" onclick="printStudentSchedule()">🖨️ Print Schedule</button>
-                <button class="btn btn-danger" onclick="deleteStudentSchedule()">🗑️ Delete Schedule</button>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="deleteStudent()">Delete Student</button>
+                <button class="btn btn-secondary" onclick="editStudentSchedule()">✏️ Edit Schedule</button>
+                <button class="btn btn-primary" onclick="closeStudentModal()">Close</button>
             </div>
         </div>
     </div>
 
     <script>
-        // GOOGLE APPS SCRIPT WEB APP CONFIGURATION
+        // Apps Script Web App URL
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB-54jxC7BrC0a6m-tlmxEkphp9FsRMhvpehWmxuLW5y9DloRoKqfs7ojmPYtb02h9/exec';
+        
+        // Data storage
+        let allStudents = [];
+        let filteredStudents = [];
+        let allOfferings = [];
+        let filteredOfferings = [];
+        let currentStudent = null;
+        let currentOfferingId = null;
 
-        let allStudentsData = [];
-        let currentStudentName = '';
-
-        // Check if config is set
-        function isConfigured() {
-            return true; // Apps Script URL is configured
-        }
-
-        // Show status message
-        function showStatus(message, type = 'success') {
-            const statusEl = document.getElementById('syncStatus');
-            statusEl.textContent = message;
-            statusEl.className = `sync-status ${type}`;
-            statusEl.style.display = 'block';
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 5000);
-        }
-
-        // Load all students from Google Sheets via Apps Script
-        async function loadAllStudents() {
-            console.log('🔄 loadAllStudents called');
-            console.log('isConfigured:', isConfigured());
-            console.log('APPS_SCRIPT_URL:', APPS_SCRIPT_URL);
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
             
-            if (!isConfigured()) {
-                console.error('❌ Not configured!');
-                showStatus('Please configure your Apps Script URL first!', 'warning');
-                switchTab('settings');
-                return;
+            // Load data if needed
+            if (tabName === 'students' && allStudents.length === 0) {
+                loadStudents();
+            } else if (tabName === 'offerings' && allOfferings.length === 0) {
+                loadOfferings();
             }
+        }
 
+        // ==================== STUDENTS FUNCTIONS ====================
+
+        async function loadStudents() {
             try {
-                console.log('📡 Fetching student data...');
-                document.getElementById('studentListContainer').innerHTML = '<div class="loading">Loading student data</div>';
+                document.getElementById('studentsContainer').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading students...</p></div>';
                 
-                const url = `${APPS_SCRIPT_URL}?action=loadAll`;
-                console.log('Fetch URL:', url);
-                
-                const response = await fetch(url);
-                console.log('Response status:', response.status);
-                console.log('Response OK:', response.ok);
-                
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=loadAll`);
                 const result = await response.json();
-                console.log('API Result:', result);
                 
                 if (result.success && result.students) {
-                    allStudentsData = result.students;
-                    console.log('✅ Loaded', allStudentsData.length, 'students');
-                    
-                    updateStatistics();
-                    renderStudentTable();
-                    showStatus('✅ Loaded ' + allStudentsData.length + ' students', 'success');
+                    allStudents = result.students;
+                    filteredStudents = [...allStudents];
+                    renderStudentsTable();
+                    updateStudentStats();
+                    showStatus(`✅ Loaded ${allStudents.length} students`, 'success');
                 } else {
-                    console.log('⚠️ No students found or API returned error');
-                    allStudentsData = [];
-                    renderStudentTable();
-                    showStatus('No student data found', 'warning');
+                    allStudents = [];
+                    filteredStudents = [];
+                    renderStudentsTable();
                 }
-                
             } catch (error) {
-                console.error('❌ Error loading students:', error);
-                console.error('Error details:', error.message);
-                console.error('Error stack:', error.stack);
+                console.error('Error loading students:', error);
                 showStatus('❌ Error loading students: ' + error.message, 'error');
-                document.getElementById('studentListContainer').innerHTML = 
-                    '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Error loading student data</p><p style="font-size: 12px; color: #999;">Check console (F12) for details</p></div>';
+                document.getElementById('studentsContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Error loading students</p></div>';
             }
         }
 
-        // Update statistics
-        function updateStatistics() {
-            const totalStudents = allStudentsData.length;
-            const totalEnrollments = allStudentsData.reduce((sum, student) => sum + student.totalClasses, 0);
-            const avgClasses = totalStudents > 0 ? (totalEnrollments / totalStudents).toFixed(1) : 0;
+        function renderStudentsTable() {
+            const container = document.getElementById('studentsContainer');
             
-            // Find most popular class
-            const classCount = {};
-            allStudentsData.forEach(student => {
-                try {
-                    const classes = JSON.parse(student.classes);
-                    classes.forEach(cls => {
-                        const key = cls.offeringName;
-                        classCount[key] = (classCount[key] || 0) + 1;
-                    });
-                } catch (e) {
-                    console.error('Error parsing classes:', e);
-                }
-            });
-            
-            let popularClass = '-';
-            let maxCount = 0;
-            for (const [offeringName, count] of Object.entries(classCount)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    popularClass = offeringName;
-                }
-            }
-            
-            document.getElementById('totalStudents').textContent = totalStudents;
-            document.getElementById('totalEnrollments').textContent = totalEnrollments;
-            document.getElementById('popularClass').textContent = popularClass;
-            document.getElementById('avgClasses').textContent = avgClasses;
-        }
-
-        // Render student table
-        function renderStudentTable() {
-            const container = document.getElementById('studentListContainer');
-            
-            if (allStudentsData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <h3>No Students Found</h3>
-                        <p>No student schedules have been saved yet.</p>
-                    </div>
-                `;
+            if (filteredStudents.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><h3>No students found</h3></div>';
                 return;
             }
-            
+
             let html = `
-                <table class="student-table">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Student Name</th>
-                            <th>Total Classes</th>
-                            <th>Last Updated</th>
-                            <th>Actions</th>
+                            <th style="width: 100px;">Total Classes</th>
+                            <th style="width: 180px;">Last Updated</th>
+                            <th style="width: 150px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
-            
-            allStudentsData.forEach(student => {
-                const formattedDate = new Date(student.timestamp).toLocaleString();
+
+            filteredStudents.forEach(student => {
+                const date = student.timestamp ? new Date(student.timestamp).toLocaleDateString() : 'N/A';
                 html += `
                     <tr>
                         <td><strong>${student.name}</strong></td>
-                        <td>${student.totalClasses}</td>
-                        <td>${formattedDate}</td>
+                        <td>${student.totalClasses || 0}</td>
+                        <td style="font-size: 12px;">${date}</td>
                         <td>
-                            <a href="#" class="action-link" onclick="viewStudentSchedule('${student.name}'); return false;">View Schedule</a>
-                            <a href="#" class="action-link" onclick="openScheduleBuilder('${student.name}'); return false;">Edit</a>
-                            <a href="#" class="action-link" onclick="deleteStudent('${student.name}'); return false;">Delete</a>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-small" onclick="viewStudent('${student.name}')">View</button>
+                                <button class="btn btn-primary btn-small" onclick="editStudent('${student.name}')">Edit</button>
+                            </div>
                         </td>
                     </tr>
                 `;
             });
-            
+
             html += '</tbody></table>';
             container.innerHTML = html;
         }
 
-        // Filter students by search
+        function updateStudentStats() {
+            document.getElementById('totalStudents').textContent = allStudents.length;
+            
+            const totalEnrollments = allStudents.reduce((sum, s) => sum + (s.totalClasses || 0), 0);
+            document.getElementById('totalEnrollments').textContent = totalEnrollments;
+            
+            const avg = allStudents.length > 0 ? Math.round(totalEnrollments / allStudents.length) : 0;
+            document.getElementById('avgClasses').textContent = avg;
+        }
+
         function filterStudents() {
-            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
-            const rows = document.querySelectorAll('.student-table tbody tr');
-            
-            rows.forEach(row => {
-                const studentName = row.cells[0].textContent.toLowerCase();
-                row.style.display = studentName.includes(searchTerm) ? '' : 'none';
-            });
+            const search = document.getElementById('searchStudents').value.toLowerCase();
+            filteredStudents = allStudents.filter(s => s.name.toLowerCase().includes(search));
+            renderStudentsTable();
         }
 
-        // View student schedule
-        function viewStudentSchedule(studentName) {
-            currentStudentName = studentName;
-            const student = allStudentsData.find(s => s.name === studentName);
+        function viewStudent(studentName) {
+            const student = allStudents.find(s => s.name === studentName);
+            if (!student) return;
             
-            if (!student) {
-                showStatus('Student not found', 'error');
-                return;
-            }
+            currentStudent = student;
+            document.getElementById('studentModalTitle').textContent = `${studentName}'s Schedule`;
             
-            const modal = document.getElementById('studentModal');
-            const modalTitle = document.getElementById('modalStudentName');
-            const modalBody = document.getElementById('modalBody');
-            
-            modalTitle.textContent = studentName + "'s Schedule";
-            
+            let classes = [];
             try {
-                const classes = JSON.parse(student.classes);
-                
-                // Group classes by day
-                const classesByDay = {};
+                classes = JSON.parse(student.classes || '[]');
+            } catch (e) {
+                console.error('Error parsing classes:', e);
+            }
+            
+            let html = `
+                <div class="student-detail">
+                    <p><strong>Name:</strong> ${studentName}</p>
+                    <p><strong>Total Classes:</strong> ${student.totalClasses || 0}</p>
+                    <p><strong>Last Updated:</strong> ${student.timestamp ? new Date(student.timestamp).toLocaleString() : 'N/A'}</p>
+                </div>
+                <h3>Selected Classes:</h3>
+                <div class="class-list">
+            `;
+            
+            if (classes.length === 0) {
+                html += '<p style="color: #999; text-align: center;">No classes selected</p>';
+            } else {
                 classes.forEach(cls => {
-                    if (!classesByDay[cls.day]) {
-                        classesByDay[cls.day] = [];
-                    }
-                    classesByDay[cls.day].push(cls);
+                    const dayName = cls.day.charAt(0).toUpperCase() + cls.day.slice(1);
+                    html += `
+                        <div class="class-item">
+                            <strong>${cls.name || cls.offeringName}</strong><br>
+                            <span style="font-size: 12px; color: #666;">
+                                👤 ${cls.instructor} | 📅 ${dayName} | ⏰ ${cls.time}
+                            </span>
+                        </div>
+                    `;
                 });
-                
-                // Sort classes within each day by time
-                for (const day in classesByDay) {
-                    classesByDay[day].sort((a, b) => a.time.localeCompare(b.time));
-                }
-                
-                const dayNames = {
-                    monday: 'Monday',
-                    tuesday: 'Tuesday',
-                    wednesday: 'Wednesday',
-                    thursday: 'Thursday',
-                    friday: 'Friday'
-                };
-                
-                let html = `
-                    <div style="margin-bottom: 20px;">
-                        <strong>Total Classes:</strong> ${student.totalClasses}<br>
-                        <strong>Last Updated:</strong> ${new Date(student.timestamp).toLocaleString()}
-                    </div>
-                `;
-                
-                const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-                days.forEach(day => {
-                    if (classesByDay[day] && classesByDay[day].length > 0) {
-                        html += `
-                            <div class="schedule-day-section">
-                                <div class="schedule-day-header">${dayNames[day]}</div>
-                        `;
-                        
-                        classesByDay[day].forEach(cls => {
-                            html += `
-                                <div class="schedule-class-item">
-                                    <div class="class-time">${cls.time}</div>
-                                    <div class="class-info-detail">
-                                        <strong>${cls.offeringName}</strong><br>
-                                        <small>${cls.instructor}</small>
-                                    </div>
-                                    <span class="class-type-badge badge-${cls.type}">${cls.type}</span>
-                                </div>
-                            `;
-                        });
-                        
-                        html += '</div>';
-                    }
-                });
-                
-                modalBody.innerHTML = html;
-                modal.style.display = 'block';
-                
-            } catch (error) {
-                console.error('Error parsing student classes:', error);
-                modalBody.innerHTML = '<p>Error loading student schedule</p>';
-                modal.style.display = 'block';
+            }
+            
+            html += '</div>';
+            document.getElementById('studentModalBody').innerHTML = html;
+            document.getElementById('studentModal').style.display = 'block';
+        }
+
+        function editStudent(studentName) {
+            window.open(`schedule_v2.html?student=${encodeURIComponent(studentName)}`, '_blank');
+        }
+
+        function editStudentSchedule() {
+            if (currentStudent) {
+                window.open(`schedule_v2.html?student=${encodeURIComponent(currentStudent.name)}`, '_blank');
             }
         }
 
-        // Delete student
-        async function deleteStudent(studentName) {
-            if (confirm(`Are you sure you want to delete ${studentName}'s schedule?`)) {
+        async function deleteStudent() {
+            if (!currentStudent) return;
+            
+            if (confirm(`Are you sure you want to delete ${currentStudent.name}'s schedule?`)) {
                 try {
-                    showStatus('Deleting schedule...', 'warning');
-                    
                     const response = await fetch(APPS_SCRIPT_URL, {
                         method: 'POST',
-                        redirect: 'follow',
-                        headers: {
-                            'Content-Type': 'text/plain',
-                        },
                         body: JSON.stringify({
                             action: 'delete',
-                            studentName: studentName
+                            studentName: currentStudent.name
                         })
                     });
                     
                     const result = await response.json();
-                    
                     if (result.success) {
-                        // Reload the data
-                        await loadAllStudents();
-                        showStatus('✅ Schedule deleted successfully!', 'success');
+                        showStatus('✅ Student deleted successfully', 'success');
+                        closeStudentModal();
+                        loadStudents();
                     } else {
-                        showStatus('❌ Error: ' + (result.message || 'Failed to delete'), 'error');
+                        showStatus('❌ Error: ' + result.message, 'error');
                     }
-                    
                 } catch (error) {
-                    console.error('Error deleting student:', error);
-                    showStatus('❌ Connection error. Make sure your Apps Script is deployed with "Anyone" access.', 'error');
+                    showStatus('❌ Error deleting student: ' + error.message, 'error');
                 }
             }
         }
 
-        // Delete student schedule (from modal)
-        function deleteStudentSchedule() {
-            deleteStudent(currentStudentName);
-            closeModal();
+        function closeStudentModal() {
+            document.getElementById('studentModal').style.display = 'none';
+            currentStudent = null;
         }
 
-        // Load enrollment data
-        function loadEnrollmentData() {
-            const container = document.getElementById('enrollmentContainer');
+        // ==================== OFFERINGS FUNCTIONS ====================
+
+        async function loadOfferings() {
+            try {
+                document.getElementById('offeringsContainer').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading offerings...</p></div>';
+                
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=loadOfferings`);
+                const result = await response.json();
+                
+                if (result.success && result.offerings) {
+                    allOfferings = result.offerings;
+                    filteredOfferings = [...allOfferings];
+                    renderOfferingsTable();
+                    updateOfferingsStats();
+                    showStatus(`✅ Loaded ${allOfferings.length} offerings`, 'success');
+                } else {
+                    allOfferings = [];
+                    filteredOfferings = [];
+                    renderOfferingsTable();
+                    showStatus('📚 No offerings found. Add your first offering!', 'success');
+                }
+            } catch (error) {
+                console.error('Error loading offerings:', error);
+                showStatus('❌ Error loading offerings: ' + error.message, 'error');
+                document.getElementById('offeringsContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Error loading offerings</p></div>';
+            }
+        }
+
+        function renderOfferingsTable() {
+            const container = document.getElementById('offeringsContainer');
             
-            if (allStudentsData.length === 0) {
-                loadAllStudents().then(() => {
-                    if (allStudentsData.length > 0) {
-                        renderEnrollmentTable();
-                    }
-                });
+            if (filteredOfferings.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No offerings found</h3><p>Add your first offering to get started!</p></div>';
                 return;
             }
-            
-            renderEnrollmentTable();
-        }
 
-        // Render enrollment table
-        function renderEnrollmentTable() {
-            const container = document.getElementById('enrollmentContainer');
-            
-            // Build enrollment data structure
-            const enrollmentMap = {};
-            
-            allStudentsData.forEach(student => {
-                try {
-                    const classes = JSON.parse(student.classes);
-                    classes.forEach(cls => {
-                        const key = `${cls.day}-${cls.time}-${cls.offeringName}`;
-                        if (!enrollmentMap[key]) {
-                            enrollmentMap[key] = {
-                                offeringName: cls.offeringName,
-                                instructor: cls.instructor,
-                                type: cls.type,
-                                day: cls.day,
-                                time: cls.time,
-                                students: []
-                            };
-                        }
-                        enrollmentMap[key].students.push(student.name);
-                    });
-                } catch (e) {
-                    console.error('Error parsing student classes:', e);
-                }
-            });
-            
-            // Convert to array and sort
-            const enrollmentArray = Object.values(enrollmentMap).sort((a, b) => {
-                // Sort by day, then time, then offering name
-                const dayOrder = {monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5};
-                if (dayOrder[a.day] !== dayOrder[b.day]) {
-                    return dayOrder[a.day] - dayOrder[b.day];
-                }
-                if (a.time !== b.time) {
-                    return a.time.localeCompare(b.time);
-                }
-                return a.offeringName.localeCompare(b.offeringName);
-            });
-            
             let html = `
-                <table class="class-enrollment-table">
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Class Name</th>
-                            <th>Instructor</th>
-                            <th>Type</th>
-                            <th>Day</th>
-                            <th>Time</th>
-                            <th>Enrollment</th>
-                            <th>Students</th>
+                            <th style="width: 250px;">Offering Name</th>
+                            <th style="width: 120px;">Instructor</th>
+                            <th style="width: 80px;">Day</th>
+                            <th style="width: 100px;">Time</th>
+                            <th style="width: 80px;">Type</th>
+                            <th style="width: 60px;">Loc</th>
+                            <th style="width: 120px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
-            
-            const dayNames = {
-                monday: 'Monday',
-                tuesday: 'Tuesday',
-                wednesday: 'Wednesday',
-                thursday: 'Thursday',
-                friday: 'Friday'
-            };
-            
-            enrollmentArray.forEach(cls => {
-                const count = cls.students.length;
-                let enrollmentClass = 'enrollment-low';
-                if (count >= 5) enrollmentClass = 'enrollment-medium';
-                if (count >= 10) enrollmentClass = 'enrollment-high';
-                
+
+            filteredOfferings.forEach(offering => {
+                const dayName = offering.day.charAt(0).toUpperCase() + offering.day.slice(1);
                 html += `
                     <tr>
-                        <td><strong>${cls.offeringName}</strong></td>
-                        <td>${cls.instructor}</td>
-                        <td><span class="class-type-badge badge-${cls.type}">${cls.type}</span></td>
-                        <td>${dayNames[cls.day]}</td>
-                        <td>${cls.time}</td>
-                        <td class="enrollment-count ${enrollmentClass}">${count}</td>
-                        <td style="font-size: 11px;">${cls.students.join(', ')}</td>
+                        <td><strong>${offering.name}</strong></td>
+                        <td>${offering.instructor}</td>
+                        <td>${dayName}</td>
+                        <td style="font-size: 11px;">${offering.time}</td>
+                        <td><span class="type-badge type-${offering.type}">${offering.type}</span></td>
+                        <td>${offering.location || '-'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-small" onclick="editOffering(${offering.id})">Edit</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteOffering(${offering.id})">Delete</button>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
-            
+
             html += '</tbody></table>';
             container.innerHTML = html;
         }
 
-        // Filter enrollment
-        function filterEnrollment() {
-            const dayFilter = document.getElementById('dayFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
-            const rows = document.querySelectorAll('.class-enrollment-table tbody tr');
+        function updateOfferingsStats() {
+            document.getElementById('totalOfferings').textContent = allOfferings.length;
             
-            rows.forEach(row => {
-                let showRow = true;
+            const uniqueInstructors = new Set(allOfferings.map(o => o.instructor));
+            document.getElementById('totalInstructors').textContent = uniqueInstructors.size;
+            
+            const commitmentCount = allOfferings.filter(o => o.type === 'commitment').length;
+            document.getElementById('commitmentCount').textContent = commitmentCount;
+            
+            const dropInCount = allOfferings.filter(o => o.type === 'drop-in').length;
+            document.getElementById('dropInCount').textContent = dropInCount;
+        }
+
+        function filterOfferings() {
+            const search = document.getElementById('searchOfferings').value.toLowerCase();
+            const day = document.getElementById('filterDay').value;
+            const time = document.getElementById('filterTime').value;
+            const type = document.getElementById('filterType').value;
+
+            filteredOfferings = allOfferings.filter(offering => {
+                const matchesSearch = !search || 
+                    offering.name.toLowerCase().includes(search) ||
+                    offering.instructor.toLowerCase().includes(search) ||
+                    (offering.description && offering.description.toLowerCase().includes(search));
                 
-                if (dayFilter) {
-                    const dayCell = row.cells[3].textContent.toLowerCase();
-                    if (!dayCell.includes(dayFilter)) showRow = false;
-                }
-                
-                if (typeFilter) {
-                    const typeCell = row.cells[2].textContent.toLowerCase();
-                    if (!typeCell.includes(typeFilter)) showRow = false;
-                }
-                
-                row.style.display = showRow ? '' : 'none';
+                const matchesDay = !day || offering.day === day;
+                const matchesTime = !time || offering.time === time;
+                const matchesType = !type || offering.type === type;
+
+                return matchesSearch && matchesDay && matchesTime && matchesType;
             });
+
+            renderOfferingsTable();
         }
 
-        // Open schedule builder for a student
-        function openScheduleBuilder(studentName) {
-            const url = `schedule.html?student=${encodeURIComponent(studentName)}`;
-            window.open(url, '_blank');
-            showStatus('Opening schedule builder for ' + studentName, 'success');
+        function showAddOfferingModal() {
+            currentOfferingId = null;
+            document.getElementById('offeringModalTitle').textContent = 'Add New Offering';
+            document.getElementById('offeringForm').reset();
+            document.getElementById('offeringId').value = '';
+            document.getElementById('offeringModal').style.display = 'block';
         }
 
-        // Edit student schedule
-        function editStudentSchedule() {
-            const studentName = currentStudentName;
-            if (!studentName) {
-                showStatus('No student selected', 'error');
+        function editOffering(id) {
+            const offering = allOfferings.find(o => o.id === id);
+            if (!offering) return;
+
+            currentOfferingId = id;
+            document.getElementById('offeringModalTitle').textContent = 'Edit Offering';
+            document.getElementById('offeringId').value = id;
+            document.getElementById('offeringName').value = offering.name;
+            document.getElementById('instructor').value = offering.instructor;
+            document.getElementById('location').value = offering.location || '';
+            document.getElementById('day').value = offering.day;
+            document.getElementById('time').value = offering.time;
+            document.getElementById('offeringType').value = offering.type;
+            document.getElementById('level').value = offering.level || '';
+            document.getElementById('description').value = offering.description || '';
+            
+            document.getElementById('offeringModal').style.display = 'block';
+        }
+
+        async function saveOffering() {
+            const form = document.getElementById('offeringForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
                 return;
             }
-            
-            // Open the schedule builder with the student's name as a parameter
-            const url = `schedule.html?student=${encodeURIComponent(studentName)}`;
-            window.open(url, '_blank');
-            showStatus('Opening schedule builder for ' + studentName, 'success');
-        }
 
-        // Switch tabs
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            
-            const tabMap = {
-                'students': 0,
-                'enrollment': 1,
-                'settings': 2
+            const offeringData = {
+                name: document.getElementById('offeringName').value,
+                instructor: document.getElementById('instructor').value,
+                location: document.getElementById('location').value,
+                day: document.getElementById('day').value,
+                time: document.getElementById('time').value,
+                type: document.getElementById('offeringType').value,
+                level: document.getElementById('level').value,
+                description: document.getElementById('description').value
             };
-            
-            document.querySelectorAll('.tab')[tabMap[tab]].classList.add('active');
-            document.getElementById(tab + '-tab').classList.add('active');
-            
-            // Load data when switching to tabs
-            if (tab === 'students' && allStudentsData.length === 0) {
-                loadAllStudents();
-            } else if (tab === 'enrollment') {
-                loadEnrollmentData();
-            }
-        }
 
-        // Close modal
-        function closeModal() {
-            document.getElementById('studentModal').style.display = 'none';
-        }
-
-        // Print student schedule
-        function printStudentSchedule() {
-            window.print();
-        }
-
-        // Test connection
-        async function testConnection() {
             try {
-                showStatus('Testing connection...', 'warning');
+                if (currentOfferingId) {
+                    offeringData.id = currentOfferingId;
+                    offeringData.action = 'updateOffering';
+                } else {
+                    offeringData.action = 'saveOffering';
+                }
                 
-                const url = `${APPS_SCRIPT_URL}?action=loadAll`;
-                const response = await fetch(url);
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(offeringData)
+                });
+                
                 const result = await response.json();
                 
                 if (result.success) {
-                    showStatus('✅ Connection successful! Found ' + (result.students?.length || 0) + ' students.', 'success');
+                    showStatus(currentOfferingId ? '✅ Offering updated!' : '✅ Offering added!', 'success');
+                    closeOfferingModal();
+                    loadOfferings();
                 } else {
-                    showStatus('❌ Connection failed: ' + (result.message || 'Unknown error'), 'error');
+                    showStatus('❌ Error: ' + result.message, 'error');
                 }
             } catch (error) {
-                showStatus('❌ Connection error: ' + error.message, 'error');
+                showStatus('❌ Error saving: ' + error.message, 'error');
             }
         }
 
-        // Export to CSV
-        function exportToCSV() {
-            if (allStudentsData.length === 0) {
-                showStatus('No data to export', 'warning');
-                return;
-            }
-            
-            let csv = 'Student Name,Total Classes,Last Updated,Classes\n';
-            
-            allStudentsData.forEach(student => {
-                const classes = student.classes.replace(/"/g, '""');
-                csv += `"${student.name}",${student.totalClasses},"${student.timestamp}","${classes}"\n`;
-            });
-            
-            downloadFile(csv, 'canopy-students-' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv');
-            showStatus('✅ Exported to CSV', 'success');
-        }
+        async function deleteOffering(id) {
+            const offering = allOfferings.find(o => o.id === id);
+            if (!offering) return;
 
-        // Export enrollment to CSV
-        function exportEnrollmentToCSV() {
-            const rows = document.querySelectorAll('.class-enrollment-table tbody tr');
-            
-            if (rows.length === 0) {
-                showStatus('No enrollment data to export', 'warning');
-                return;
-            }
-            
-            let csv = 'Class Name,Instructor,Type,Day,Time,Enrollment,Students\n';
-            
-            rows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    const cells = row.cells;
-                    const students = cells[6].textContent.replace(/"/g, '""');
-                    csv += `"${cells[0].textContent}","${cells[1].textContent}","${cells[2].textContent}","${cells[3].textContent}","${cells[4].textContent}",${cells[5].textContent},"${students}"\n`;
+            if (confirm(`Delete "${offering.name}"?`)) {
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'deleteOffering',
+                            offeringId: id
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        showStatus('✅ Offering deleted!', 'success');
+                        loadOfferings();
+                    } else {
+                        showStatus('❌ Error: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    showStatus('❌ Error deleting: ' + error.message, 'error');
                 }
-            });
-            
-            downloadFile(csv, 'canopy-enrollment-' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv');
-            showStatus('✅ Exported enrollment to CSV', 'success');
-        }
-
-        // Export all data as JSON
-        function exportAllData() {
-            const data = {
-                exportDate: new Date().toISOString(),
-                students: allStudentsData
-            };
-            
-            const json = JSON.stringify(data, null, 2);
-            downloadFile(json, 'canopy-all-data-' + new Date().toISOString().split('T')[0] + '.json', 'application/json');
-            showStatus('✅ Exported all data', 'success');
-        }
-
-        // Export class rosters
-        function exportClassRosters() {
-            // This would generate individual rosters per class
-            showStatus('Class rosters feature coming soon!', 'warning');
-        }
-
-        // Download file helper
-        function downloadFile(content, filename, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('studentModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
             }
         }
 
-        // Load configuration on page load
-        function init() {
-            console.log('🚀 Admin Dashboard Initializing...');
-            console.log('Window loaded successfully');
-            console.log('APPS_SCRIPT_URL:', APPS_SCRIPT_URL);
-            
-            // Auto-load student data
-            loadAllStudents();
-            
-            console.log('✅ Init complete');
+        function closeOfferingModal() {
+            document.getElementById('offeringModal').style.display = 'none';
+            currentOfferingId = null;
         }
 
-        // Initialize on page load
-        window.onload = init;
+        // ==================== UTILITY FUNCTIONS ====================
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.style.display = 'block';
+
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Event listeners
+        document.getElementById('searchStudents').addEventListener('input', filterStudents);
+        document.getElementById('searchOfferings').addEventListener('input', filterOfferings);
+        document.getElementById('filterDay').addEventListener('change', filterOfferings);
+        document.getElementById('filterTime').addEventListener('change', filterOfferings);
+        document.getElementById('filterType').addEventListener('change', filterOfferings);
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Initialize - load students first
+        window.onload = function() {
+            loadStudents();
+        };
     </script>
 </body>
 </html>
