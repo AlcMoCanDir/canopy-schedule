@@ -12,7 +12,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
 .grid-table th, .grid-table td { border:1px solid #ddd; padding:4px; vertical-align:top; }
 .class-option { font-size:12px; background:#f5f5f5; padding:4px; margin-bottom:4px; cursor:pointer; border-left:4px solid #2196f3; }
 .class-option.selected { background:#e9f3ff; border-left-color:#004da8; }
-.class-option.full-class { opacity:0.55; background:#ffd4d4; border-left-color:#c30000; }
+.class-option.full-class { opacity:0.55; background:#ffd4d4; border-left-color:#c30000; cursor:not-allowed; }
 .roster-display { font-size:10px; margin-top:5px; color:#444; }
 #status { padding:6px; text-align:center; font-size:13px; }
 </style>
@@ -45,6 +45,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
 
 <tbody>
 
+<!-- BLOCK 1 -->
 <tr>
     <td><strong>Block 1<br>10:00-10:45</strong></td>
     <td id="monday-block1"></td>
@@ -54,6 +55,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
     <td id="friday-block1"></td>
 </tr>
 
+<!-- BLOCK 2 -->
 <tr>
     <td><strong>Block 2<br>10:50-11:35</strong></td>
     <td id="monday-block2"></td>
@@ -63,6 +65,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
     <td id="friday-block2"></td>
 </tr>
 
+<!-- LUNCH -->
 <tr>
     <td><strong>Lunch<br>11:35-12:05</strong></td>
     <td id="monday-lunch"></td>
@@ -72,6 +75,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
     <td id="friday-lunch"></td>
 </tr>
 
+<!-- BLOCK 3 -->
 <tr>
     <td><strong>Block 3<br>12:10-12:55</strong></td>
     <td id="monday-block3"></td>
@@ -81,6 +85,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
     <td id="friday-block3"></td>
 </tr>
 
+<!-- BLOCK 4 -->
 <tr>
     <td><strong>Block 4<br>1:00-1:50</strong></td>
     <td id="monday-block4"></td>
@@ -90,6 +95,7 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
     <td id="friday-block4"></td>
 </tr>
 
+<!-- BLOCK 5 -->
 <tr>
     <td><strong>Block 5<br>1:55-2:45</strong></td>
     <td id="monday-block5"></td>
@@ -105,14 +111,16 @@ body { font-family: Arial, sans-serif; margin:0; background:#fafafa; }
 </div>
 
 <script>
+// ---------------- API ----------------
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxOHs6TelVM347BqlaydmtiDaNSLeQwJkUCLRruP0HoHmTFSvrof-yA1q4A8wSKLqxt/exec";
 
+// Data structures
 let offerings = [];
 let selected = {};
 
 
-// Loads offerings from Sheets
+// ---------------- Load Data ----------------
 async function loadOfferings() {
     const res = await fetch(API_URL + "?action=loadOfferings");
     const data = await res.json();
@@ -122,143 +130,135 @@ async function loadOfferings() {
 }
 
 
-// Render offerings where they belong
+// ---------------- Render Grid ----------------
 function drawOfferings() {
     clearCells();
-    offerings.forEach(o => {
-        const id = mapCell(o);
-        if (!id) return;
-        const el = document.createElement("div");
-        el.className = "class-option";
-        el.dataset.id = o.id;
-        el.dataset.day = o.day;
-        el.dataset.time = o.time;
-        el.dataset.capacity = Number(o.capacity) || null;
-        el.onclick = () => toggleOffering(el);
 
-        el.innerHTML = `
+    offerings.forEach(o => {
+        const cell = mapCell(o);
+        if (!cell) return;
+
+        const div = document.createElement("div");
+        div.dataset.id = o.id;
+        div.dataset.day = o.day;
+        div.dataset.time = o.time;
+        div.dataset.capacity = Number(o.capacity) || null;
+
+        div.className = "class-option";
+        div.onclick = () => toggleOffering(div);
+
+        div.innerHTML = `
             <strong>${o.name}</strong><br>
             👤 ${o.instructor ?? ""}<br>
             <div class="roster-display">${formatRoster(o)}</div>
         `;
-        document.getElementById(id).appendChild(el);
+
+        document.getElementById(cell).appendChild(div);
     });
+
     enforceRules();
 }
 
 
-// Maps (day + time) to grid cell
+// ---------------- Mapping ----------------
 function mapCell(o) {
-    const b = getBlock(o.time);
-    if (!b) return null;
-    return `${o.day.toLowerCase()}-${b}`;
+    const block = getBlock(o.time);
+    if (!block) return null;
+    return `${o.day.toLowerCase()}-${block}`;
 }
 
-
-// Clean fixed mapping
 function getBlock(timeString) {
-    const t = timeString.toLowerCase();
+    const t = timeString.replace(/\s+/g, "").toLowerCase();
+
     if (t.includes("10:00") || t.includes("10:45")) return "block1";
     if (t.includes("10:50") || t.includes("11:35")) return "block2";
-    if (t.includes("11:35") || t.includes("12:05")) return "lunch";
+    if (t.includes("11:35-12:05")) return "lunch";
     if (t.includes("12:10") || t.includes("12:55")) return "block3";
-    if (t.includes("1:00") && !t.includes("55")) return "block4";
+    if (t.includes("1:00") && !t.includes("1:55")) return "block4";
     if (t.includes("1:55") || t.includes("2:45")) return "block5";
     return null;
 }
 
 
-// Wipes grid to blank
-function clearCells() {
-    document.querySelectorAll("[id*='block'], [id*='lunch']").forEach(el => el.innerHTML = "");
-}
-
-
-// Toggle selection
+// ---------------- Selection ----------------
 function toggleOffering(el) {
-    const id = Number(el.dataset.id);
-    const bucket = blockKey(el.dataset.day, el.dataset.time);
+    if (el.classList.contains("full-class")) return;
 
-    if (!selected[bucket]) selected[bucket] = [];
-    const arr = selected[bucket];
+    const id = Number(el.dataset.id);
+    const key = blockKey(el.dataset.day, el.dataset.time);
+
+    if (!selected[key]) selected[key] = [];
+    const arr = selected[key];
 
     if (arr.includes(id)) {
-        selected[bucket] = arr.filter(x => x !== id);
-        el.classList.remove("selected");
+        selected[key] = arr.filter(x => x !== id);
     } else {
         arr.push(id);
-        el.classList.add("selected");
     }
 
     enforceRules();
 }
 
-
-// Force rules after any change
-function enforceRules() {
-    enforceMaxTwoPerBlock();
-    enforceSeatCaps();
-}
-
-
-// Enforces max 2 per block rule
-function enforceMaxTwoPerBlock() {
-    Object.keys(selected).forEach(block => {
-        const arr = selected[block];
-        if (arr.length > 2) {
-            arr.splice(2);   // drop extras
-            show("Max 2 per block reached");
-        }
-    });
-
-    repaintSelections();
-}
-
-
-// Enforces capacity locking
-function enforceSeatCaps() {
-    offerings.forEach(o => {
-        if (!o.capacity) return;
-        const full = (o.roster ?? []).length >= Number(o.capacity);
-
-        document.querySelectorAll(`[data-id='${o.id}']`).forEach(el => {
-            if (full) el.classList.add("full-class");
-            else el.classList.remove("full-class");
-        });
-    });
-}
-
-
-// Sync UI with selected structure
-function repaintSelections() {
-    document.querySelectorAll(".class-option").forEach(el => {
-        const b = blockKey(el.dataset.day, el.dataset.time);
-        const id = Number(el.dataset.id);
-        el.classList.toggle("selected", selected[b]?.includes(id));
-    });
-}
-
-
-// Block grouping key
 function blockKey(day, time) {
     return day + "-" + getBlock(time);
 }
 
 
-// Format roster display
+// ---------------- Enforcement ----------------
+function enforceRules() {
+    enforceMaxTwo();
+    enforceCapacity();
+    repaintSelections();
+}
+
+function enforceMaxTwo() {
+    Object.keys(selected).forEach(key => {
+        if (selected[key].length > 2) {
+            selected[key].splice(2);
+            show("Max 2 classes per block reached");
+        }
+    });
+}
+
+function enforceCapacity() {
+    offerings.forEach(o => {
+        if (!o.capacity) return;
+        const overfull = (o.roster?.length ?? 0) >= Number(o.capacity);
+
+        document.querySelectorAll(`[data-id='${o.id}']`).forEach(el => {
+            el.classList.toggle("full-class", overfull);
+        });
+    });
+}
+
+function repaintSelections() {
+    document.querySelectorAll(".class-option").forEach(el => {
+        const key = blockKey(el.dataset.day, el.dataset.time);
+        const id = Number(el.dataset.id);
+        el.classList.toggle("selected", selected[key]?.includes(id));
+    });
+}
+
+
+// ---------------- Helpers ----------------
+function clearCells() {
+    document.querySelectorAll("[id*='block'], [id*='lunch']")
+        .forEach(el => el.innerHTML = "");
+}
+
 function formatRoster(o) {
     if (!o.roster || !o.roster.length) return "No students yet";
     return "Enrolled: " + o.roster.join(", ");
 }
 
 
-// Save schedule
+// ---------------- Save & Load ----------------
 async function saveSchedule() {
     const name = document.getElementById("studentName").value.trim();
     if (!name) return alert("Enter your name first");
 
     const ids = [];
-    Object.values(selected).forEach(a => ids.push(...a));
+    Object.values(selected).forEach(arr => ids.push(...arr));
 
     await fetch(API_URL, {
         method: "POST",
@@ -269,11 +269,9 @@ async function saveSchedule() {
         })
     });
 
-    show("Saved successfully");
+    show("Saved!");
 }
 
-
-// Load schedule
 async function loadSchedule() {
     const name = document.getElementById("studentName").value.trim();
     if (!name) return alert("Enter your name first");
@@ -285,30 +283,31 @@ async function loadSchedule() {
 
     if (data.success && data.offerings) {
         data.offerings.forEach(o => {
-            const b = blockKey(o.day, o.time);
-            if (!selected[b]) selected[b] = [];
-            selected[b].push(o.id);
+            const key = blockKey(o.day, o.time);
+            if (!selected[key]) selected[key] = [];
+            selected[key].push(o.id);
         });
 
         repaintSelections();
         enforceRules();
-        show("Loaded");
+        show("Loaded!");
     } else {
-        show("No schedule found");
+        show("No schedule on record");
     }
 }
 
 
-// Flash status
+// ---------------- Status ----------------
 function show(msg) {
-    const s = document.getElementById("status");
-    s.textContent = msg;
-    setTimeout(() => s.textContent = "", 2000);
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    setTimeout(() => el.textContent = "", 2000);
 }
 
 
-// Load data
+// Auto-load
 document.addEventListener("DOMContentLoaded", loadOfferings);
+
 </script>
 
 </body>
