@@ -93,8 +93,8 @@
       border-radius: 4px;
       font-size: 11px;
       display: flex;
-      gap: 4px;
       align-items: center;
+      justify-content: space-between;
       cursor: pointer;
       position: relative;
     }
@@ -103,23 +103,11 @@
     .class-option.private    { background: #ffdede; border-left: 4px solid #c93d3d; }
     .class-option.selected   { border: 2px solid orange; background: #fff2d5; }
 
-    /* Tooltip styling */
-    .class-option .tooltip {
-      visibility: hidden;
-      background-color: rgba(0,0,0,0.8);
-      color: #fff;
-      text-align: left;
-      padding: 4px 8px;
-      border-radius: 4px;
-      position: absolute;
-      top: -5px;
-      left: 105%;
-      z-index: 10;
-      white-space: nowrap;
-      font-size: 11px;
-    }
-    .class-option:hover .tooltip {
-      visibility: visible;
+    .info-icon {
+      margin-left: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #555;
     }
 
     .action-buttons {
@@ -154,6 +142,38 @@
       display: none;
     }
 
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      overflow: auto;
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 6px;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+    }
+
     /* PRINT FOOTER */
     #printMeta {
       display:none;
@@ -179,7 +199,7 @@
       }
     }
 
-    /* Responsive */
+    /* Responsive tweaks */
     @media (max-width: 600px) {
       .tabs { flex-direction: column; }
       .tab { width: 100%; text-align: center; }
@@ -228,67 +248,74 @@
     <div id="printMeta"></div>
   </div>
 
+  <!-- Modal HTML -->
+  <div id="infoModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle"></h3>
+      <p><strong>Teacher:</strong> <span id="modalTeacher"></span></p>
+      <p><strong>Program / Room:</strong> <span id="modalProgRoom"></span></p>
+      <p><strong>Notes:</strong> <span id="modalNotes"></span></p>
+      <p id="modalDesc"></p>
+    </div>
+  </div>
+
   <script>
     /* MASTER DATA */
     const TIMES = ["10:00-10:45","10:50-11:35","11:35-12:05","12:10-12:55","1:00-1:50","1:55-2:45"];
     const DAYS  = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+    // Example enhanced class data:
     const classes = {
       "10:00-10:45": {
-        Monday:"Chemistry Lab|commitment|Anna (JR)",
-        Tuesday:"Art Room|dropin|Tyleen (AR)",
-        Wednesday:"Math Group A|commitment|Anna (JR)",
-        Thursday:"1:1 Music Lesson|private|Music Teacher (MR)",
-        Friday:""
+        Monday:   { title: "Chemistry Lab", type: "commitment", teacher: "Anna", room: "JR", program: "Canopy+", notes: "Lab work & experiments", description: "Hands‑on chemistry experiments, all safety gear provided." },
+        Tuesday:  { title: "Art Room", type: "dropin", teacher: "Tyleen", room: "AR", program: "Saplings+", notes: "Drop‑in open art", description: "Creative open‑studio art time."},
+        Wednesday:{ title: "Math Group A", type: "commitment", teacher: "Anna", room: "JR", program: "Canopy+", notes: "Algebra & Geometry, full‑year", description: "Focused math curriculum covering algebra & geometry."},
+        Thursday: { title: "1:1 Music Lesson", type: "private", teacher: "Music Teacher", room: "MR", program: "Private", notes: "Individual lesson", description: "One‑on‑one music lesson, instrument & level per student."},
+        Friday:   null
       },
       "10:50-11:35": {
-        Monday:"Open Drawing|dropin|Ashlyn (AR)",
-        Tuesday:"Civics|commitment|Jenique (CR)",
-        Wednesday:"Writing Lab|commitment|Elliott (Cafe)",
-        Thursday:"Free Reading|dropin|---",
-        Friday:"Piano Lesson|private|Piano Teacher (LR)"
+        Monday:   { title: "Open Drawing", type: "dropin", teacher: "Ashlyn", room: "AR", program: "Saplings+", notes: "Casual drawing drop‑in", description: "Free drawing time — bring your sketchbook."},
+        Tuesday:  { title: "Civics", type: "commitment", teacher: "Jenique", room: "CR", program: "Canopy+", notes: "Social studies", description: "Civics and social science."},
+        Wednesday:{ title: "Writing Lab", type: "commitment", teacher: "Elliott", room: "Cafe", program: "Canopy+", notes: "Writing & composition", description: "Creative & academic writing workshop."},
+        Thursday: { title: "Free Reading", type: "dropin", teacher: "---", room: "LR", program: "Saplings+", notes: "Quiet reading time", description: "Bring a book or borrow one from the shelf."},
+        Friday:   { title: "Piano Lesson", type: "private", teacher: "Piano Teacher", room: "LR", program: "Private", notes: "Individual lesson", description: "One‑on‑one piano instruction."}
       },
       "11:35-12:05": "Lunch",
       "12:10-12:55": {
-        Monday:"Connection Circle|commitment|Anna (JR)",
-        Tuesday:"Active Games|dropin|---",
-        Wednesday:"Garden Club|dropin|Garden Teacher (max 8)",
-        Thursday:"Japanese|commitment|Japanese Teacher",
-        Friday:""
+        Monday:   { title: "Connection Circle", type: "commitment", teacher: "Anna", room: "JR", program: "Canopy+", notes: "Group bonding", description: "Circle time for community building."},
+        Tuesday:  { title: "Active Games", type: "dropin", teacher: "---", room: "GYM", program: "Saplings+", notes: "All‑inclusive games", description: "Fun group games and movement."},
+        Wednesday:{ title: "Garden Club", type: "dropin", teacher: "Garden Teacher", room: "Garden", program: "Saplings+", notes: "Max 8 students", description: "Gardening activities and nature exploration."},
+        Thursday: { title: "Japanese", type: "commitment", teacher: "Japanese Teacher", room: "JR", program: "Canopy+", notes: "Language study", description: "Japanese language class for continuing students."},
+        Friday:   null
       },
       "1:00-1:50": {
-        Monday:"Songwriting|commitment|Music Teacher",
-        Tuesday:"Cooking|dropin|Kitchen Teacher",
-        Wednesday:"Open Art|dropin|Art Teacher",
-        Thursday:"Photography|commitment|Photo Teacher",
-        Friday:""
+        Monday:   { title: "Songwriting", type: "commitment", teacher: "Music Teacher", room: "MR", program: "Canopy+", notes: "Music & lyrics", description: "Songwriting sessions for composition and performance."},
+        Tuesday:  { title: "Cooking", type: "dropin", teacher: "Kitchen Teacher", room: "KT", program: "Saplings+", notes: "Hands‑on cooking", description: "Simple cooking recipes and kitchen practice."},
+        Wednesday:{ title: "Open Art", type: "dropin", teacher: "Art Teacher", room: "AR", program: "Saplings+", notes: "Free art time", description: "Open‑studio art projects and creativity."},
+        Thursday: { title: "Photography", type: "commitment", teacher: "Photo Teacher", room: "PR", program: "Canopy+", notes: "Photo & editing", description: "Photography basics & photo‑editing projects."},
+        Friday:   null
       },
       "1:55-2:45": {
-        Monday:"Sensory Lab|dropin|Lab Teacher",
-        Tuesday:"Test Prep|commitment|Test Teacher",
-        Wednesday:"Theatre|commitment|Drama Teacher",
-        Thursday:"Debate Club|commitment|Debate Teacher",
-        Friday:""
+        Monday:   { title: "Sensory Lab", type: "dropin", teacher: "Lab Teacher", room: "LR", program: "Saplings+", notes: "Sensory‑focused play", description: "Sensory activities and exploration."},
+        Tuesday:  { title: "Test Prep", type: "commitment", teacher: "Test Teacher", room: "CR", program: "Canopy+", notes: "Academic prep", description: "Test preparation and academic review sessions."},
+        Wednesday:{ title: "Theatre", type: "commitment", teacher: "Drama Teacher", room: "TR", program: "Canopy+", notes: "Drama & acting", description: "Theatre class with acting, playwriting, performance."},
+        Thursday: { title: "Debate Club", type: "commitment", teacher: "Debate Teacher", room: "DR", program: "Canopy+", notes: "Discussion & debate", description: "Debate club meetings — public speaking & reasoning."},
+        Friday:   null
       }
     };
 
     let selected = {};
     let undoStack = [];
 
-    // Get filter state
     function getFilterState() {
       return Array.from(document.querySelectorAll('.filter-type'))
-        .filter(ch => ch.checked)
-        .map(ch => ch.value);
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
     }
 
-    /* RENDER FULL DISPLAY ---------------------------------------- */
     function renderFull() {
       const filters = getFilterState();
-      let html = `<table class="schedule-table">
-        <thead><tr>
-          <th class="time-col">Time</th>
-          ${DAYS.map(d=>`<th>${d}</th>`).join("")}
-        </tr></thead><tbody>`;
+      let html = `<table class="schedule-table"><thead><tr><th class="time-col">Time</th>${DAYS.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`;
 
       TIMES.forEach(time => {
         if (time === "11:35-12:05") {
@@ -297,25 +324,18 @@
         }
         html += `<tr><td class="time-col">${time}</td>`;
         DAYS.forEach(day => {
-          const entry = classes[time][day] || "";
-          if (!entry) {
+          const entry = classes[time][day];
+          if (!entry || !filters.includes(entry.type)) {
             html += `<td></td>`;
           } else {
-            const [name, type, teacher] = entry.split("|");
-            if (!filters.includes(type)) {
-              html += `<td></td>`;
-            } else {
-              const key = `${time}-${day}`;
-              const isSel = selected[key] === name;
-              html += `<td>
-                <div class="class-option ${type} ${isSel?'selected':''}"
-                    onclick="choose('${key}','${name}')" >
-                  <input type="checkbox" ${isSel?'checked':''} onchange="choose('${key}','${name}')">
-                  ${name}
-                  <span class="tooltip">${teacher} · ${type.charAt(0).toUpperCase()+type.slice(1)}</span>
-                </div>
-              </td>`;
-            }
+            const key = `${time}-${day}`;
+            const isSel = selected[key] === entry.title;
+            html += `<td>
+              <div class="class-option ${entry.type} ${isSel?'selected':''}" onclick="choose('${key}','${entry.title}')">
+                <span class="class-name">${entry.title}</span>
+                <span class="info-icon" onclick="showInfo(event, '${key}', '${day}')">ℹ️</span>
+              </div>
+            </td>`;
           }
         });
         html += `</tr>`;
@@ -325,31 +345,22 @@
       document.getElementById("full-tab").innerHTML = html;
     }
 
-    /* RENDER MY CHOICES ---------------------------------------- */
     function renderMine() {
-      let html = `<table class="schedule-table">
-        <thead><tr><th>Time</th><th>Class</th></tr></thead><tbody>`;
+      let html = `<table class="schedule-table"><thead><tr><th>Time</th><th>Class</th></tr></thead><tbody>`;
       TIMES.forEach(time => {
         html += `<tr><td class="time-col">${time}</td><td>`;
-        let match = "";
-        Object.keys(selected).forEach(key => {
-          if (key.startsWith(time)) match = selected[key];
-        });
-        html += match || "";
+        const found = Object.entries(selected).find(([k, v]) => k.startsWith(time));
+        html += found ? found[1] : "";
         html += `</td></tr>`;
       });
       html += `</tbody></table>`;
       document.getElementById("myScheduleList").innerHTML = html;
     }
 
-    /* SELECTION LOGIC + UNDO ----------------------------------- */
-    function choose(key, name) {
-      // record undo state
-      const prev = selected[key];
-      undoStack.push({ key, prevName: prev || null });
+    function choose(key, title) {
+      undoStack.push({ key, prev: selected[key] || null });
       document.getElementById("undo-btn").style.display = 'inline-block';
-
-      selected[key] = name;
+      selected[key] = title;
       saveLocal();
       renderFull();
       renderMine();
@@ -358,42 +369,33 @@
     function undo() {
       const last = undoStack.pop();
       if (!last) return;
-      if (last.prevName === null) {
-        delete selected[last.key];
-      } else {
-        selected[last.key] = last.prevName;
-      }
-      if (undoStack.length === 0) {
-        document.getElementById("undo-btn").style.display = 'none';
-      }
+      if (last.prev === null) delete selected[last.key];
+      else selected[last.key] = last.prev;
+      if (undoStack.length === 0) document.getElementById("undo-btn").style.display = 'none';
       saveLocal();
       renderFull();
       renderMine();
     }
 
-    /* TAB SWITCHING */
     function switchTab(tab) {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add("active");
-      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-      document.getElementById(`${tab}-tab`).classList.add("active");
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.getElementById(`${tab}-tab`).classList.add('active');
     }
 
-    /* SAVE TO LOCAL */
     function saveLocal() {
       localStorage.setItem("MY_SCHEDULE_DATA", JSON.stringify(selected));
       localStorage.setItem("STUDENT_NAME", document.getElementById("studentName").value.trim());
     }
 
-    /* RESTORE */
     function restore() {
-      const stored = localStorage.getItem("MY_SCHEDULE_DATA");
-      if (stored) selected = JSON.parse(stored);
-      const sn = localStorage.getItem("STUDENT_NAME");
-      if (sn) document.getElementById("studentName").value = sn;
+      const s = localStorage.getItem("MY_SCHEDULE_DATA");
+      if (s) selected = JSON.parse(s);
+      const n = localStorage.getItem("STUDENT_NAME");
+      if (n) document.getElementById("studentName").value = n;
     }
 
-    /* PRINT */
     function printSchedule() {
       const today = new Date().toLocaleDateString();
       const footer = document.getElementById("printMeta");
@@ -402,29 +404,26 @@
       setTimeout(() => window.print(), 200);
     }
 
-    /* EXPORT PDF using jsPDF + AutoTable ------------------------ */
     function exportPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'pt', 'a4');
       const name = document.getElementById("studentName").value.trim() || "Schedule";
-
       doc.text(`${name} — My Schedule`, 40, 40);
-      // Prepare data from current "My Schedule" table
+
       const body = TIMES.map(time => {
-        const cls = (Object.keys(selected).find(k => k.startsWith(time)) || "").slice(time.length+1);
-        return [time, selected[time + "-" + cls] || ""];
+        const found = Object.entries(selected).find(([k, v]) => k.startsWith(time));
+        return [time, found ? found[1] : ""];
       });
 
       doc.autoTable({
         head: [['Time', 'Class']],
-        body: body,
-        startY: 60,
+        body,
+        startY: 70,
         styles: { fontSize: 10 }
       });
       doc.save(`${name.replace(/\s+/g, "_")}_schedule.pdf`);
     }
 
-    /* CLEAR */
     function clearSchedule() {
       if (!confirm("Clear your selected schedule?")) return;
       selected = {};
@@ -435,14 +434,34 @@
       renderMine();
     }
 
-    /* INIT */
+    // Modal logic
+    function showInfo(event, key, day) {
+      event.stopPropagation();
+      const [time, d] = key.split('-').slice(0,2);
+      const entry = classes[time][day];
+      if (!entry) return;
+      document.getElementById("modalTitle").textContent = entry.title;
+      document.getElementById("modalTeacher").textContent = entry.teacher;
+      document.getElementById("modalProgRoom").textContent = `${entry.program} · Room: ${entry.room}`;
+      document.getElementById("modalNotes").textContent = entry.notes;
+      document.getElementById("modalDesc").textContent = entry.description;
+      document.getElementById("infoModal").style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById("infoModal").style.display = 'none';
+    }
+
+    // Init
     restore();
     renderFull();
     renderMine();
-    document.querySelectorAll('.filter-type').forEach(cb => {
-      cb.addEventListener('change', renderFull);
-    });
-  </script>
+    document.querySelectorAll('.filter-type').forEach(cb => cb.addEventListener('change', renderFull));
 
+    window.onclick = function(e) {
+      const modal = document.getElementById("infoModal");
+      if (e.target === modal) closeModal();
+    };
+  </script>
 </body>
 </html>
