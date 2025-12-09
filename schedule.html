@@ -6,229 +6,309 @@
 <title>Canopy Schedule Builder</title>
 <style>
 body { font-family: Arial, sans-serif; background:#fafafa; margin:0; padding:20px; }
-.container { max-width:1200px; margin:auto; background:white; padding:20px; }
+.container { max-width:1250px; margin:auto; background:white; padding:20px; border-radius:6px; }
+
+select, button {
+    padding:6px 10px;
+    font-size:14px;
+}
+
 .tabs { display:flex; gap:10px; margin:15px 0; }
-.tab { padding:8px 14px; background:#eee; cursor:pointer; border-radius:4px; }
-.tab.active { background:#4287f5; color:white; }
+.tab {
+    padding:8px 14px;
+    background:#eee;
+    cursor:pointer;
+    border-radius:4px;
+    border:1px solid #ccc;
+}
+.tab.active {
+    background:#4287f5;
+    color:white;
+    border-color:#4287f5;
+}
+
 .grid-table { width:100%; border-collapse:collapse; margin-top:10px; }
-.grid-table th, .grid-table td { border:1px solid #ddd; padding:6px; font-size:14px; vertical-align:top; }
-.class-option { font-size:12px; padding:6px; border-left:4px solid #2196f3; background:#f7f7f7; margin-bottom:6px; cursor:pointer; }
-.class-option.selected { background:#e6f0ff; border-left-color:#003f9a; }
-.class-option.full-class { opacity:0.45; border-left-color:#b20000; background:#ffd4d4; cursor:not-allowed; }
-#status, #conflicts { padding:6px; text-align:center; font-size:13px; }
-#conflicts { color:#b20000; font-weight:bold; }
+.grid-table th, .grid-table td {
+    border:1px solid #ddd;
+    padding:6px;
+    font-size:14px;
+    vertical-align:top;
+    width:16%;
+}
+
+.class-option {
+    font-size:12px;
+    padding:6px;
+    border-left:4px solid #2196f3;
+    background:#f7f7f7;
+    margin-bottom:6px;
+    cursor:pointer;
+}
+.class-option.selected {
+    background:#e6f0ff;
+    border-left-color:#003f9a;
+}
+.class-option.full-class {
+    opacity:0.45;
+    background:#ffd4d4;
+    border-left-color:#b20000;
+    cursor:not-allowed;
+}
+
+#status {
+    margin-top:6px;
+    text-align:center;
+    font-size:14px;
+    font-weight:bold;
+}
+#conflicts {
+    margin-top:6px;
+    text-align:center;
+    font-size:14px;
+    color:#b20000;
+    font-weight:bold;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🌳 Canopy Schedule — Session 3</h2>
-    
-    <select id="studentSelect" style="padding:5px;width:250px;margin:10px 5px 10px 0;">
+
+    <select id="studentSelect" style="width:250px;">
         <option value="">-- Choose Student --</option>
     </select>
     <button onclick="loadSchedule()">Load</button>
     <button onclick="saveSchedule()">Save</button>
-    
+
     <div id="status"></div>
     <div id="conflicts"></div>
-    
+
     <div class="tabs">
         <div class="tab active" onclick="switchTab(0)">Schedule</div>
-        <div class="tab" onclick="switchTab(1)">Your Selections</div>
+        <div class="tab" onclick="switchTab(1)">My Selected Schedule</div>
     </div>
-    
+
     <div id="mainPanel">
         <table class="grid-table">
-            <thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                </tr>
+            </thead>
             <tbody id="scheduleGrid"></tbody>
         </table>
     </div>
-    
+
     <div id="selectedPanel" style="display:none;">
         <h3>Your Selected Schedule</h3>
         <div id="selectedSchedule"></div>
     </div>
+
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxOHs6TelVM347BqlaydmtiDaNSLeQwJkUCLRruP0HoHmTFSvrof-yA1q4A8wSKLqxt/exec";
-const TIMES = ["10:00-10:45", "10:50-11:35", "11:35-12:05", "12:10-12:55", "1:00-1:50", "1:55-2:45"];
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
-const BLOCKS = ["block1", "block2", "lunch", "block3", "block4", "block5"];
 
-let offerings = [], selected = {}, enrollmentCounts = {};
+const TIMES = [
+    "10:00-10:45",
+    "10:50-11:35",
+    "11:35-12:05",
+    "12:10-12:55",
+    "1:00-1:50",
+    "1:55-2:45"
+];
+const BLOCKS = ["block1","block2","lunch","block3","block4","block5"];
+const DAYS = ["monday","tuesday","wednesday","thursday","friday"];
+
+let offerings = [];
+let selected = {};
+let enrollmentCounts = {};
 
 async function init() {
     const [off, stud, enroll] = await Promise.all([
-        fetch(API_URL + "?action=loadOfferings").then(r => r.json()),
-        fetch(API_URL + "?action=loadStudents").then(r => r.json()),
-        fetch(API_URL + "?action=getEnrollmentCounts").then(r => r.json())
+        fetch(API_URL+"?action=loadOfferings").then(r=>r.json()),
+        fetch(API_URL+"?action=loadStudents").then(r=>r.json()),
+        fetch(API_URL+"?action=getEnrollmentCounts").then(r=>r.json())
     ]);
-    
+
     offerings = off.offerings || [];
     enrollmentCounts = enroll.counts || {};
-    
-    const sel = document.getElementById("studentSelect");
-    (stud.students || []).forEach(name => sel.add(new Option(name, name)));
-    
+
+    const select = document.getElementById("studentSelect");
+    (stud.students || []).forEach(name => select.add(new Option(name,name)));
+
     drawSchedule();
 }
 
-function drawSchedule() {
+function drawSchedule(){
     const grid = document.getElementById("scheduleGrid");
-    grid.innerHTML = TIMES.map((time, i) => `
-        <tr><td><strong>${time}</strong></td>
-            ${DAYS.map(day => `<td id="${day}-${BLOCKS[i]}"></td>`).join("")}
+
+    grid.innerHTML = TIMES.map((blockTime,i)=>`
+        <tr>
+            <td><strong>${blockTime}</strong></td>
+            ${DAYS.map(day=>`<td id="${day}-${BLOCKS[i]}"></td>`).join("")}
         </tr>
     `).join("");
-    
-    offerings.forEach(o => {
+
+    offerings.forEach(o=>{
         const cell = document.getElementById(`${o.day}-${getBlock(o.time)}`);
         if (!cell) return;
-        
+
         const enrolled = enrollmentCounts[o.id] || 0;
         const capacity = Number(o.capacity) || 999;
-        const isFull = enrolled >= capacity;
-        
-        const card = document.createElement("div");
-        card.className = `class-option ${isFull ? "full-class" : ""}`;
-        card.innerHTML = `
-            <input type="checkbox" data-id="${o.id}" ${isFull ? "disabled" : ""}>
-            <strong>${o.name}</strong><br>👤 ${o.instructor}<br>
-            <small>${o.type} | ${o.level}<br>Enrolled: ${enrolled}/${capacity}${isFull ? " <strong>(FULL)</strong>" : ""}</small>
+        const full = enrolled>=capacity;
+
+        const div = document.createElement("div");
+        div.className = "class-option"+(full?" full-class":"");
+
+        div.innerHTML = `
+            <input type="checkbox" data-id="${o.id}" ${full?"disabled":""}>
+            <strong>${o.name}</strong><br>
+            👤 ${o.instructor}<br>
+            <small>${o.type} | ${o.level}<br>
+            Capacity: ${capacity}</small>
         `;
-        
-        card.onclick = (e) => {
-            if (!isFull && e.target.type !== "checkbox") {
-                const cb = card.querySelector("input");
+
+        div.onclick = e=>{
+            if (e.target.tagName!=="INPUT" && !full) {
+                const cb = div.querySelector("input");
                 cb.checked = !cb.checked;
-                toggle(o, cb.checked);
+                toggleSelect(o,cb.checked);
             }
         };
-        
-        card.querySelector("input").onchange = (e) => toggle(o, e.target.checked);
-        cell.appendChild(card);
+
+        div.querySelector("input").onchange = e=>toggleSelect(o,e.target.checked);
+
+        cell.appendChild(div);
     });
-    
-    updateUI();
+
+    refreshUI();
 }
 
-function toggle(o, checked) {
+function toggleSelect(o,checked){
     const key = `${o.day}-${getBlock(o.time)}`;
-    if (!selected[key]) selected[key] = [];
-    
-    if (checked && !selected[key].includes(o.id)) {
-        if (selected[key].length >= 2) selected[key].shift();
-        selected[key].push(o.id);
+    if (!selected[key]) selected[key]=[];
+
+    if (checked){
+        if (!selected[key].includes(o.id)) selected[key].push(o.id);
+        if(selected[key].length>2) selected[key]=selected[key].slice(0,2);
     } else {
-        selected[key] = selected[key].filter(id => id !== o.id);
+        selected[key]=selected[key].filter(id=>id!==o.id);
     }
-    
-    updateUI();
+
+    refreshUI();
 }
 
-function updateUI() {
-    document.querySelectorAll(".class-option").forEach(el => {
-        const cb = el.querySelector("input");
-        const o = offerings.find(x => x.id == cb.dataset.id);
-        if (o) {
-            const key = `${o.day}-${getBlock(o.time)}`;
-            const isSelected = selected[key]?.includes(o.id);
-            el.classList.toggle("selected", isSelected);
-            cb.checked = isSelected;
-        }
+function refreshUI(){
+    document.querySelectorAll(".class-option").forEach(el=>{
+        const id = Number(el.querySelector("input").dataset.id);
+        const offering = offerings.find(o=>o.id===id);
+        const key = offering ? `${offering.day}-${getBlock(offering.time)}`:"";
+
+        const selectedHere = selected[key]?.includes(id);
+        el.classList.toggle("selected",selectedHere);
+        el.querySelector("input").checked = selectedHere;
     });
-    
-    const conflicts = Object.entries(selected)
-        .filter(([k, v]) => v.length > 1)
-        .map(([k, v]) => `${k}: ${v.map(id => offerings.find(o => o.id === id)?.name).join(" & ")}`);
-    
-    document.getElementById("conflicts").innerHTML = conflicts.length 
-        ? "⚠️ CONFLICTS: " + conflicts.join(" | ") : "";
-    
-    renderSelected();
+
+    renderSelectedSchedule();
 }
 
-function renderSelected() {
-    const html = TIMES.map((time, i) => `
-        <tr><td>${time}</td>
-            ${DAYS.map(day => {
-                const ids = selected[`${day}-${BLOCKS[i]}`] || [];
-                return `<td>${ids.map(id => {
-                    const o = offerings.find(x => x.id === id);
-                    return o ? `<div class="class-option selected"><strong>${o.name}</strong><br><small>${o.instructor}</small></div>` : "";
-                }).join("")}</td>`;
-            }).join("")}
-        </tr>
-    `).join("");
-    
-    document.getElementById("selectedSchedule").innerHTML = `<table class="grid-table"><thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead><tbody>${html}</tbody></table>`;
+function renderSelectedSchedule(){
+    const table = `
+        <table class="grid-table">
+            <thead>
+                <tr><th>Time</th>${DAYS.map(d=>`<th>${d[0].toUpperCase()+d.slice(1)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+                ${TIMES.map((time,i)=>`
+                    <tr><td>${time}</td>
+                    ${DAYS.map(day=>{
+                        const ids = selected[`${day}-${BLOCKS[i]}`] || [];
+                        return `<td>
+                            ${ids.map(id=>{
+                                const o= offerings.find(e=>e.id===id);
+                                return o? `<div class="class-option selected"><strong>${o.name}</strong><br><small>${o.instructor}</small></div>`:"";
+                            }).join("")}
+                        </td>`;
+                    }).join("")}
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    `;
+    document.getElementById("selectedSchedule").innerHTML = table;
 }
 
-async function saveSchedule() {
+async function loadSchedule(){
     const name = document.getElementById("studentSelect").value;
-    if (!name) return alert("Please select a student");
-    
-    await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-            action: "saveStudentSchedule",
-            studentName: name,
-            offeringIds: Object.values(selected).flat()
-        })
-    });
-    
-    show("Saved");
-    const enroll = await fetch(API_URL + "?action=getEnrollmentCounts").then(r => r.json());
-    enrollmentCounts = enroll.counts || {};
-    drawSchedule();
-}
+    if (!name) return alert("Choose student");
 
-async function loadSchedule() {
-    const name = document.getElementById("studentSelect").value;
-    if (!name) return alert("Please select a student");
-    
-    const data = await fetch(API_URL + "?action=loadStudent&studentName=" + encodeURIComponent(name)).then(r => r.json());
+    const data = await fetch(API_URL+"?action=loadStudent&studentName="+encodeURIComponent(name)).then(r=>r.json());
+
     selected = {};
-    
-    if (data.success && data.offerings) {
-        data.offerings.forEach(o => {
+
+    if(data.success && data.offerings){
+        data.offerings.forEach(o=>{
             const key = `${o.day}-${getBlock(o.time)}`;
-            if (!selected[key]) selected[key] = [];
+            if (!selected[key]) selected[key]=[];
             selected[key].push(o.id);
         });
         show("Loaded");
-    } else show("No schedule found");
-    
-    updateUI();
+    } else {
+        show("No saved schedule");
+    }
+
+    refreshUI();
 }
 
-function switchTab(i) {
-    document.querySelectorAll(".tab").forEach((t, idx) => {
-        t.classList.toggle("active", idx === i);
+async function saveSchedule(){
+    const name = document.getElementById("studentSelect").value;
+    if(!name) return alert("Choose student first");
+
+    await fetch(API_URL,{
+        method:"POST",
+        body:JSON.stringify({
+            action:"saveStudentSchedule",
+            studentName:name,
+            offeringIds:Object.values(selected).flat()
+        })
     });
-    document.getElementById("mainPanel").style.display = i === 0 ? "block" : "none";
-    document.getElementById("selectedPanel").style.display = i === 1 ? "block" : "none";
+
+    show("Saved");
 }
 
-function getBlock(time) {
+function switchTab(i){
+    document.querySelectorAll(".tab").forEach((t,idx)=>{
+        t.classList.toggle("active",idx===i);
+    });
+
+    document.getElementById("mainPanel").style.display = i===0?"block":"none";
+    document.getElementById("selectedPanel").style.display = i===1?"block":"none";
+}
+
+function getBlock(time){
     const t = time.toLowerCase();
-    if (t.includes("10:00")) return "block1";
-    if (t.includes("10:50")) return "block2";
-    if (t.includes("11:35")) return "lunch";
-    if (t.includes("12:10")) return "block3";
-    if (t.includes("1:00")) return "block4";
+    if(t.includes("10:00"))return "block1";
+    if(t.includes("10:50"))return "block2";
+    if(t.includes("11:35"))return "lunch";
+    if(t.includes("12:10"))return "block3";
+    if(t.includes("1:00")&&!t.includes("55"))return "block4";
     return "block5";
 }
 
-function show(msg) {
+function show(msg){
     const s = document.getElementById("status");
     s.textContent = msg;
-    setTimeout(() => s.textContent = "", 2000);
+    setTimeout(()=>s.textContent="",2000);
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded",init);
 </script>
 
 </body>
