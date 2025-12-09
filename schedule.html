@@ -135,48 +135,44 @@ function drawOfferings() {
     clearCells();
 
     offerings.forEach(o => {
-        const cell = mapCell(o);
-        if (!cell) return;
+        const id = mapCell(o);
+        if (!id) return;
 
         const div = document.createElement("div");
+        div.className = "class-option";
         div.dataset.id = o.id;
         div.dataset.day = o.day;
         div.dataset.time = o.time;
         div.dataset.capacity = Number(o.capacity) || null;
 
-        div.className = "class-option";
         div.onclick = () => toggleOffering(div);
 
         div.innerHTML = `
             <strong>${o.name}</strong><br>
-            👤 ${o.instructor ?? ""}<br>
-            <div class="roster-display">${formatRoster(o)}</div>
+            <span style="font-size:11px; color:#333;">👤 ${o.instructor ?? ""}</span><br>
+
+            <span style="font-size:10px; display:block; margin-top:2px;">
+                <strong>Type:</strong> ${o.type ?? ""}
+            </span>
+
+            <span style="font-size:10px; display:block;">
+                <strong>Level:</strong> ${o.level ?? ""}
+            </span>
+
+            <span style="font-size:10px; display:block; margin-top:3px; border-top:1px solid #ddd; padding-top:3px;">
+                ${o.description ?? ""}
+            </span>
+
+            ${o.capacity 
+                ? `<span style="font-size:10px; display:block; margin-top:4px;"><strong>Capacity:</strong> ${o.capacity}</span>` 
+                : `<span style="font-size:10px; display:block; margin-top:4px;"><strong>Capacity:</strong> None listed</span>`
+            }
         `;
 
-        document.getElementById(cell).appendChild(div);
+        document.getElementById(id).appendChild(div);
     });
 
     enforceRules();
-}
-
-
-// ---------------- Mapping ----------------
-function mapCell(o) {
-    const block = getBlock(o.time);
-    if (!block) return null;
-    return `${o.day.toLowerCase()}-${block}`;
-}
-
-function getBlock(timeString) {
-    const t = timeString.replace(/\s+/g, "").toLowerCase();
-
-    if (t.includes("10:00") || t.includes("10:45")) return "block1";
-    if (t.includes("10:50") || t.includes("11:35")) return "block2";
-    if (t.includes("11:35-12:05")) return "lunch";
-    if (t.includes("12:10") || t.includes("12:55")) return "block3";
-    if (t.includes("1:00") && !t.includes("1:55")) return "block4";
-    if (t.includes("1:55") || t.includes("2:45")) return "block5";
-    return null;
 }
 
 
