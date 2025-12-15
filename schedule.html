@@ -136,10 +136,30 @@ let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[]
 async function init(){
 try{
 showStatus('Loading...','success');
-const [off,enroll,students]=await Promise.all([
-fetch(`${API}?action=loadOfferings`).then(r=>r.json()),
-fetch(`${API}?action=getEnrollmentCounts`).then(r=>r.json()),
-fetch(`${API}?action=loadStudents`).then(r=>r.json())
+
+// Fetch data with timeout and retry
+const fetchWithTimeout = (url, timeout = 10000) => {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout')), timeout)
+    )
+  ]);
+};
+
+const [off, enroll, students] = await Promise.all([
+  fetchWithTimeout(`${API}?action=loadOfferings`).then(r=>r.json()).catch(e=>{
+    console.error('Error loading offerings:', e);
+    return {offerings: []};
+  }),
+  fetchWithTimeout(`${API}?action=getEnrollmentCounts`).then(r=>r.json()).catch(e=>{
+    console.error('Error loading enrollment:', e);
+    return {counts: {}};
+  }),
+  fetchWithTimeout(`${API}?action=loadStudents`).then(r=>r.json()).catch(e=>{
+    console.error('Error loading students:', e);
+    return {students: []};
+  })
 ]);
 
 console.log('Offerings loaded:', off.offerings?.length || 0);
