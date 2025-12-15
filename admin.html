@@ -120,7 +120,7 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 <div class="form-group"><label>Type *</label><select id="type" required><option value="">Select</option><option value="commitment">Commitment</option><option value="drop-in">Drop-in</option><option value="private">Private</option></select></div>
 <div class="form-group"><label>Levels</label><select id="level" multiple size="5"><option value="All">All Ages</option><option value="EC">EC</option><option value="Saplings">Saplings</option><option value="Acorns">Acorns</option><option value="Canopy">Canopy</option></select></div>
 </div>
-<div class="form-group"><label>Capacity</label><input type="number" id="capacity" min="1"></div>
+<div class="form-group"><label>Capacity</label><input type="number" id="capacity" min="1" placeholder="999 = unlimited"></div>
 <div class="form-group"><label>Description</label><textarea id="description"></textarea></div>
 </form>
 </div>
@@ -139,7 +139,7 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 </div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbxOHs6TelVM347BqlaydmtiDaNSLeQwJkUCLRruP0HoHmTFSvrof-yA1q4A8wSKLqxt/exec';
+const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 let students=[],offerings=[],currentEdit=null;
 
 function switchTab(i){
@@ -189,9 +189,9 @@ let html=`<div class="detail"><p><strong>Name:</strong> ${name}</p><p><strong>Cl
 <p><strong>Updated:</strong> ${s.timestamp?new Date(s.timestamp).toLocaleString():'N/A'}</p></div><h3>Classes:</h3>`;
 if(!classes.length){html+='<p style="color:#999;text-align:center">No classes</p>'}
 else{classes.forEach(c=>{
-const day=c.day.charAt(0).toUpperCase()+c.day.slice(1);
-html+=`<div class="class-item"><strong>${c.name||c.offeringName}</strong><br>
-<span style="font-size:12px;color:#666">👤 ${c.instructor} | 📅 ${day} | ⏰ ${c.time}</span></div>`;
+const day=c.day?c.day.charAt(0).toUpperCase()+c.day.slice(1):'';
+html+=`<div class="class-item"><strong>${c.name||c.offeringName||'Unknown'}</strong><br>
+<span style="font-size:12px;color:#666">👤 ${c.instructor||''} | 📅 ${day} | ⏰ ${c.time||''}</span></div>`;
 })}
 document.getElementById('detailTitle').textContent=name+"'s Schedule";
 document.getElementById('detailBody').innerHTML=html;
@@ -319,7 +319,7 @@ instructor:instructors.join(' & '),
 location:document.getElementById('location').value,
 type:document.getElementById('type').value,
 level:levels.join(', '),
-capacity:document.getElementById('capacity').value,
+capacity:document.getElementById('capacity').value||999,
 description:document.getElementById('description').value
 };
 try{
