@@ -135,31 +135,62 @@ let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[]
 
 async function init(){
 try{
+showStatus('Loading...','success');
 const [off,enroll,students]=await Promise.all([
 fetch(`${API}?action=loadOfferings`).then(r=>r.json()),
 fetch(`${API}?action=getEnrollmentCounts`).then(r=>r.json()),
 fetch(`${API}?action=loadStudents`).then(r=>r.json())
 ]);
+
+console.log('Offerings loaded:', off.offerings?.length || 0);
+console.log('Enrollment data loaded:', Object.keys(enroll.counts || {}).length);
+console.log('Students response:', students);
+console.log('Student names:', students.students);
+
 offerings=off.offerings||[];
 enrollmentCounts=enroll.counts||{};
 studentNames=students.students||[];
+
+console.log('studentNames array:', studentNames);
+
 loadDescriptions();
 populateStudentDropdown();
 drawSchedule();
 checkURLParams();
-}catch(e){showStatus('Error loading: '+e.message,'error')}
+
+document.getElementById('status').style.display='none';
+}catch(e){
+console.error('Init error:', e);
+showStatus('Error loading: '+e.message,'error');
+}
 }
 
 function populateStudentDropdown(){
 const select=document.getElementById('studentName');
 // Keep the first "Select Student Name" option
 select.innerHTML='<option value="">-- Select Student Name --</option>';
+
+console.log('Populating dropdown with', studentNames.length, 'students');
+
+if(studentNames.length === 0){
+console.warn('No students found!');
+const option=document.createElement('option');
+option.value='';
+option.textContent='(No students yet)';
+option.disabled=true;
+select.appendChild(option);
+return;
+}
+
 studentNames.sort().forEach(name=>{
 const option=document.createElement('option');
 option.value=name;
 option.textContent=name;
 select.appendChild(option);
+console.log('Added student:', name);
 });
+
+console.log('Dropdown populated with', select.options.length - 1, 'students');
 }
 
 function loadDescriptions(){
