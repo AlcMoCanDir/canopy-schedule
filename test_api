@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Test - Load Students</title>
+<style>
+body{font-family:Arial,sans-serif;padding:40px;max-width:800px;margin:0 auto}
+.box{background:#f5f5f5;padding:20px;margin:20px 0;border-radius:8px;border:2px solid #ddd}
+h1{color:#4CAF50}
+button{padding:10px 20px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px}
+button:hover{background:#45a049}
+pre{background:#fff;padding:15px;border-radius:4px;overflow-x:auto;border:1px solid #ddd}
+.success{color:#4CAF50;font-weight:bold}
+.error{color:#d32f2f;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>🧪 API Endpoint Test: loadStudents</h1>
+
+<div class="box">
+<h3>1. API Configuration</h3>
+<p><strong>URL:</strong></p>
+<pre id="apiUrl">Loading...</pre>
+<button onclick="testAPI()">🚀 Test API</button>
+</div>
+
+<div class="box">
+<h3>2. API Response</h3>
+<div id="status">Click button to test...</div>
+<pre id="response"></pre>
+</div>
+
+<div class="box">
+<h3>3. Parsed Student Names</h3>
+<div id="students"></div>
+</div>
+
+<div class="box">
+<h3>4. Dropdown Preview</h3>
+<select id="dropdown" style="width:100%;padding:10px;font-size:14px">
+<option>-- Select Student Name --</option>
+</select>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbxXj8MxZWU2xJyHDuibHLVsYRXz-BdKlx4fyEPzi0aN6l_f8a6E77Z5jnr3S00xjGcY/exec';
+
+document.getElementById('apiUrl').textContent = API + '?action=loadStudents';
+
+async function testAPI(){
+document.getElementById('status').innerHTML='⏳ Testing...';
+document.getElementById('response').textContent='';
+document.getElementById('students').innerHTML='';
+
+try{
+console.log('Fetching from:', API + '?action=loadStudents');
+
+const response = await fetch(API + '?action=loadStudents');
+const data = await response.json();
+
+console.log('Response:', data);
+
+// Show raw response
+document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+
+// Check if successful
+if(data.success){
+document.getElementById('status').innerHTML = '<span class="success">✅ Success!</span>';
+
+// Show student names
+const students = data.students || [];
+if(students.length === 0){
+document.getElementById('students').innerHTML = '<span class="error">⚠️ No students found in sheet</span><p>Please add student names to Column A of StudentSchedules tab</p>';
+}else{
+let html = '<span class="success">✅ Found ' + students.length + ' students:</span><ul>';
+students.forEach(name => {
+html += '<li>' + name + '</li>';
+});
+html += '</ul>';
+document.getElementById('students').innerHTML = html;
+
+// Populate dropdown
+const select = document.getElementById('dropdown');
+select.innerHTML = '<option value="">-- Select Student Name --</option>';
+students.sort().forEach(name => {
+const option = document.createElement('option');
+option.value = name;
+option.textContent = name;
+select.appendChild(option);
+});
+}
+}else{
+document.getElementById('status').innerHTML = '<span class="error">❌ API returned success:false</span>';
+}
+
+}catch(error){
+console.error('Error:', error);
+document.getElementById('status').innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+document.getElementById('response').textContent = 'Error details:\n' + error.toString();
+document.getElementById('students').innerHTML = '<span class="error">Failed to load students</span>';
+}
+}
+
+// Auto-test on load
+window.onload = () => {
+setTimeout(testAPI, 1000);
+};
+</script>
+</body>
+</html>
