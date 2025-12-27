@@ -200,19 +200,37 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <input type="text" id="createLocation" placeholder="Room 101">
 </div>
 <div class="form-group">
-<label>Day *</label>
-<select id="createDay" required>
-<option value="">-- Select Day --</option>
+<label>Days * (Hold Ctrl/Cmd to select multiple)</label>
+<select id="createDays" multiple size="5" required style="height:auto">
 <option value="monday">Monday</option>
 <option value="tuesday">Tuesday</option>
 <option value="wednesday">Wednesday</option>
 <option value="thursday">Thursday</option>
 <option value="friday">Friday</option>
 </select>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple days</p>
 </div>
 <div class="form-group">
-<label>Time *</label>
-<input type="text" id="createTime" placeholder="10:00-10:45" required>
+<label>Time Blocks * (Hold Ctrl/Cmd to select multiple)</label>
+<select id="createBlocks" multiple size="6" required style="height:auto">
+<option value="8:45-9:30">Block 1: 8:45-9:30</option>
+<option value="10:00-10:45">Block 2: 10:00-10:45</option>
+<option value="11:00-11:50">Block 3: 11:00-11:50</option>
+<option value="1:00-1:50">Block 4: 1:00-1:50</option>
+<option value="2:00-2:50">Block 5: 2:00-2:50</option>
+<option value="3:00-3:50">Block 6: 3:00-3:50</option>
+</select>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple blocks</p>
+</div>
+<div class="form-group">
+<label>
+<input type="checkbox" id="createMultiple" onchange="toggleMultipleCreation()">
+Create separate offering for each day/block combination
+</label>
+<p style="font-size:11px;color:#666;margin-top:5px">
+✓ Checked: Creates individual offerings (e.g., Math(A) Mon 10:00, Math(A) Tue 10:00)<br>
+✗ Unchecked: Single offering with multiple times (e.g., Math(A) shows "Mon, Tue" and "10:00, 1:00")
+</p>
 </div>
 <div class="form-group">
 <label>Type *</label>
@@ -242,10 +260,14 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <input type="number" id="createCapacity" placeholder="12" min="1" value="12" required>
 </div>
 <p style="font-size:12px;color:#666;margin-top:10px">* Required fields</p>
+<div id="createPreview" style="background:#f8f9fa;padding:15px;border-radius:4px;margin-top:15px;display:none">
+<strong>Preview:</strong>
+<div id="createPreviewText" style="margin-top:10px;font-size:13px"></div>
+</div>
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
-<button class="btn btn-primary" onclick="createOffering()">➕ Create Offering</button>
+<button class="btn btn-primary" onclick="createOffering()">➕ Create Offering(s)</button>
 </div>
 </div>
 </div>
@@ -564,12 +586,14 @@ function showCreateOfferingModal(){
 document.getElementById('createName').value='';
 document.getElementById('createInstructor').value='';
 document.getElementById('createLocation').value='';
-document.getElementById('createDay').value='';
-document.getElementById('createTime').value='';
+document.getElementById('createDays').selectedIndex=-1;
+document.getElementById('createBlocks').selectedIndex=-1;
+document.getElementById('createMultiple').checked=false;
 document.getElementById('createType').value='';
 document.getElementById('createLevel').value='';
 document.getElementById('createDescription').value='';
 document.getElementById('createCapacity').value='12';
+document.getElementById('createPreview').style.display='none';
 document.getElementById('createModal').style.display='block';
 }
 
@@ -577,30 +601,105 @@ function closeCreateModal(){
 document.getElementById('createModal').style.display='none';
 }
 
+function toggleMultipleCreation(){
+updateCreatePreview();
+}
+
+function updateCreatePreview(){
+const daysSelect=document.getElementById('createDays');
+const blocksSelect=document.getElementById('createBlocks');
+const multiple=document.getElementById('createMultiple').checked;
+const name=document.getElementById('createName').value.trim();
+
+const selectedDays=Array.from(daysSelect.selectedOptions).map(o=>o.text);
+const selectedBlocks=Array.from(blocksSelect.selectedOptions).map(o=>o.value);
+
+if(selectedDays.length>0&&selectedBlocks.length>0){
+const preview=document.getElementById('createPreview');
+const previewText=document.getElementById('createPreviewText');
+preview.style.display='block';
+
+if(multiple){
+const count=selectedDays.length*selectedBlocks.length;
+previewText.innerHTML=`<strong>Will create ${count} separate offering(s):</strong><br>`;
+selectedDays.forEach(day=>{
+selectedBlocks.forEach(block=>{
+previewText.innerHTML+=`• ${name||'[Class]'} - ${day} ${block}<br>`;
+});
+});
+}else{
+previewText.innerHTML=`<strong>Will create 1 offering:</strong><br>`;
+previewText.innerHTML+=`• ${name||'[Class]'} - Days: ${selectedDays.join(', ')}<br>`;
+previewText.innerHTML+=`• Times: ${selectedBlocks.join(', ')}`;
+}
+}else{
+document.getElementById('createPreview').style.display='none';
+}
+}
+
+// Add event listeners for preview
+document.addEventListener('DOMContentLoaded',()=>{
+if(document.getElementById('createDays')){
+document.getElementById('createDays').addEventListener('change',updateCreatePreview);
+document.getElementById('createBlocks').addEventListener('change',updateCreatePreview);
+document.getElementById('createName').addEventListener('input',updateCreatePreview);
+}
+});
+
 async function createOffering(){
 const name=document.getElementById('createName').value.trim();
 const instructor=document.getElementById('createInstructor').value.trim();
-const day=document.getElementById('createDay').value;
-const time=document.getElementById('createTime').value.trim();
 const type=document.getElementById('createType').value;
 
-if(!name||!instructor||!day||!time||!type){
-alert('Please fill in all required fields (marked with *)');
+const daysSelect=document.getElementById('createDays');
+const blocksSelect=document.getElementById('createBlocks');
+const selectedDays=Array.from(daysSelect.selectedOptions).map(o=>o.value);
+const selectedBlocks=Array.from(blocksSelect.selectedOptions).map(o=>o.value);
+const createMultiple=document.getElementById('createMultiple').checked;
+
+if(!name||!instructor||selectedDays.length===0||selectedBlocks.length===0||!type){
+alert('Please fill in all required fields:\n- Class Name\n- Instructor\n- At least one Day\n- At least one Time Block\n- Type');
 return;
 }
 
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'saveOffering',
+const baseData={
 name:name,
 instructor:instructor,
 location:document.getElementById('createLocation').value.trim(),
-day:day,
-time:time,
 type:type,
 level:document.getElementById('createLevel').value,
 description:document.getElementById('createDescription').value.trim(),
 capacity:parseInt(document.getElementById('createCapacity').value)||12
+};
+
+try{
+if(createMultiple){
+// Create separate offering for each day/block combination
+let created=0;
+for(const day of selectedDays){
+for(const block of selectedBlocks){
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'saveOffering',
+...baseData,
+day:day,
+time:block
+})});
+const d=await r.json();
+if(d.success)created++;
+}
+}
+msg(`✅ Created ${created} offering(s)!`,'success');
+closeCreateModal();
+await loadOfferings();
+}else{
+// Create single offering with multiple days/blocks
+const days=selectedDays.join(',');
+const times=selectedBlocks.join(',');
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'saveOffering',
+...baseData,
+day:days,
+time:times
 })});
 const d=await r.json();
 if(d.success){
@@ -609,6 +708,7 @@ closeCreateModal();
 await loadOfferings();
 }else{
 msg('❌ '+d.message,'error');
+}
 }
 }catch(e){msg('❌ '+e.message,'error')}
 }
