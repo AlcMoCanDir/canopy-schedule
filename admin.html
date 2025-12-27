@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canopy Admin - With Approvals</title>
+<title>Canopy Admin - Enhanced</title>
 <style>
 *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5}
 .container{max-width:1600px;margin:0 auto;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
@@ -26,7 +26,7 @@ h1{text-align:center;color:#2196F3;margin-bottom:5px}h2{font-size:16px;color:#66
 .btn-danger{background:#f44336;color:white}.btn-danger:hover{background:#da190b}
 .btn-success{background:#4CAF50;color:white}.btn-success:hover{background:#45a049}
 .btn-warning{background:#ff9800;color:white}.btn-warning:hover{background:#e68900}
-.btn-small{padding:6px 12px;font-size:12px}
+.btn-small{padding:6px 12px;font-size:12px;margin:2px}
 table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
 th{background:#4CAF50;color:white;padding:12px 8px;text-align:left;font-weight:bold;position:sticky;top:0}
 td{padding:10px 8px;border:1px solid #ddd;vertical-align:top}
@@ -41,15 +41,30 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .modal-header{padding:20px;background:#4CAF50;color:white;border-radius:8px 8px 0 0}.modal-header h2{margin:0;color:white;text-align:left}
 .modal-body{padding:20px}.modal-footer{padding:15px 20px;background:#f8f9fa;border-radius:0 0 8px 8px;display:flex;justify-content:flex-end;gap:10px}
 .close{color:white;float:right;font-size:28px;font-weight:bold;cursor:pointer}.close:hover{opacity:0.8}
-.detail{background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px}.detail h3{margin:0 0 10px;color:#2196F3}
-.class-item{background:white;padding:8px 12px;margin:5px 0;border-radius:4px;border-left:3px solid #2196F3;font-size:13px}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;margin-bottom:5px;font-weight:bold;color:#333}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px}
+.form-group textarea{resize:vertical;min-height:80px}
+.request-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:15px;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+.request-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:2px solid #eee}
+.request-student{font-size:18px;font-weight:bold;color:#2196F3}
+.class-row{background:#f8f9fa;padding:10px;margin:5px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid #2196F3}
+.class-info{flex:1}
+.class-name{font-weight:bold;color:#333;font-size:14px}
+.class-details{font-size:12px;color:#666;margin-top:3px}
+.class-actions{display:flex;gap:5px}
+.group-actions{margin-top:10px;padding-top:10px;border-top:1px solid #ddd;display:flex;gap:10px;justify-content:flex-end}
+.editable-cell{cursor:pointer;position:relative;padding:8px;border-radius:4px}
+.editable-cell:hover{background:#e3f2fd}
+.edit-icon{font-size:10px;color:#999;margin-left:5px}
+input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-radius:4px;width:100%}
 @media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>🎓 Canopy Admin</h1>
-<h2>Session 3 (2025-2026) - With Approval System</h2>
+<h1>🎓 Canopy Admin - Enhanced</h1>
+<h2>Session 3 (2025-2026) - Edit Offerings & Manual Enrollment</h2>
 <div id="status" class="status"></div>
 <div class="tabs">
 <button class="tab active" onclick="switchTab(0)">⏳ Pending Requests</button>
@@ -60,12 +75,13 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 <!-- PENDING REQUESTS TAB -->
 <div id="pending" class="tab-content active">
 <div class="stats">
-<div class="stat-card orange"><h3 id="totalPending">0</h3><p>Pending Requests</p></div>
+<div class="stat-card orange"><h3 id="totalPending">0</h3><p>Pending Classes</p></div>
+<div class="stat-card"><h3 id="totalStudentsWaiting">0</h3><p>Students Waiting</p></div>
 </div>
 <div class="actions">
 <button class="btn btn-secondary" onclick="loadPendingRequests()">🔄 Refresh</button>
 </div>
-<div id="pendingContainer"><div class="loading"><div class="spinner"></div>Loading requests...</div></div>
+<div id="pendingContainer"><div class="loading"><div class="spinner"></div>Loading...</div></div>
 </div>
 
 <!-- STUDENTS TAB -->
@@ -93,18 +109,107 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 </div>
 </div>
 
-<!-- DETAIL MODAL -->
-<div id="detailModal" class="modal">
+<!-- EDIT OFFERING MODAL -->
+<div id="editModal" class="modal">
 <div class="modal-content">
-<div class="modal-header"><span class="close" onclick="closeDetail()">&times;</span><h2 id="detailTitle"></h2></div>
-<div class="modal-body" id="detailBody"></div>
-<div class="modal-footer" id="detailFooter"></div>
+<div class="modal-header">
+<span class="close" onclick="closeEditModal()">&times;</span>
+<h2 id="editModalTitle">Edit Offering</h2>
+</div>
+<div class="modal-body">
+<div class="form-group">
+<label>Class Name</label>
+<input type="text" id="editName" placeholder="Math(A)">
+</div>
+<div class="form-group">
+<label>Instructor/Facilitator</label>
+<input type="text" id="editInstructor" placeholder="Anna">
+</div>
+<div class="form-group">
+<label>Location</label>
+<input type="text" id="editLocation" placeholder="Room 101">
+</div>
+<div class="form-group">
+<label>Day</label>
+<select id="editDay">
+<option value="monday">Monday</option>
+<option value="tuesday">Tuesday</option>
+<option value="wednesday">Wednesday</option>
+<option value="thursday">Thursday</option>
+<option value="friday">Friday</option>
+</select>
+</div>
+<div class="form-group">
+<label>Time</label>
+<input type="text" id="editTime" placeholder="10:00-10:45">
+</div>
+<div class="form-group">
+<label>Type</label>
+<select id="editType">
+<option value="commitment">Commitment</option>
+<option value="drop-in">Drop-in</option>
+<option value="private">Private</option>
+</select>
+</div>
+<div class="form-group">
+<label>Capacity</label>
+<input type="number" id="editCapacity" placeholder="12">
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+<button class="btn btn-primary" onclick="saveOffering()">💾 Save Changes</button>
+</div>
+</div>
+</div>
+
+<!-- ADD STUDENT TO CLASS MODAL -->
+<div id="enrollModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close" onclick="closeEnrollModal()">&times;</span>
+<h2 id="enrollModalTitle">Add Student to Class</h2>
+</div>
+<div class="modal-body">
+<p id="enrollClassName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
+<div class="form-group">
+<label>Select Student</label>
+<select id="enrollStudent">
+<option value="">-- Select Student --</option>
+</select>
+</div>
+<p style="font-size:12px;color:#666;margin-top:10px">
+This will add the class to the student's approved schedule.
+</p>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeEnrollModal()">Cancel</button>
+<button class="btn btn-primary" onclick="addStudentToClass()">➕ Add Student</button>
+</div>
+</div>
+</div>
+
+<!-- ENROLLED STUDENTS MODAL -->
+<div id="enrolledModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close" onclick="closeEnrolledModal()">&times;</span>
+<h2 id="enrolledModalTitle">Enrolled Students</h2>
+</div>
+<div class="modal-body">
+<p id="enrolledClassName" style="font-size:18px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
+<div id="enrolledList"></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeEnrolledModal()">Close</button>
+</div>
 </div>
 </div>
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
-let pending=[],students=[],offerings=[];
+let pending=[],students=[],offerings=[],allStudentNames=[];
+let currentEditId=null,currentEnrollOfferingId=null;
 
 function switchTab(i){
 document.querySelectorAll('.tab-content,.tab').forEach(e=>e.classList.remove('active'));
@@ -122,6 +227,8 @@ const r=await fetch(`${API}?action=getPendingRequests`);
 const d=await r.json();
 pending=d.requests||[];
 document.getElementById('totalPending').textContent=pending.length;
+const uniqueStudents=new Set(pending.map(p=>p.studentName));
+document.getElementById('totalStudentsWaiting').textContent=uniqueStudents.size;
 renderPendingRequests();
 msg('✅ Loaded','success');
 }catch(e){msg('❌ '+e.message,'error')}
@@ -130,66 +237,80 @@ msg('✅ Loaded','success');
 function renderPendingRequests(){
 const c=document.getElementById('pendingContainer');
 if(!pending.length){c.innerHTML='<div class="empty">✅<br>No pending requests</div>';return}
-let html='<table><thead><tr><th>Student</th><th>Classes</th><th>Submitted</th><th style="width:200px">Actions</th></tr></thead><tbody>';
+const grouped={};
 pending.forEach(p=>{
-const date=new Date(p.submitted).toLocaleString();
-html+=`<tr><td><strong>${p.studentName}</strong><br><span class="badge badge-pending">PENDING</span></td>
-<td>${p.totalClasses} classes</td><td>${date}</td>
-<td><button class="btn btn-success btn-small" onclick="viewRequest('${p.requestId}')">View</button>
-<button class="btn btn-primary btn-small" onclick="approveRequest('${p.requestId}')">✓ Approve</button>
-<button class="btn btn-danger btn-small" onclick="denyRequest('${p.requestId}')">✗ Deny</button></td></tr>`;
+if(!grouped[p.studentName])grouped[p.studentName]=[];
+grouped[p.studentName].push(p);
 });
-html+='</tbody></table>';
+let html='';
+Object.keys(grouped).forEach(studentName=>{
+const requests=grouped[studentName];
+const firstReq=requests[0];
+const date=new Date(firstReq.submitted).toLocaleString();
+const baseRequestId=firstReq.requestId.split('_')[0]+'_'+firstReq.requestId.split('_')[1];
+html+=`<div class="request-card">
+<div class="request-header">
+<div><div class="request-student">${studentName}</div>
+<div style="font-size:12px;color:#999">Submitted: ${date}</div></div>
+<div><span class="badge badge-pending">PENDING</span></div>
+</div>`;
+requests.forEach(req=>{
+html+=`<div class="class-row">
+<div class="class-info">
+<div class="class-name">${req.className}</div>
+<div class="class-details">${req.dayTime}</div>
+</div>
+<div class="class-actions">
+<button class="btn btn-success btn-small" onclick="approveClass('${req.requestId}','${req.offeringId}','${studentName}','${req.className}')">✓ Approve</button>
+<button class="btn btn-danger btn-small" onclick="denyClass('${req.requestId}','${req.offeringId}','${studentName}','${req.className}')">✗ Deny</button>
+</div>
+</div>`;
+});
+html+=`<div class="group-actions">
+<button class="btn btn-success btn-small" onclick="approveAllForStudent('${baseRequestId}','${studentName}')">✓ Approve All (${requests.length})</button>
+<button class="btn btn-danger btn-small" onclick="denyAllForStudent('${baseRequestId}','${studentName}')">✗ Deny All</button>
+</div></div>`;
+});
 c.innerHTML=html;
 }
 
-async function viewRequest(id){
-const p=pending.find(r=>r.requestId===id);
-if(!p)return;
-let classes=[];
-try{classes=JSON.parse(p.offeringIds||'[]')}catch(e){}
-const date=new Date(p.submitted).toLocaleString();
-let html=`<div class="detail"><p><strong>Student:</strong> ${p.studentName}</p>
-<p><strong>Submitted:</strong> ${date}</p><p><strong>Classes:</strong> ${p.totalClasses}</p>
-<p><strong>Status:</strong> <span class="badge badge-pending">PENDING APPROVAL</span></p></div>
-<h3>Requested Classes (IDs):</h3>`;
-if(!classes.length){html+='<p style="color:#999">No classes</p>'}
-else{html+='<p>'+classes.join(', ')+'</p>'}
-document.getElementById('detailTitle').textContent='Request: '+p.studentName;
-document.getElementById('detailBody').innerHTML=html;
-document.getElementById('detailFooter').innerHTML=`
-<button class="btn btn-secondary" onclick="closeDetail()">Close</button>
-<button class="btn btn-primary" onclick="approveRequest('${id}');closeDetail()">✓ Approve</button>
-<button class="btn btn-danger" onclick="denyRequest('${id}');closeDetail()">✗ Deny</button>`;
-document.getElementById('detailModal').style.display='block';
-}
-
-async function approveRequest(id){
-if(!confirm('Approve this schedule request?'))return;
+async function approveClass(requestId,offeringId,studentName,className){
+if(!confirm(`Approve "${className}" for ${studentName}?`))return;
 try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'approveRequest',requestId:id})});
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'approveClass',requestId:requestId,offeringId:offeringId})});
 const d=await r.json();
-if(d.success){
-msg('✅ Request approved!','success');
-await loadPendingRequests();
-await loadStudents();
-}else{
-msg('❌ '+d.message,'error');
-}
+if(d.success){msg(`✅ Approved: ${className}`,'success');await loadPendingRequests();await loadStudents();}
+else{msg('❌ '+d.message,'error');}
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
-async function denyRequest(id){
-if(!confirm('Deny this schedule request? Student will not be enrolled.'))return;
+async function denyClass(requestId,offeringId,studentName,className){
+if(!confirm(`Deny "${className}" for ${studentName}?`))return;
 try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'denyRequest',requestId:id})});
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'denyClass',requestId:requestId,offeringId:offeringId})});
 const d=await r.json();
-if(d.success){
-msg('✅ Request denied','success');
-await loadPendingRequests();
-}else{
-msg('❌ '+d.message,'error');
+if(d.success){msg(`✅ Denied: ${className}`,'success');await loadPendingRequests();}
+else{msg('❌ '+d.message,'error');}
+}catch(e){msg('❌ '+e.message,'error')}
 }
+
+async function approveAllForStudent(baseRequestId,studentName){
+if(!confirm(`Approve ALL classes for ${studentName}?`))return;
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'approveAllClasses',requestId:baseRequestId})});
+const d=await r.json();
+if(d.success){msg(`✅ Approved ${d.count} class(es)`,'success');await loadPendingRequests();await loadStudents();}
+else{msg('❌ '+d.message,'error');}
+}catch(e){msg('❌ '+e.message,'error')}
+}
+
+async function denyAllForStudent(baseRequestId,studentName){
+if(!confirm(`Deny ALL classes for ${studentName}?`))return;
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'denyAllClasses',requestId:baseRequestId})});
+const d=await r.json();
+if(d.success){msg(`✅ Denied ${d.count} class(es)`,'success');await loadPendingRequests();}
+else{msg('❌ '+d.message,'error');}
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
@@ -202,6 +323,12 @@ students=d.students||[];
 document.getElementById('totalStudents').textContent=students.length;
 const total=students.reduce((s,st)=>s+(st.totalClasses||0),0);
 document.getElementById('totalEnrollments').textContent=total;
+
+// Also load all student names for dropdown
+const r2=await fetch(`${API}?action=loadStudents`);
+const d2=await r2.json();
+allStudentNames=d2.students||[];
+
 renderStudents();
 msg('✅ Loaded','success');
 }catch(e){msg('❌ '+e.message,'error')}
@@ -228,25 +355,244 @@ offerings=d.offerings||[];
 document.getElementById('totalOfferings').textContent=offerings.length;
 const instructors=new Set(offerings.map(o=>o.instructor));
 document.getElementById('totalInstructors').textContent=instructors.size;
+
+// Also load students to calculate enrollment
+const r2=await fetch(`${API}?action=loadAll`);
+const d2=await r2.json();
+students=d2.students||[];
+
 renderOfferings();
 msg('✅ Loaded','success');
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
+function getEnrolledStudents(offeringId){
+const enrolled=[];
+students.forEach(s=>{
+try{
+const classes=JSON.parse(s.classes||'[]');
+if(classes.includes(offeringId)){
+enrolled.push(s.name);
+}
+}catch(e){}
+});
+return enrolled;
+}
+
 function renderOfferings(){
 const c=document.getElementById('offeringsContainer');
 if(!offerings.length){c.innerHTML='<div class="empty">📚<br>No offerings</div>';return}
-let html='<table><thead><tr><th>Name</th><th>Instructor</th><th>Day</th><th>Time</th><th>Type</th><th>Capacity</th></tr></thead><tbody>';
+let html='<table><thead><tr><th>Name</th><th>Instructor</th><th>Day</th><th>Time</th><th>Type</th><th>Enrolled</th><th>Actions</th></tr></thead><tbody>';
 offerings.forEach(o=>{
 const day=o.day.charAt(0).toUpperCase()+o.day.slice(1);
-html+=`<tr><td><strong>${o.name}</strong></td><td>${o.instructor}</td><td>${day}</td><td style="font-size:11px">${o.time}</td>
-<td>${o.type}</td><td>${o.capacity||999}</td></tr>`;
+const enrolled=getEnrolledStudents(o.id);
+const capacity=o.capacity||999;
+const enrolledCount=enrolled.length;
+const isFull=enrolledCount>=capacity;
+const enrolledBtn=enrolledCount>0?
+`<button class="btn btn-secondary btn-small" onclick="showEnrolledModal(${o.id},'${o.name}')">${enrolledCount}/${capacity} 👥</button>`:
+`<span style="color:#999">${enrolledCount}/${capacity}</span>`;
+
+html+=`<tr style="${isFull?'background:#ffe6e6':''}">
+<td><strong>${o.name}</strong></td>
+<td class="editable-cell" onclick="quickEditInstructor(${o.id},'${o.instructor}')">${o.instructor} <span class="edit-icon">✏️</span></td>
+<td>${day}</td>
+<td style="font-size:11px">${o.time}</td>
+<td>${o.type}</td>
+<td>${enrolledBtn}</td>
+<td>
+<button class="btn btn-warning btn-small" onclick="editOffering(${o.id})">✏️ Edit</button>
+<button class="btn btn-primary btn-small" onclick="showEnrollModal(${o.id},'${o.name}')">➕ Add</button>
+</td>
+</tr>`;
 });
 html+='</tbody></table>';
 c.innerHTML=html;
 }
 
-function closeDetail(){document.getElementById('detailModal').style.display='none'}
+function quickEditInstructor(id,currentName){
+const newName=prompt('Edit Instructor Name:',currentName);
+if(newName&&newName!==currentName){
+updateOfferingField(id,'instructor',newName);
+}
+}
+
+async function updateOfferingField(id,field,value){
+try{
+const offering=offerings.find(o=>o.id===id);
+if(!offering)return;
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'updateOffering',
+offeringId:id,
+name:offering.name,
+instructor:field==='instructor'?value:offering.instructor,
+location:offering.location,
+day:offering.day,
+time:offering.time,
+type:offering.type,
+level:offering.level,
+description:offering.description,
+capacity:offering.capacity
+})});
+const d=await r.json();
+if(d.success){
+msg('✅ Updated instructor','success');
+await loadOfferings();
+}else{
+msg('❌ '+d.message,'error');
+}
+}catch(e){msg('❌ '+e.message,'error')}
+}
+
+function editOffering(id){
+const o=offerings.find(of=>of.id===id);
+if(!o)return;
+currentEditId=id;
+document.getElementById('editModalTitle').textContent='Edit: '+o.name;
+document.getElementById('editName').value=o.name;
+document.getElementById('editInstructor').value=o.instructor;
+document.getElementById('editLocation').value=o.location||'';
+document.getElementById('editDay').value=o.day;
+document.getElementById('editTime').value=o.time;
+document.getElementById('editType').value=o.type;
+document.getElementById('editCapacity').value=o.capacity||999;
+document.getElementById('editModal').style.display='block';
+}
+
+function closeEditModal(){
+document.getElementById('editModal').style.display='none';
+currentEditId=null;
+}
+
+async function saveOffering(){
+if(!currentEditId)return;
+const o=offerings.find(of=>of.id===currentEditId);
+if(!o)return;
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'updateOffering',
+offeringId:currentEditId,
+name:document.getElementById('editName').value,
+instructor:document.getElementById('editInstructor').value,
+location:document.getElementById('editLocation').value,
+day:document.getElementById('editDay').value,
+time:document.getElementById('editTime').value,
+type:document.getElementById('editType').value,
+level:o.level,
+description:o.description,
+capacity:document.getElementById('editCapacity').value
+})});
+const d=await r.json();
+if(d.success){
+msg('✅ Offering updated','success');
+closeEditModal();
+await loadOfferings();
+}else{
+msg('❌ '+d.message,'error');
+}
+}catch(e){msg('❌ '+e.message,'error')}
+}
+
+function showEnrollModal(offeringId,offeringName){
+currentEnrollOfferingId=offeringId;
+document.getElementById('enrollModalTitle').textContent='Add Student to Class';
+document.getElementById('enrollClassName').textContent=offeringName;
+const select=document.getElementById('enrollStudent');
+select.innerHTML='<option value="">-- Select Student --</option>';
+allStudentNames.forEach(name=>{
+select.innerHTML+=`<option value="${name}">${name}</option>`;
+});
+document.getElementById('enrollModal').style.display='block';
+}
+
+function closeEnrollModal(){
+document.getElementById('enrollModal').style.display='none';
+currentEnrollOfferingId=null;
+}
+
+function showEnrolledModal(offeringId,offeringName){
+const offering=offerings.find(o=>o.id===offeringId);
+const enrolled=getEnrolledStudents(offeringId);
+const capacity=offering?offering.capacity||999:999;
+
+document.getElementById('enrolledModalTitle').textContent='Enrolled Students';
+document.getElementById('enrolledClassName').textContent=offeringName;
+
+let html='<div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px">';
+html+=`<p style="margin:0"><strong>Enrolled:</strong> ${enrolled.length} / ${capacity}</p>`;
+if(enrolled.length>=capacity){
+html+=`<p style="margin:5px 0 0;color:#d32f2f;font-weight:bold">⚠️ CLASS IS FULL</p>`;
+}else{
+html+=`<p style="margin:5px 0 0;color:#4CAF50">${capacity-enrolled.length} spot(s) remaining</p>`;
+}
+html+='</div>';
+
+if(enrolled.length===0){
+html+='<p style="text-align:center;color:#999;padding:40px 20px">No students enrolled yet</p>';
+}else{
+html+='<div style="max-height:400px;overflow-y:auto">';
+enrolled.sort().forEach((name,index)=>{
+html+=`<div style="background:white;padding:12px;margin:5px 0;border-radius:4px;border-left:3px solid #2196F3;display:flex;justify-content:space-between;align-items:center">
+<div><strong>${index+1}. ${name}</strong></div>
+<button class="btn btn-danger btn-small" onclick="removeStudentFromClass('${name}',${offeringId},'${offeringName}')">✗ Remove</button>
+</div>`;
+});
+html+='</div>';
+}
+
+document.getElementById('enrolledList').innerHTML=html;
+document.getElementById('enrolledModal').style.display='block';
+}
+
+function closeEnrolledModal(){
+document.getElementById('enrolledModal').style.display='none';
+}
+
+async function removeStudentFromClass(studentName,offeringId,className){
+if(!confirm(`Remove ${studentName} from ${className}?`))return;
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'removeEnrollment',
+studentName:studentName,
+offeringId:offeringId
+})});
+const d=await r.json();
+if(d.success){
+msg(`✅ Removed ${studentName}`,'success');
+await loadStudents();
+await loadOfferings();
+closeEnrolledModal();
+}else{
+msg('❌ '+d.message,'error');
+}
+}catch(e){msg('❌ '+e.message,'error')}
+}
+
+async function addStudentToClass(){
+const studentName=document.getElementById('enrollStudent').value;
+if(!studentName){
+alert('Please select a student');
+return;
+}
+if(!currentEnrollOfferingId)return;
+if(!confirm(`Add ${studentName} to this class?`))return;
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'manualEnroll',
+studentName:studentName,
+offeringId:currentEnrollOfferingId
+})});
+const d=await r.json();
+if(d.success){
+msg(`✅ Added ${studentName} to class`,'success');
+closeEnrollModal();
+await loadStudents();
+}else{
+msg('❌ '+d.message,'error');
+}
+}catch(e){msg('❌ '+e.message,'error')}
+}
+
 function msg(text,type){
 const s=document.getElementById('status');
 s.textContent=text;
@@ -255,7 +601,10 @@ s.style.display='block';
 setTimeout(()=>s.style.display='none',3000);
 }
 
-window.onclick=e=>{if(e.target.classList.contains('modal'))e.target.style.display='none'}
+window.onclick=e=>{
+if(e.target.classList.contains('modal'))e.target.style.display='none';
+}
+
 window.onload=()=>loadPendingRequests();
 </script>
 </body>
