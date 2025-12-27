@@ -281,7 +281,16 @@ row.appendChild(timeCell);
 DAYS.forEach(day=>{
 const cell=document.createElement('td');
 cell.id=`${day}-${block.time}`;
-const dayOfferings=offerings.filter(o=>o.day===day&&o.time===block.time);
+
+// Filter offerings - handle both single and comma-separated days/times
+const dayOfferings=offerings.filter(o=>{
+// Split days and times if comma-separated
+const offeringDays = o.day ? o.day.split(',').map(d=>d.trim().toLowerCase()) : [];
+const offeringTimes = o.time ? o.time.split(',').map(t=>t.trim()) : [];
+
+// Check if this offering matches current day and time
+return offeringDays.includes(day) && offeringTimes.includes(block.time);
+});
 
 dayOfferings.forEach(o=>{
 const enrolled=enrollmentCounts[o.id]||0;
