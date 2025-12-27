@@ -165,13 +165,25 @@ const [off, enroll, students] = await Promise.all([
 console.log('Offerings loaded:', off.offerings?.length || 0);
 console.log('Enrollment data loaded:', Object.keys(enroll.counts || {}).length);
 console.log('Students response:', students);
-console.log('Student names:', students.students);
+console.log('Raw students data:', JSON.stringify(students));
+
+// Handle both response formats
+if (students && students.students && Array.isArray(students.students)) {
+  studentNames = students.students;
+  console.log('Student names (from .students):', studentNames);
+} else if (students && Array.isArray(students)) {
+  studentNames = students;
+  console.log('Student names (direct array):', studentNames);
+} else {
+  studentNames = [];
+  console.warn('Could not parse student names from response');
+}
 
 offerings=off.offerings||[];
 enrollmentCounts=enroll.counts||{};
-studentNames=students.students||[];
 
-console.log('studentNames array:', studentNames);
+console.log('Final studentNames array:', studentNames);
+console.log('Number of students:', studentNames.length);
 
 loadDescriptions();
 populateStudentDropdown();
@@ -464,7 +476,7 @@ const allIds=Object.values(selected).flat();
 if(allIds.length===0){showStatus('⚠️ Please select some classes first','error');return}
 
 try{
-await fetch(API,{
+const response = await fetch(API,{
 method:'POST',
 body:JSON.stringify({
 action:'saveStudentSchedule',
@@ -472,7 +484,13 @@ studentName:name,
 offeringIds:allIds
 })
 });
-showStatus(`✅ Schedule saved! (${allIds.length} classes)`,'success');
+const result = await response.json();
+
+if(result.success){
+showStatus(`⏳ Schedule request submitted! (${allIds.length} classes) - Awaiting admin approval.`,'success');
+}else{
+showStatus('❌ Error: '+result.message,'error');
+}
 }catch(e){showStatus('❌ Error saving: '+e.message,'error')}
 }
 
