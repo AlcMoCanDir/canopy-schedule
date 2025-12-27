@@ -477,6 +477,18 @@ const r2=await fetch(`${API}?action=loadAll`);
 const d2=await r2.json();
 students=d2.students||[];
 
+// Load ALL students from Students sheet (master list) for dropdown
+const r3=await fetch(`${API}?action=getAllStudents`);
+const d3=await r3.json();
+if(d3.success){
+allStudentNames=d3.students||[];
+}else{
+// Fallback to approved students if Students sheet doesn't exist
+const r4=await fetch(`${API}?action=loadStudents`);
+const d4=await r4.json();
+allStudentNames=d4.students?d4.students.map(name=>({id:'',name:name})):[];
+}
+
 renderOfferings();
 msg('✅ Loaded','success');
 }catch(e){msg('❌ '+e.message,'error')}
