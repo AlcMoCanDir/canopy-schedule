@@ -156,27 +156,30 @@ const [off, enroll, students] = await Promise.all([
     console.error('Error loading enrollment:', e);
     return {counts: {}};
   }),
-  fetchWithTimeout(`${API}?action=loadStudents`).then(r=>r.json()).catch(e=>{
+  fetchWithTimeout(`${API}?action=getAllStudents`).then(r=>r.json()).catch(e=>{
     console.error('Error loading students:', e);
-    return {students: []};
+    return {success: false, students: []};
   })
 ]);
 
 console.log('Offerings loaded:', off.offerings?.length || 0);
 console.log('Enrollment data loaded:', Object.keys(enroll.counts || {}).length);
 console.log('Students response:', students);
-console.log('Raw students data:', JSON.stringify(students));
 
-// Handle both response formats
-if (students && students.students && Array.isArray(students.students)) {
+// Handle getAllStudents response (with student objects)
+if (students && students.success && Array.isArray(students.students)) {
+  // Students sheet exists - use it (includes ID, name, grade, level)
   studentNames = students.students;
-  console.log('Student names (from .students):', studentNames);
-} else if (students && Array.isArray(students)) {
-  studentNames = students;
-  console.log('Student names (direct array):', studentNames);
+  console.log('Student names from Students sheet:', studentNames);
 } else {
-  studentNames = [];
-  console.warn('Could not parse student names from response');
+  // Fallback to approved students if Students sheet doesn't exist
+  const fallback = await fetchWithTimeout(`${API}?action=loadStudents`).then(r=>r.json()).catch(e=>({students: []}));
+  if (fallback.students && Array.isArray(fallback.students)) {
+    studentNames = fallback.students.map(name => typeof name === 'string' ? {id: '', name: name} : name);
+  } else {
+    studentNames = [];
+  }
+  console.log('Student names from fallback:', studentNames);
 }
 
 offerings=off.offerings||[];
@@ -214,12 +217,33 @@ select.appendChild(option);
 return;
 }
 
-studentNames.sort().forEach(name=>{
+// Sort students by name
+const sortedStudents = [...studentNames].sort((a,b)=>{
+const nameA = typeof a === 'string' ? a : (a.name || '');
+const nameB = typeof b === 'string' ? b : (b.name || '');
+return nameA.localeCompare(nameB);
+});
+
+sortedStudents.forEach(student=>{
 const option=document.createElement('option');
-option.value=name;
-option.textContent=name;
+// Handle both string names and student objects
+if (typeof student === 'string') {
+option.value = student;
+option.textContent = student;
+} else {
+const name = student.name || '';
+const id = student.id || '';
+const grade = student.grade || '';
+const level = student.level || '';
+option.value = name;
+let displayText = name;
+if (id) displayText += ` (ID: ${id})`;
+if (grade) displayText += ` - Grade ${grade}`;
+if (level) displayText += ` - ${level}`;
+option.textContent = displayText;
+}
 select.appendChild(option);
-console.log('Added student:', name);
+console.log('Added student:', option.textContent);
 });
 
 console.log('Dropdown populated with', select.options.length - 1, 'students');
