@@ -103,6 +103,7 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <div class="stat-card orange"><h3 id="totalInstructors">0</h3><p>Instructors</p></div>
 </div>
 <div class="actions">
+<button class="btn btn-primary" onclick="showCreateOfferingModal()">➕ Create New Offering</button>
 <button class="btn btn-secondary" onclick="loadOfferings()">🔄 Refresh</button>
 </div>
 <div id="offeringsContainer"><div class="loading"><div class="spinner"></div></div></div>
@@ -118,20 +119,20 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 </div>
 <div class="modal-body">
 <div class="form-group">
-<label>Class Name</label>
-<input type="text" id="editName" placeholder="Math(A)">
+<label>Class Name *</label>
+<input type="text" id="editName" placeholder="Math(A)" required>
 </div>
 <div class="form-group">
-<label>Instructor/Facilitator</label>
-<input type="text" id="editInstructor" placeholder="Anna">
+<label>Instructor/Facilitator *</label>
+<input type="text" id="editInstructor" placeholder="Anna" required>
 </div>
 <div class="form-group">
 <label>Location</label>
 <input type="text" id="editLocation" placeholder="Room 101">
 </div>
 <div class="form-group">
-<label>Day</label>
-<select id="editDay">
+<label>Day *</label>
+<select id="editDay" required>
 <option value="monday">Monday</option>
 <option value="tuesday">Tuesday</option>
 <option value="wednesday">Wednesday</option>
@@ -140,25 +141,111 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 </select>
 </div>
 <div class="form-group">
-<label>Time</label>
-<input type="text" id="editTime" placeholder="10:00-10:45">
+<label>Time *</label>
+<input type="text" id="editTime" placeholder="10:00-10:45" required>
 </div>
 <div class="form-group">
-<label>Type</label>
-<select id="editType">
+<label>Type *</label>
+<select id="editType" required>
 <option value="commitment">Commitment</option>
 <option value="drop-in">Drop-in</option>
 <option value="private">Private</option>
 </select>
 </div>
 <div class="form-group">
-<label>Capacity</label>
-<input type="number" id="editCapacity" placeholder="12">
+<label>Level</label>
+<select id="editLevel">
+<option value="">All Levels</option>
+<option value="acorns">Acorns</option>
+<option value="canopy">Canopy</option>
+<option value="canopy+">Canopy+</option>
+<option value="mixed">Mixed Age</option>
+</select>
 </div>
+<div class="form-group">
+<label>Description</label>
+<textarea id="editDescription" placeholder="Describe what students will learn and do in this class..." rows="4"></textarea>
+</div>
+<div class="form-group">
+<label>Capacity *</label>
+<input type="number" id="editCapacity" placeholder="12" min="1" required>
+</div>
+<p style="font-size:12px;color:#666;margin-top:10px">* Required fields</p>
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
 <button class="btn btn-primary" onclick="saveOffering()">💾 Save Changes</button>
+</div>
+</div>
+</div>
+
+<!-- CREATE OFFERING MODAL -->
+<div id="createModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close" onclick="closeCreateModal()">&times;</span>
+<h2>Create New Offering</h2>
+</div>
+<div class="modal-body">
+<div class="form-group">
+<label>Class Name *</label>
+<input type="text" id="createName" placeholder="Math(A)" required>
+</div>
+<div class="form-group">
+<label>Instructor/Facilitator *</label>
+<input type="text" id="createInstructor" placeholder="Anna" required>
+</div>
+<div class="form-group">
+<label>Location</label>
+<input type="text" id="createLocation" placeholder="Room 101">
+</div>
+<div class="form-group">
+<label>Day *</label>
+<select id="createDay" required>
+<option value="">-- Select Day --</option>
+<option value="monday">Monday</option>
+<option value="tuesday">Tuesday</option>
+<option value="wednesday">Wednesday</option>
+<option value="thursday">Thursday</option>
+<option value="friday">Friday</option>
+</select>
+</div>
+<div class="form-group">
+<label>Time *</label>
+<input type="text" id="createTime" placeholder="10:00-10:45" required>
+</div>
+<div class="form-group">
+<label>Type *</label>
+<select id="createType" required>
+<option value="">-- Select Type --</option>
+<option value="commitment">Commitment</option>
+<option value="drop-in">Drop-in</option>
+<option value="private">Private</option>
+</select>
+</div>
+<div class="form-group">
+<label>Level</label>
+<select id="createLevel">
+<option value="">All Levels</option>
+<option value="acorns">Acorns</option>
+<option value="canopy">Canopy</option>
+<option value="canopy+">Canopy+</option>
+<option value="mixed">Mixed Age</option>
+</select>
+</div>
+<div class="form-group">
+<label>Description</label>
+<textarea id="createDescription" placeholder="Describe what students will learn and do in this class..." rows="4"></textarea>
+</div>
+<div class="form-group">
+<label>Capacity *</label>
+<input type="number" id="createCapacity" placeholder="12" min="1" value="12" required>
+</div>
+<p style="font-size:12px;color:#666;margin-top:10px">* Required fields</p>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+<button class="btn btn-primary" onclick="createOffering()">➕ Create Offering</button>
 </div>
 </div>
 </div>
@@ -324,10 +411,17 @@ document.getElementById('totalStudents').textContent=students.length;
 const total=students.reduce((s,st)=>s+(st.totalClasses||0),0);
 document.getElementById('totalEnrollments').textContent=total;
 
-// Also load all student names for dropdown
-const r2=await fetch(`${API}?action=loadStudents`);
+// Load ALL students from Students sheet (master list)
+const r2=await fetch(`${API}?action=getAllStudents`);
 const d2=await r2.json();
+if(d2.success){
 allStudentNames=d2.students||[];
+}else{
+// Fallback to approved students if Students sheet doesn't exist
+const r3=await fetch(`${API}?action=loadStudents`);
+const d3=await r3.json();
+allStudentNames=d3.students?d3.students.map(name=>({id:'',name:name})):[];
+}
 
 renderStudents();
 msg('✅ Loaded','success');
@@ -455,7 +549,9 @@ document.getElementById('editLocation').value=o.location||'';
 document.getElementById('editDay').value=o.day;
 document.getElementById('editTime').value=o.time;
 document.getElementById('editType').value=o.type;
-document.getElementById('editCapacity').value=o.capacity||999;
+document.getElementById('editLevel').value=o.level||'';
+document.getElementById('editDescription').value=o.description||'';
+document.getElementById('editCapacity').value=o.capacity||12;
 document.getElementById('editModal').style.display='block';
 }
 
@@ -464,23 +560,88 @@ document.getElementById('editModal').style.display='none';
 currentEditId=null;
 }
 
+function showCreateOfferingModal(){
+document.getElementById('createName').value='';
+document.getElementById('createInstructor').value='';
+document.getElementById('createLocation').value='';
+document.getElementById('createDay').value='';
+document.getElementById('createTime').value='';
+document.getElementById('createType').value='';
+document.getElementById('createLevel').value='';
+document.getElementById('createDescription').value='';
+document.getElementById('createCapacity').value='12';
+document.getElementById('createModal').style.display='block';
+}
+
+function closeCreateModal(){
+document.getElementById('createModal').style.display='none';
+}
+
+async function createOffering(){
+const name=document.getElementById('createName').value.trim();
+const instructor=document.getElementById('createInstructor').value.trim();
+const day=document.getElementById('createDay').value;
+const time=document.getElementById('createTime').value.trim();
+const type=document.getElementById('createType').value;
+
+if(!name||!instructor||!day||!time||!type){
+alert('Please fill in all required fields (marked with *)');
+return;
+}
+
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'saveOffering',
+name:name,
+instructor:instructor,
+location:document.getElementById('createLocation').value.trim(),
+day:day,
+time:time,
+type:type,
+level:document.getElementById('createLevel').value,
+description:document.getElementById('createDescription').value.trim(),
+capacity:parseInt(document.getElementById('createCapacity').value)||12
+})});
+const d=await r.json();
+if(d.success){
+msg(`✅ Created: ${name}`,'success');
+closeCreateModal();
+await loadOfferings();
+}else{
+msg('❌ '+d.message,'error');
+}
+}catch(e){msg('❌ '+e.message,'error')}
+}
+
 async function saveOffering(){
 if(!currentEditId)return;
 const o=offerings.find(of=>of.id===currentEditId);
 if(!o)return;
+
+const name=document.getElementById('editName').value.trim();
+const instructor=document.getElementById('editInstructor').value.trim();
+const day=document.getElementById('editDay').value;
+const time=document.getElementById('editTime').value.trim();
+const type=document.getElementById('editType').value;
+
+if(!name||!instructor||!day||!time||!type){
+alert('Please fill in all required fields (marked with *)');
+return;
+}
+
 try{
 const r=await fetch(API,{method:'POST',body:JSON.stringify({
 action:'updateOffering',
 offeringId:currentEditId,
-name:document.getElementById('editName').value,
-instructor:document.getElementById('editInstructor').value,
-location:document.getElementById('editLocation').value,
-day:document.getElementById('editDay').value,
-time:document.getElementById('editTime').value,
-type:document.getElementById('editType').value,
-level:o.level,
-description:o.description,
-capacity:document.getElementById('editCapacity').value
+name:name,
+instructor:instructor,
+location:document.getElementById('editLocation').value.trim(),
+day:day,
+time:time,
+type:type,
+level:document.getElementById('editLevel').value,
+description:document.getElementById('editDescription').value.trim(),
+capacity:parseInt(document.getElementById('editCapacity').value)||12
 })});
 const d=await r.json();
 if(d.success){
@@ -499,9 +660,26 @@ document.getElementById('enrollModalTitle').textContent='Add Student to Class';
 document.getElementById('enrollClassName').textContent=offeringName;
 const select=document.getElementById('enrollStudent');
 select.innerHTML='<option value="">-- Select Student --</option>';
-allStudentNames.forEach(name=>{
-select.innerHTML+=`<option value="${name}">${name}</option>`;
+
+// Sort students by name
+const sortedStudents=[...allStudentNames].sort((a,b)=>{
+const nameA=a.name||a;
+const nameB=b.name||b;
+return nameA.localeCompare(nameB);
 });
+
+sortedStudents.forEach(student=>{
+const name=student.name||student;
+const id=student.id||'';
+const grade=student.grade||'';
+const level=student.level||'';
+let displayText=name;
+if(id)displayText+=` (ID: ${id})`;
+if(grade)displayText+=` - Grade ${grade}`;
+if(level)displayText+=` - ${level}`;
+select.innerHTML+=`<option value="${name}" data-id="${id}">${displayText}</option>`;
+});
+
 document.getElementById('enrollModal').style.display='block';
 }
 
