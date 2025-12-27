@@ -277,23 +277,28 @@ Create separate offering for each day/block combination
 <div class="modal-content">
 <div class="modal-header">
 <span class="close" onclick="closeEnrollModal()">&times;</span>
-<h2 id="enrollModalTitle">Add Student to Class</h2>
+<h2 id="enrollModalTitle">Add Students to Class</h2>
 </div>
 <div class="modal-body">
 <p id="enrollClassName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
 <div class="form-group">
-<label>Select Student</label>
-<select id="enrollStudent">
-<option value="">-- Select Student --</option>
+<label>Select Students (Hold Ctrl/Cmd to select multiple)</label>
+<select id="enrollStudent" multiple size="10">
+<option value="">-- Loading students... --</option>
 </select>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple students</p>
+</div>
+<div id="enrollPreview" style="background:#f8f9fa;padding:10px;border-radius:4px;margin-top:10px;display:none">
+<strong>Selected students:</strong>
+<div id="enrollPreviewList" style="margin-top:5px;font-size:13px"></div>
 </div>
 <p style="font-size:12px;color:#666;margin-top:10px">
-This will add the class to the student's approved schedule.
+This will add the class to the selected students' approved schedules.
 </p>
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" onclick="closeEnrollModal()">Cancel</button>
-<button class="btn btn-primary" onclick="addStudentToClass()">➕ Add Student</button>
+<button class="btn btn-primary" onclick="addStudentsToClass()">➕ Add Student(s)</button>
 </div>
 </div>
 </div>
@@ -768,10 +773,10 @@ msg('❌ '+d.message,'error');
 
 function showEnrollModal(offeringId,offeringName){
 currentEnrollOfferingId=offeringId;
-document.getElementById('enrollModalTitle').textContent='Add Student to Class';
+document.getElementById('enrollModalTitle').textContent='Add Students to Class';
 document.getElementById('enrollClassName').textContent=offeringName;
 const select=document.getElementById('enrollStudent');
-select.innerHTML='<option value="">-- Select Student --</option>';
+select.innerHTML='';
 
 // Sort students by name
 const sortedStudents=[...allStudentNames].sort((a,b)=>{
@@ -792,7 +797,24 @@ if(level)displayText+=` - ${level}`;
 select.innerHTML+=`<option value="${name}" data-id="${id}">${displayText}</option>`;
 });
 
+// Add event listener for preview
+select.addEventListener('change',updateEnrollPreview);
+document.getElementById('enrollPreview').style.display='none';
 document.getElementById('enrollModal').style.display='block';
+}
+
+function updateEnrollPreview(){
+const select=document.getElementById('enrollStudent');
+const selectedOptions=Array.from(select.selectedOptions);
+const preview=document.getElementById('enrollPreview');
+const previewList=document.getElementById('enrollPreviewList');
+
+if(selectedOptions.length>0){
+preview.style.display='block';
+previewList.innerHTML=selectedOptions.map((opt,i)=>`${i+1}. ${opt.text}`).join('<br>');
+}else{
+preview.style.display='none';
+}
 }
 
 function closeEnrollModal(){
@@ -858,15 +880,26 @@ msg('❌ '+d.message,'error');
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
-async function addStudentToClass(){
-const studentName=document.getElementById('enrollStudent').value;
-if(!studentName){
-alert('Please select a student');
+async function addStudentsToClass(){
+const select=document.getElementById('enrollStudent');
+const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
+
+if(selectedStudents.length===0){
+alert('Please select at least one student');
 return;
 }
 if(!currentEnrollOfferingId)return;
-if(!confirm(`Add ${studentName} to this class?`))return;
+
+const count=selectedStudents.length;
+const studentText=count===1?selectedStudents[0]:`${count} students`;
+if(!confirm(`Add ${studentText} to this class?`))return;
+
 try{
+let succeeded=0;
+let failed=0;
+const errors=[];
+
+for(const studentName of selectedStudents){
 const r=await fetch(API,{method:'POST',body:JSON.stringify({
 action:'manualEnroll',
 studentName:studentName,
@@ -874,11 +907,23 @@ offeringId:currentEnrollOfferingId
 })});
 const d=await r.json();
 if(d.success){
-msg(`✅ Added ${studentName} to class`,'success');
-closeEnrollModal();
-await loadStudents();
+succeeded++;
 }else{
-msg('❌ '+d.message,'error');
+failed++;
+errors.push(`${studentName}: ${d.message}`);
+}
+}
+
+if(succeeded>0){
+msg(`✅ Added ${succeeded} student(s) to class`,'success');
+await loadStudents();
+await loadOfferings();
+}
+if(failed>0){
+msg(`⚠️ ${failed} failed: ${errors.join(', ')}`,'error');
+}
+if(succeeded>0){
+closeEnrollModal();
 }
 }catch(e){msg('❌ '+e.message,'error')}
 }
