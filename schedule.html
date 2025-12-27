@@ -462,9 +462,43 @@ cell.innerHTML='<div style="color:#ccc;text-align:center;padding:10px">-</div>';
 ids.forEach(id=>{
 const o=offerings.find(of=>of.id===id);
 if(o){
+const enrolled=enrollmentCounts[o.id]||0;
+const capacity=Number(o.capacity)||999;
+const desc=descriptions[o.name]||o.description||'';
+
 const div=document.createElement('div');
 div.className='my-schedule-card';
-div.innerHTML=`<strong>${o.name}</strong><br><small>👤 ${o.instructor}</small>`;
+div.style.cursor=desc?'pointer':'default';
+div.innerHTML=`
+<div style="display:flex;justify-content:space-between;align-items:start">
+<div style="flex:1">
+<strong style="font-size:14px">${o.name}</strong>
+${desc?'<span style="font-size:10px;color:#999;margin-left:5px">▼</span>':''}
+<div style="font-size:11px;color:#666;margin-top:4px">
+👤 ${o.instructor}<br>
+📍 ${o.location||'TBA'}<br>
+${o.level?`📊 ${o.level.charAt(0).toUpperCase()+o.level.slice(1)}<br>`:''}
+👥 ${enrolled}/${capacity} enrolled
+</div>
+${desc?`<div class="class-desc" style="display:none;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #ddd;line-height:1.4">${desc}</div>`:''}
+</div>
+</div>
+`;
+
+if(desc){
+div.onclick=function(){
+const descDiv=this.querySelector('.class-desc');
+const arrow=this.querySelector('span');
+if(descDiv.style.display==='none'){
+descDiv.style.display='block';
+arrow.textContent='▲';
+}else{
+descDiv.style.display='none';
+arrow.textContent='▼';
+}
+};
+}
+
 cell.appendChild(div);
 }
 });
