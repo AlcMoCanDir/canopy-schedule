@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canopy Admin - Enhanced</title>
+<title>Facilitator Dashboard</title>
 <style>
 *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5}
 .container{max-width:1600px;margin:0 auto;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
@@ -54,6 +54,18 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .class-details{font-size:12px;color:#666;margin-top:3px}
 .class-actions{display:flex;gap:5px}
 .group-actions{margin-top:10px;padding-top:10px;border-top:1px solid #ddd;display:flex;gap:10px;justify-content:flex-end}
+.attendance-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px;margin-top:20px}
+.attendance-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;box-shadow:0 2px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:15px;transition:all 0.2s}
+.attendance-card:hover{box-shadow:0 4px 8px rgba(0,0,0,0.1)}
+.attendance-card.present{border-left:4px solid #4CAF50;background:#f1f8f4}
+.attendance-card.absent{border-left:4px solid #ddd;background:#fafafa;opacity:0.7}
+.attendance-checkbox{width:24px;height:24px;cursor:pointer}
+.attendance-name{font-size:15px;font-weight:600;color:#333;flex:1}
+.attendance-info{font-size:12px;color:#666;margin-top:3px}
+.attendance-summary{background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:20px;display:flex;gap:30px;align-items:center}
+.attendance-stat{text-align:center}
+.attendance-stat-number{font-size:28px;font-weight:bold;color:#4CAF50}
+.attendance-stat-label{font-size:12px;color:#666;margin-top:3px}
 .editable-cell{cursor:pointer;position:relative;padding:8px;border-radius:4px}
 .editable-cell:hover{background:#e3f2fd}
 .edit-icon{font-size:10px;color:#999;margin-left:5px}
@@ -63,13 +75,14 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 </head>
 <body>
 <div class="container">
-<h1>🎓 Canopy Admin - Enhanced</h1>
-<h2>Session 3 (2025-2026) - Edit Offerings & Manual Enrollment</h2>
+<h1>Facilitator Dashboard</h1>
+<h2>Session 3: Jan-Feb 2026</h2>
 <div id="status" class="status"></div>
 <div class="tabs">
 <button class="tab active" onclick="switchTab(0)">⏳ Pending Requests</button>
 <button class="tab" onclick="switchTab(1)">👥 Students</button>
 <button class="tab" onclick="switchTab(2)">📚 Offerings</button>
+<button class="tab" onclick="switchTab(3)">✅ Attendance</button>
 </div>
 
 <!-- PENDING REQUESTS TAB -->
@@ -86,10 +99,6 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 
 <!-- STUDENTS TAB -->
 <div id="students" class="tab-content">
-<div class="stats">
-<div class="stat-card"><h3 id="totalStudents">0</h3><p>Approved Students</p></div>
-<div class="stat-card orange"><h3 id="totalEnrollments">0</h3><p>Total Enrollments</p></div>
-</div>
 <div class="actions">
 <button class="btn btn-secondary" onclick="loadStudents()">🔄 Refresh</button>
 </div>
@@ -100,13 +109,72 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <div id="offerings" class="tab-content">
 <div class="stats">
 <div class="stat-card"><h3 id="totalOfferings">0</h3><p>Offerings</p></div>
-<div class="stat-card orange"><h3 id="totalInstructors">0</h3><p>Instructors</p></div>
 </div>
 <div class="actions">
 <button class="btn btn-primary" onclick="showCreateOfferingModal()">➕ Create New Offering</button>
 <button class="btn btn-secondary" onclick="loadOfferings()">🔄 Refresh</button>
 </div>
+<div class="actions" style="margin-top:10px">
+<label for="sortBy" style="font-weight:bold;color:#333">Sort By:</label>
+<select id="sortBy" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<option value="default">Default (Day/Time)</option>
+<option value="name">Class Name (A-Z)</option>
+<option value="instructor">Instructor (A-Z)</option>
+<option value="type">Type</option>
+<option value="level">Level</option>
+<option value="enrollment">Enrollment (High to Low)</option>
+</select>
+
+<label for="filterType" style="font-weight:bold;color:#333">Filter Type:</label>
+<select id="filterType" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<option value="">All Types</option>
+<option value="commitment">Commitment</option>
+<option value="drop-in">Drop-in</option>
+<option value="private">Private</option>
+</select>
+
+<label for="filterLevel" style="font-weight:bold;color:#333">Filter Level:</label>
+<select id="filterLevel" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<option value="">All Levels</option>
+<option value="acorns">Acorns</option>
+<option value="canopy">Canopy</option>
+<option value="canopy+">Canopy+</option>
+<option value="saplings+">Saplings+</option>
+<option value="playyard+">Playyard</option>
+<option value="mixed">Mixed Age</option>
+</select>
+
+<label for="filterDay" style="font-weight:bold;color:#333">Filter Day:</label>
+<select id="filterDay" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<option value="">All Days</option>
+<option value="monday">Monday</option>
+<option value="tuesday">Tuesday</option>
+<option value="wednesday">Wednesday</option>
+<option value="thursday">Thursday</option>
+<option value="friday">Friday</option>
+</select>
+</div>
 <div id="offeringsContainer"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+
+<!-- ATTENDANCE TAB -->
+<div id="attendance" class="tab-content">
+<div class="actions">
+<label for="attendanceDate" style="font-weight:bold;color:#333">Date:</label>
+<input type="date" id="attendanceDate" onchange="loadAttendanceForDate()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+
+<label for="attendanceOffering" style="font-weight:bold;color:#333">Select Offering:</label>
+<select id="attendanceOffering" onchange="loadAttendanceRoster()" style="padding:8px;border:1px solid #ddd;border-radius:4px;min-width:250px">
+<option value="">-- Select Offering --</option>
+</select>
+
+<button class="btn btn-secondary" onclick="loadAttendanceTab()">🔄 Refresh</button>
+</div>
+<div id="attendanceContainer">
+<div style="text-align:center;padding:60px 20px;color:#999">
+<p style="font-size:18px">Select a date and offering to mark attendance</p>
+</div>
+</div>
 </div>
 </div>
 
@@ -119,7 +187,7 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 </div>
 <div class="modal-body">
 <div class="form-group">
-<label>Class Name *</label>
+<label>Offering Name *</label>
 <input type="text" id="editName" placeholder="Math(A)" required>
 </div>
 <div class="form-group">
@@ -157,9 +225,9 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <select id="editLevel">
 <option value="">All Levels</option>
 <option value="acorns">Acorns</option>
+<option value="canopy">Canopy</option>
 <option value="canopy+">Canopy+</option>
-<option value="saplings+">Saplings+</option>
-<option value="playyard+">Playyard</option>
+<option value="mixed">Mixed Age</option>
 </select>
 </div>
 <div class="form-group">
@@ -188,7 +256,7 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 </div>
 <div class="modal-body">
 <div class="form-group">
-<label>Class Name *</label>
+<label>Offering Name *</label>
 <input type="text" id="createName" placeholder="Math(A)" required>
 </div>
 <div class="form-group">
@@ -276,7 +344,7 @@ Create separate offering for each day/block combination
 <div class="modal-content">
 <div class="modal-header">
 <span class="close" onclick="closeEnrollModal()">&times;</span>
-<h2 id="enrollModalTitle">Add Students to Class</h2>
+<h2 id="enrollModalTitle">Add Students to Offering</h2>
 </div>
 <div class="modal-body">
 <p id="enrollClassName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
@@ -292,7 +360,7 @@ Create separate offering for each day/block combination
 <div id="enrollPreviewList" style="margin-top:5px;font-size:13px"></div>
 </div>
 <p style="font-size:12px;color:#666;margin-top:10px">
-This will add the class to the selected students' approved schedules.
+This will add the offering to the selected students' approved schedules.
 </p>
 </div>
 <div class="modal-footer">
@@ -331,6 +399,7 @@ document.querySelectorAll('.tab-content')[i].classList.add('active');
 if(i===0)loadPendingRequests();
 if(i===1)loadStudents();
 if(i===2)loadOfferings();
+if(i===3)loadAttendanceTab();
 }
 
 async function loadPendingRequests(){
@@ -433,9 +502,6 @@ document.getElementById('studentsContainer').innerHTML='<div class="loading"><di
 const r=await fetch(`${API}?action=loadAll`);
 const d=await r.json();
 students=d.students||[];
-document.getElementById('totalStudents').textContent=students.length;
-const total=students.reduce((s,st)=>s+(st.totalClasses||0),0);
-document.getElementById('totalEnrollments').textContent=total;
 
 // Load ALL students from Students sheet (master list)
 const r2=await fetch(`${API}?action=getAllStudents`);
@@ -473,8 +539,6 @@ const r=await fetch(`${API}?action=loadOfferings`);
 const d=await r.json();
 offerings=d.offerings||[];
 document.getElementById('totalOfferings').textContent=offerings.length;
-const instructors=new Set(offerings.map(o=>o.instructor));
-document.getElementById('totalInstructors').textContent=instructors.size;
 
 // Also load students to calculate enrollment
 const r2=await fetch(`${API}?action=loadAll`);
@@ -511,11 +575,67 @@ enrolled.push(s.name);
 return enrolled;
 }
 
+function applyOfferingFilters(){
+renderOfferings();
+}
+
+function getFilteredAndSortedOfferings(){
+const sortBy=document.getElementById('sortBy').value;
+const filterType=document.getElementById('filterType').value;
+const filterLevel=document.getElementById('filterLevel').value;
+const filterDay=document.getElementById('filterDay').value;
+
+// Filter
+let filtered=offerings.filter(o=>{
+if(filterType&&o.type!==filterType)return false;
+if(filterLevel&&o.level!==filterLevel)return false;
+if(filterDay){
+const days=o.day.split(',').map(d=>d.trim().toLowerCase());
+if(!days.includes(filterDay))return false;
+}
+return true;
+});
+
+// Sort
+if(sortBy==='name'){
+filtered.sort((a,b)=>a.name.localeCompare(b.name));
+}else if(sortBy==='instructor'){
+filtered.sort((a,b)=>a.instructor.localeCompare(b.instructor));
+}else if(sortBy==='type'){
+filtered.sort((a,b)=>a.type.localeCompare(b.type));
+}else if(sortBy==='level'){
+filtered.sort((a,b)=>(a.level||'').localeCompare(b.level||''));
+}else if(sortBy==='enrollment'){
+filtered.sort((a,b)=>{
+const enrollA=getEnrolledStudents(a.id).length;
+const enrollB=getEnrolledStudents(b.id).length;
+return enrollB-enrollA;
+});
+}else{
+// Default: sort by day then time
+filtered.sort((a,b)=>{
+const dayOrder=['monday','tuesday','wednesday','thursday','friday'];
+const dayA=dayOrder.indexOf(a.day.split(',')[0].trim().toLowerCase());
+const dayB=dayOrder.indexOf(b.day.split(',')[0].trim().toLowerCase());
+if(dayA!==dayB)return dayA-dayB;
+return a.time.localeCompare(b.time);
+});
+}
+
+return filtered;
+}
+
 function renderOfferings(){
 const c=document.getElementById('offeringsContainer');
-if(!offerings.length){c.innerHTML='<div class="empty">📚<br>No offerings</div>';return}
+const filtered=getFilteredAndSortedOfferings();
+
+if(filtered.length===0){
+c.innerHTML='<div class="empty">📚<br>No offerings match your filters</div>';
+return;
+}
+
 let html='<table><thead><tr><th>Name</th><th>Instructor</th><th>Day</th><th>Time</th><th>Type</th><th>Enrolled</th><th>Actions</th></tr></thead><tbody>';
-offerings.forEach(o=>{
+filtered.forEach(o=>{
 const day=o.day.charAt(0).toUpperCase()+o.day.slice(1);
 const enrolled=getEnrolledStudents(o.id);
 const capacity=o.capacity||999;
@@ -772,7 +892,7 @@ msg('❌ '+d.message,'error');
 
 function showEnrollModal(offeringId,offeringName){
 currentEnrollOfferingId=offeringId;
-document.getElementById('enrollModalTitle').textContent='Add Students to Class';
+document.getElementById('enrollModalTitle').textContent='Add Students to Offering';
 document.getElementById('enrollClassName').textContent=offeringName;
 const select=document.getElementById('enrollStudent');
 select.innerHTML='';
@@ -891,7 +1011,7 @@ if(!currentEnrollOfferingId)return;
 
 const count=selectedStudents.length;
 const studentText=count===1?selectedStudents[0]:`${count} students`;
-if(!confirm(`Add ${studentText} to this class?`))return;
+if(!confirm(`Add ${studentText} to this offering?`))return;
 
 try{
 let succeeded=0;
@@ -914,7 +1034,7 @@ errors.push(`${studentName}: ${d.message}`);
 }
 
 if(succeeded>0){
-msg(`✅ Added ${succeeded} student(s) to class`,'success');
+msg(`✅ Added ${succeeded} student(s) to offering`,'success');
 await loadStudents();
 await loadOfferings();
 }
@@ -933,6 +1053,191 @@ s.textContent=text;
 s.className='status '+type;
 s.style.display='block';
 setTimeout(()=>s.style.display='none',3000);
+}
+
+// ATTENDANCE FUNCTIONS
+let attendanceData={};
+
+function loadAttendanceTab(){
+// Set today's date
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('attendanceDate').value=today;
+
+// Populate offerings dropdown
+const select=document.getElementById('attendanceOffering');
+select.innerHTML='<option value="">-- Select Class --</option>';
+offerings.forEach(o=>{
+const day=o.day.charAt(0).toUpperCase()+o.day.slice(1);
+select.innerHTML+=`<option value="${o.id}">${o.name} - ${day} ${o.time}</option>`;
+});
+
+loadAttendanceForDate();
+}
+
+async function loadAttendanceForDate(){
+const date=document.getElementById('attendanceDate').value;
+if(!date)return;
+
+try{
+const r=await fetch(`${API}?action=getAttendance&date=${date}`);
+const d=await r.json();
+attendanceData=d.attendance||{};
+loadAttendanceRoster();
+}catch(e){
+console.error('Error loading attendance:',e);
+attendanceData={};
+}
+}
+
+function loadAttendanceRoster(){
+const offeringId=document.getElementById('attendanceOffering').value;
+const date=document.getElementById('attendanceDate').value;
+const container=document.getElementById('attendanceContainer');
+
+if(!offeringId||!date){
+container.innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">Select a date and class to mark attendance</p></div>';
+return;
+}
+
+const offering=offerings.find(o=>o.id==offeringId);
+if(!offering){
+container.innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p>Offering not found</p></div>';
+return;
+}
+
+const enrolled=getEnrolledStudents(offeringId);
+const key=`${date}_${offeringId}`;
+const presentList=attendanceData[key]||[];
+
+// Default: all enrolled students are checked (present) unless marked absent
+let studentStatuses=new Map();
+
+// First, mark all enrolled students as present by default
+enrolled.forEach(name=>{
+studentStatuses.set(name,{enrolled:true,present:true});
+});
+
+// Then update based on actual attendance data if it exists
+if(presentList.length>0){
+// If we have attendance data, respect it
+enrolled.forEach(name=>{
+studentStatuses.set(name,{enrolled:true,present:presentList.includes(name)});
+});
+// Check for other students who attended
+presentList.forEach(name=>{
+if(!enrolled.includes(name)){
+studentStatuses.set(name,{enrolled:false,present:true});
+}
+});
+}
+
+const totalPresent=Array.from(studentStatuses.values()).filter(s=>s.present).length;
+const totalAbsent=Array.from(studentStatuses.values()).filter(s=>!s.present).length;
+
+let html=`<div class="attendance-summary">
+<div>
+<strong style="font-size:16px">${offering.name}</strong><br>
+<span style="font-size:13px;color:#666">${new Date(date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</span>
+</div>
+<div style="flex:1"></div>
+<div class="attendance-stat">
+<div class="attendance-stat-number" style="color:#4CAF50">${totalPresent}</div>
+<div class="attendance-stat-label">Present</div>
+</div>
+<div class="attendance-stat">
+<div class="attendance-stat-number" style="color:#999">${totalAbsent}</div>
+<div class="attendance-stat-label">Absent</div>
+</div>
+<div class="attendance-stat">
+<div class="attendance-stat-number">${enrolled.length}</div>
+<div class="attendance-stat-label">Enrolled</div>
+</div>
+<button class="btn btn-secondary btn-small" onclick="showAddOtherModal(${offeringId},'${date}')" style="margin-left:15px">➕ Add Other Student</button>
+</div>`;
+
+if(studentStatuses.size===0){
+html+='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">No students enrolled in this offering</p></div>';
+container.innerHTML=html;
+return;
+}
+
+html+='<div class="attendance-roster">';
+// Sort: enrolled first, then other
+const sortedStudents=Array.from(studentStatuses.entries()).sort((a,b)=>{
+if(a[1].enrolled&&!b[1].enrolled)return -1;
+if(!a[1].enrolled&&b[1].enrolled)return 1;
+return a[0].localeCompare(b[0]);
+});
+
+sortedStudents.forEach(([studentName,status])=>{
+const isPresent=status.present;
+const isEnrolled=status.enrolled;
+html+=`<div class="attendance-card ${isPresent?'present':'absent'}">
+<input type="checkbox" class="attendance-checkbox" ${isPresent?'checked':''} 
+onchange="toggleAttendance('${studentName}',${offeringId},'${date}',this.checked)">
+<div style="flex:1">
+<div class="attendance-name">${studentName}</div>
+${!isEnrolled?'<div class="attendance-info" style="color:#ff9800;font-weight:600">⚠️ Other</div>':''}
+</div>
+${!isEnrolled?`<button class="btn btn-danger btn-small" onclick="removeOtherAttendance('${studentName}',${offeringId},'${date}')" style="margin-left:10px">✗</button>`:''}
+</div>`;
+});
+html+='</div>';
+
+container.innerHTML=html;
+}
+
+function showAddOtherModal(offeringId,date){
+const allNames=allStudentNames.map(s=>s.name||s);
+const enrolled=getEnrolledStudents(offeringId);
+const other=allNames.filter(name=>!enrolled.includes(name));
+
+if(other.length===0){
+alert('All students are already enrolled in this offering');
+return;
+}
+
+const name=prompt('Enter student name (other):\n\nSuggestions:\n'+other.slice(0,10).join(', ')+(other.length>10?'...':''));
+if(name&&name.trim()){
+toggleAttendance(name.trim(),offeringId,date,true);
+}
+}
+
+function removeOtherAttendance(studentName,offeringId,date){
+if(!confirm(`Remove ${studentName} from attendance? (They are not enrolled in this offering)`))return;
+toggleAttendance(studentName,offeringId,date,false);
+}
+
+async function toggleAttendance(studentName,offeringId,date,isPresent){
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'markAttendance',
+studentName:studentName,
+offeringId:offeringId,
+date:date,
+present:isPresent
+})});
+const d=await r.json();
+if(d.success){
+// Update local data
+const key=`${date}_${offeringId}`;
+if(!attendanceData[key])attendanceData[key]=[];
+if(isPresent){
+if(!attendanceData[key].includes(studentName)){
+attendanceData[key].push(studentName);
+}
+}else{
+attendanceData[key]=attendanceData[key].filter(n=>n!==studentName);
+}
+loadAttendanceRoster();
+}else{
+msg('❌ '+d.message,'error');
+loadAttendanceRoster();
+}
+}catch(e){
+msg('❌ '+e.message,'error');
+loadAttendanceRoster();
+}
 }
 
 window.onclick=e=>{
