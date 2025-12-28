@@ -1211,15 +1211,15 @@ closeEnrollModal();
 
 // ATTENDANCE FUNCTIONS
 
-loadAttendanceTab = function(){
+loadAttendanceTab = async function(){
 // Set today's date
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 
-// Check if offerings are loaded
+// Auto-load offerings if not loaded
 if(offerings.length===0){
-document.getElementById('attendanceContainer').innerHTML=emptyState('Please load Offerings first (go to Offerings tab and click Refresh)');
-return;
+document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading offerings...</div>';
+await loadOfferings();
 }
 
 // Populate offerings dropdown
