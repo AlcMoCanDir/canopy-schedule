@@ -84,17 +84,6 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 <button class="tab" onclick="switchTab(3)">⏳ Pending Requests</button>
 </div>
 
-<!-- PENDING REQUESTS TAB -->
-<div id="pending" class="tab-content">
-<div class="actions">
-<button class="btn btn-secondary" onclick="loadPendingRequests()">🔄 Refresh</button>
-</div>
-<div id="pendingContainer">
-<div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Click Refresh to load pending requests</p>
-</div>
-</div>
-</div>
 
 <!-- LEARNERS TAB -->
 <div id="students" class="tab-content active">
@@ -104,6 +93,27 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 <div id="studentsContainer">
 <div style="text-align:center;padding:60px 20px;color:#999">
 <p style="font-size:18px">Click Refresh to load learners</p>
+</div>
+</div>
+</div>
+
+
+<!-- ATTENDANCE TAB -->
+<div id="attendance" class="tab-content">
+<div class="actions">
+<label for="attendanceDate" class="lbl">Date:</label>
+<input type="date" id="attendanceDate" onchange="loadAttendanceForDate()" class="inp">
+
+<label for="attendanceOffering" class="lbl">Select Offering:</label>
+<select id="attendanceOffering" onchange="loadAttendanceRoster()" style="padding:8px;border:1px solid #ddd;border-radius:4px;min-width:250px">
+<option value="">-- Select Offering --</option>
+</select>
+
+<button class="btn btn-secondary" onclick="loadAttendanceTab()">🔄 Refresh</button>
+</div>
+<div id="attendanceContainer">
+<div style="text-align:center;padding:60px 20px;color:#999">
+<p style="font-size:18px">Select a date and offering to mark attendance</p>
 </div>
 </div>
 </div>
@@ -164,25 +174,20 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 </div>
 </div>
 
-<!-- ATTENDANCE TAB -->
-<div id="attendance" class="tab-content">
+
+<!-- PENDING REQUESTS TAB -->
+<div id="pending" class="tab-content">
 <div class="actions">
-<label for="attendanceDate" class="lbl">Date:</label>
-<input type="date" id="attendanceDate" onchange="loadAttendanceForDate()" class="inp">
-
-<label for="attendanceOffering" class="lbl">Select Offering:</label>
-<select id="attendanceOffering" onchange="loadAttendanceRoster()" style="padding:8px;border:1px solid #ddd;border-radius:4px;min-width:250px">
-<option value="">-- Select Offering --</option>
-</select>
-
-<button class="btn btn-secondary" onclick="loadAttendanceTab()">🔄 Refresh</button>
+<button class="btn btn-secondary" onclick="loadPendingRequests()">🔄 Refresh</button>
 </div>
-<div id="attendanceContainer">
+<div id="pendingContainer">
 <div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Select a date and offering to mark attendance</p>
+<p style="font-size:18px">Click Refresh to load pending requests</p>
 </div>
 </div>
 </div>
+
+
 </div>
 
 <!-- EDIT OFFERING MODAL -->
