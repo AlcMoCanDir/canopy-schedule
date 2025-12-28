@@ -72,7 +72,7 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 @media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr}}
 </style>
 <script>
-// Essential functions needed by onclick handlers
+// Essential functions needed by onclick handlers - defined early so they're available
 let attendanceLoaded=false;
 function switchTab(i){
 document.querySelectorAll('.tab-content,.tab').forEach(e=>e.classList.remove('active'));
@@ -84,6 +84,15 @@ document.getElementById('attendanceDate').value=today;
 attendanceLoaded=true;
 }
 }
+// Stub functions that will be replaced by full implementations in main script
+function loadStudents(){}
+function loadAttendanceTab(){}
+function loadAttendanceForDate(){}
+function loadAttendanceRoster(){}
+function loadOfferings(){}
+function loadPendingRequests(){}
+function applyOfferingFilters(){}
+function showCreateOfferingModal(){}
 </script>
 </head>
 <body>
@@ -493,7 +502,7 @@ else{msg(d.message||'Error','error');if(onError)onError(d)}
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
-async function loadPendingRequests(){
+loadPendingRequests = async function(){
 try{
 pendingLoaded=true;
 document.getElementById('pendingContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading...</div>';
@@ -579,7 +588,7 @@ await loadPendingRequests();
 });
 }
 
-async function loadStudents(){
+loadStudents = async function(){
 try{
 studentsLoaded=true;
 document.getElementById('studentsContainer').innerHTML='<div class="loading"><div class="spinner"></div></div>';
@@ -700,7 +709,7 @@ alert('Error loading schedule: '+e.message);
 
 function closeStudentScheduleModal(){closeModal('studentScheduleModal')}
 
-async function loadOfferings(){
+loadOfferings = async function(){
 try{
 offeringsLoaded=true;
 document.getElementById('offeringsContainer').innerHTML='<div class="loading"><div class="spinner"></div></div>';
@@ -748,7 +757,7 @@ enrolled.push(s.name);
 return enrolled;
 }
 
-function applyOfferingFilters(){
+applyOfferingFilters = function(){
 renderOfferings();
 }
 
@@ -888,7 +897,7 @@ document.getElementById('editModal').style.display='block';
 
 function closeEditModal(){closeModal('editModal',['currentEditId'])}
 
-function showCreateOfferingModal(){
+showCreateOfferingModal = function(){
 document.getElementById('createName').value='';
 document.getElementById('createInstructor').value='';
 document.getElementById('createLocation').value='';
@@ -1202,7 +1211,7 @@ closeEnrollModal();
 
 // ATTENDANCE FUNCTIONS
 
-function loadAttendanceTab(){
+loadAttendanceTab = function(){
 // Set today's date
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
@@ -1224,7 +1233,7 @@ select.innerHTML+=`<option value="${o.id}">${o.name} - ${day} ${o.time}</option>
 loadAttendanceForDate();
 }
 
-async function loadAttendanceForDate(){
+loadAttendanceForDate = async function(){
 const date=document.getElementById('attendanceDate').value;
 if(!date)return;
 
@@ -1239,7 +1248,7 @@ attendanceData={};
 }
 }
 
-function loadAttendanceRoster(){
+loadAttendanceRoster = function(){
 const offeringId=document.getElementById('attendanceOffering').value;
 const date=document.getElementById('attendanceDate').value;
 const container=document.getElementById('attendanceContainer');
@@ -1337,7 +1346,6 @@ html+='</div>';
 container.innerHTML=html;
 }
 
-let currentAttendanceDate=null;
 
 function showAddOtherStudentModal(offeringId,date){
 currentAttendanceOfferingId=offeringId;
@@ -1424,7 +1432,6 @@ msg('❌ '+e.message,'error');
 }
 }
 
-let currentAttendanceDate=null;
 
 function showAddOtherModal(offeringId,date){
 currentAttendanceOfferingId=offeringId;
