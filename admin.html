@@ -16,17 +16,18 @@ h1{text-align:center;color:#2196F3;margin-bottom:5px}h2{font-size:16px;color:#66
 .status.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
 .status.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:25px}
-.stat-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:8px;text-align:center}
+.stat-card{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:8px;text-align:center}
 .stat-card h3{margin:0;font-size:32px}.stat-card p{margin:5px 0 0;font-size:13px;opacity:0.9}
-.stat-card.orange{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%)}
+.stat-card.orange{background:linear-gradient(135deg,#f093fb,#f5576c)}
 .actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:15px;background:#f8f9fa;border-radius:8px;flex-wrap:wrap;gap:10px}
-.btn{padding:10px 20px;font-size:14px;cursor:pointer;border:none;border-radius:4px;font-weight:600}
-.btn-primary{background:#4CAF50;color:white}.btn-primary:hover{background:#45a049}
-.btn-secondary{background:#2196F3;color:white}.btn-secondary:hover{background:#0b7dda}
-.btn-danger{background:#f44336;color:white}.btn-danger:hover{background:#da190b}
-.btn-success{background:#4CAF50;color:white}.btn-success:hover{background:#45a049}
-.btn-warning{background:#ff9800;color:white}.btn-warning:hover{background:#e68900}
+.btn{padding:10px 20px;font-size:14px;cursor:pointer;border:none;border-radius:4px;font-weight:600;color:white}
+.btn-primary,.btn-success{background:#4CAF50}.btn-primary:hover,.btn-success:hover{background:#45a049}
+.btn-secondary{background:#2196F3}.btn-secondary:hover{background:#0b7dda}
+.btn-danger{background:#f44336}.btn-danger:hover{background:#da190b}
+.btn-warning{background:#ff9800}.btn-warning:hover{background:#e68900}
 .btn-small{padding:6px 12px;font-size:12px;margin:2px}
+.lbl{font-weight:bold;color:#333}
+.inp{padding:8px;border:1px solid #ddd;border-radius:4px}
 table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
 th{background:#4CAF50;color:white;padding:12px 8px;text-align:left;font-weight:bold;position:sticky;top:0}
 td{padding:10px 8px;border:1px solid #ddd;vertical-align:top}
@@ -52,7 +53,6 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .class-info{flex:1}
 .class-name{font-weight:bold;color:#333;font-size:14px}
 .class-details{font-size:12px;color:#666;margin-top:3px}
-.class-actions{display:flex;gap:5px}
 .group-actions{margin-top:10px;padding-top:10px;border-top:1px solid #ddd;display:flex;gap:10px;justify-content:flex-end}
 .attendance-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px;margin-top:20px}
 .attendance-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;box-shadow:0 2px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:15px;transition:all 0.2s}
@@ -66,18 +66,10 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .attendance-stat{text-align:center}
 .attendance-stat-number{font-size:28px;font-weight:bold;color:#4CAF50}
 .attendance-stat-label{font-size:12px;color:#666;margin-top:3px}
-.student-schedule-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
-.student-schedule-table th,.student-schedule-table td{border:2px solid #ddd;padding:10px;vertical-align:top;height:100px}
-.student-schedule-table th{background:#2196F3;color:white;font-weight:bold;text-align:center;position:sticky;top:0}
-.student-schedule-table .time-col{font-weight:bold;background:#f8f9fa;text-align:center;width:120px}
-.student-offering-card{background:#e3f2fd;border-left:3px solid #2196F3;padding:10px;margin:4px 0;border-radius:4px;font-size:12px}
-.student-offering-name{font-weight:bold;margin-bottom:5px;font-size:13px}
-.student-offering-info{color:#666;font-size:11px;line-height:1.4}
-.editable-cell{cursor:pointer;position:relative;padding:8px;border-radius:4px}
+.editable-cell{cursor:pointer;padding:8px;border-radius:4px}
 .editable-cell:hover{background:#e3f2fd}
 .edit-icon{font-size:10px;color:#999;margin-left:5px}
-input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-radius:4px;width:100%}
-@media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr 1fr}}
+@media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -86,44 +78,48 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <h2>Session 3: Jan-Feb 2026</h2>
 <div id="status" class="status"></div>
 <div class="tabs">
-<button class="tab active" onclick="switchTab(0)">⏳ Pending Requests</button>
-<button class="tab" onclick="switchTab(1)">👥 Students</button>
+<button class="tab active" onclick="switchTab(0)">👥 Learners</button>
+<button class="tab" onclick="switchTab(1)">✅ Attendance</button>
 <button class="tab" onclick="switchTab(2)">📚 Offerings</button>
-<button class="tab" onclick="switchTab(3)">✅ Attendance</button>
+<button class="tab" onclick="switchTab(3)">⏳ Pending Requests</button>
 </div>
 
 <!-- PENDING REQUESTS TAB -->
-<div id="pending" class="tab-content active">
-<div class="stats">
-<div class="stat-card orange"><h3 id="totalPending">0</h3><p>Pending Classes</p></div>
-<div class="stat-card"><h3 id="totalStudentsWaiting">0</h3><p>Students Waiting</p></div>
-</div>
+<div id="pending" class="tab-content">
 <div class="actions">
 <button class="btn btn-secondary" onclick="loadPendingRequests()">🔄 Refresh</button>
 </div>
-<div id="pendingContainer"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+<div id="pendingContainer">
+<div style="text-align:center;padding:60px 20px;color:#999">
+<p style="font-size:18px">Click Refresh to load pending requests</p>
+</div>
+</div>
 </div>
 
-<!-- STUDENTS TAB -->
-<div id="students" class="tab-content">
+<!-- LEARNERS TAB -->
+<div id="students" class="tab-content active">
 <div class="actions">
 <button class="btn btn-secondary" onclick="loadStudents()">🔄 Refresh</button>
 </div>
-<div id="studentsContainer"><div class="loading"><div class="spinner"></div></div></div>
+<div id="studentsContainer">
+<div style="text-align:center;padding:60px 20px;color:#999">
+<p style="font-size:18px">Click Refresh to load learners</p>
+</div>
+</div>
 </div>
 
 <!-- OFFERINGS TAB -->
 <div id="offerings" class="tab-content">
 <div class="stats">
-<div class="stat-card"><h3 id="totalOfferings">0</h3><p>Offerings</p></div>
+<div class="stat-card"><h3 id="totalOfferings">-</h3><p>Offerings</p></div>
 </div>
 <div class="actions">
 <button class="btn btn-primary" onclick="showCreateOfferingModal()">➕ Create New Offering</button>
 <button class="btn btn-secondary" onclick="loadOfferings()">🔄 Refresh</button>
 </div>
 <div class="actions" style="margin-top:10px">
-<label for="sortBy" style="font-weight:bold;color:#333">Sort By:</label>
-<select id="sortBy" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<label for="sortBy" class="lbl">Sort By:</label>
+<select id="sortBy" onchange="applyOfferingFilters()" class="inp">
 <option value="default">Default (Day/Time)</option>
 <option value="name">Class Name (A-Z)</option>
 <option value="instructor">Instructor (A-Z)</option>
@@ -132,16 +128,16 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <option value="enrollment">Enrollment (High to Low)</option>
 </select>
 
-<label for="filterType" style="font-weight:bold;color:#333">Filter Type:</label>
-<select id="filterType" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<label for="filterType" class="lbl">Filter Type:</label>
+<select id="filterType" onchange="applyOfferingFilters()" class="inp">
 <option value="">All Types</option>
 <option value="commitment">Commitment</option>
 <option value="drop-in">Drop-in</option>
 <option value="private">Private</option>
 </select>
 
-<label for="filterLevel" style="font-weight:bold;color:#333">Filter Level:</label>
-<select id="filterLevel" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<label for="filterLevel" class="lbl">Filter Level:</label>
+<select id="filterLevel" onchange="applyOfferingFilters()" class="inp">
 <option value="">All Levels</option>
 <option value="acorns">Acorns</option>
 <option value="canopy">Canopy</option>
@@ -151,8 +147,8 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <option value="mixed">Mixed Age</option>
 </select>
 
-<label for="filterDay" style="font-weight:bold;color:#333">Filter Day:</label>
-<select id="filterDay" onchange="applyOfferingFilters()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<label for="filterDay" class="lbl">Filter Day:</label>
+<select id="filterDay" onchange="applyOfferingFilters()" class="inp">
 <option value="">All Days</option>
 <option value="monday">Monday</option>
 <option value="tuesday">Tuesday</option>
@@ -161,16 +157,20 @@ input.inline-edit{padding:6px;font-size:13px;border:2px solid #2196F3;border-rad
 <option value="friday">Friday</option>
 </select>
 </div>
-<div id="offeringsContainer"><div class="loading"><div class="spinner"></div></div></div>
+<div id="offeringsContainer">
+<div style="text-align:center;padding:60px 20px;color:#999">
+<p style="font-size:18px">Click Refresh to load offerings</p>
+</div>
+</div>
 </div>
 
 <!-- ATTENDANCE TAB -->
 <div id="attendance" class="tab-content">
 <div class="actions">
-<label for="attendanceDate" style="font-weight:bold;color:#333">Date:</label>
-<input type="date" id="attendanceDate" onchange="loadAttendanceForDate()" style="padding:8px;border:1px solid #ddd;border-radius:4px">
+<label for="attendanceDate" class="lbl">Date:</label>
+<input type="date" id="attendanceDate" onchange="loadAttendanceForDate()" class="inp">
 
-<label for="attendanceOffering" style="font-weight:bold;color:#333">Select Offering:</label>
+<label for="attendanceOffering" class="lbl">Select Offering:</label>
 <select id="attendanceOffering" onchange="loadAttendanceRoster()" style="padding:8px;border:1px solid #ddd;border-radius:4px;min-width:250px">
 <option value="">-- Select Offering --</option>
 </select>
@@ -351,28 +351,28 @@ Create separate offering for each day/block combination
 <div class="modal-content">
 <div class="modal-header">
 <span class="close" onclick="closeEnrollModal()">&times;</span>
-<h2 id="enrollModalTitle">Add Students to Offering</h2>
+<h2 id="enrollModalTitle">Add Learners to Offering</h2>
 </div>
 <div class="modal-body">
 <p id="enrollClassName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
 <div class="form-group">
-<label>Select Students (Hold Ctrl/Cmd to select multiple)</label>
+<label>Select Learners (Hold Ctrl/Cmd to select multiple)</label>
 <select id="enrollStudent" multiple size="10">
 <option value="">-- Loading students... --</option>
 </select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple students</p>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple learners</p>
 </div>
 <div id="enrollPreview" style="background:#f8f9fa;padding:10px;border-radius:4px;margin-top:10px;display:none">
-<strong>Selected students:</strong>
+<strong>Selected learners:</strong>
 <div id="enrollPreviewList" style="margin-top:5px;font-size:13px"></div>
 </div>
 <p style="font-size:12px;color:#666;margin-top:10px">
-This will add the offering to the selected students' approved schedules.
+This will add the offering to the selected learners' approved schedules.
 </p>
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" onclick="closeEnrollModal()">Cancel</button>
-<button class="btn btn-primary" onclick="addStudentsToClass()">➕ Add Student(s)</button>
+<button class="btn btn-primary" onclick="addStudentsToClass()">➕ Add Learner(s)</button>
 </div>
 </div>
 </div>
@@ -382,7 +382,7 @@ This will add the offering to the selected students' approved schedules.
 <div class="modal-content">
 <div class="modal-header">
 <span class="close" onclick="closeEnrolledModal()">&times;</span>
-<h2 id="enrolledModalTitle">Enrolled Students</h2>
+<h2 id="enrolledModalTitle">Enrolled Learners</h2>
 </div>
 <div class="modal-body">
 <p id="enrolledClassName" style="font-size:18px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
@@ -399,7 +399,7 @@ This will add the offering to the selected students' approved schedules.
 <div class="modal-content" style="max-width:1200px">
 <div class="modal-header">
 <span class="close" onclick="closeStudentScheduleModal()">&times;</span>
-<h2 id="studentScheduleModalTitle">Student Schedule</h2>
+<h2 id="studentScheduleModalTitle">Learner Schedule</h2>
 </div>
 <div class="modal-body">
 <div id="studentScheduleGrid"></div>
@@ -415,23 +415,23 @@ This will add the offering to the selected students' approved schedules.
 <div class="modal-content">
 <div class="modal-header">
 <span class="close" onclick="closeOtherStudentModal()">&times;</span>
-<h2 id="otherStudentModalTitle">Add Other Student to Attendance</h2>
+<h2 id="otherStudentModalTitle">Add Other Learners to Attendance</h2>
 </div>
 <div class="modal-body">
 <p id="otherOfferingName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
 <div class="form-group">
-<label>Select Students (Hold Ctrl/Cmd to select multiple)</label>
+<label>Select Learners (Hold Ctrl/Cmd to select multiple)</label>
 <select id="otherStudentSelect" multiple size="10">
-<option value="">-- Loading students... --</option>
+<option value="">-- Loading learners... --</option>
 </select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple students</p>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple learners</p>
 </div>
 <div id="otherStudentPreview" style="background:#f8f9fa;padding:10px;border-radius:4px;margin-top:10px;display:none">
-<strong>Selected students:</strong>
+<strong>Selected learners:</strong>
 <div id="otherStudentPreviewList" style="margin-top:5px;font-size:13px"></div>
 </div>
 <p style="font-size:12px;color:#666;margin-top:10px">
-These students are not enrolled in this offering but will be marked as present.
+These learners are not enrolled in this offering but will be marked as present.
 </p>
 </div>
 <div class="modal-footer">
@@ -445,26 +445,56 @@ These students are not enrolled in this offering but will be marked as present.
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 let pending=[],students=[],offerings=[],allStudentNames=[];
 let currentEditId=null,currentEnrollOfferingId=null;
+let studentsLoaded=false,offeringsLoaded=false,attendanceLoaded=false,pendingLoaded=false;
+let currentAttendanceOfferingId=null,currentAttendanceDate=null;
+let attendanceData={};
+
+// === HELPER FUNCTIONS ===
+function msg(text,type){
+const s=document.getElementById('status');
+s.textContent=text;
+s.className='status '+type;
+s.style.display='block';
+setTimeout(()=>s.style.display='none',3000);
+}
+
+function closeModal(id,resetVars=[]){
+document.getElementById(id).style.display='none';
+resetVars.forEach(v=>{if(v==='currentEditId')currentEditId=null;else if(v==='currentEnrollOfferingId')currentEnrollOfferingId=null;else if(v==='currentAttendanceOfferingId')currentAttendanceOfferingId=null;else if(v==='currentAttendanceDate')currentAttendanceDate=null});
+}
+
+function emptyState(msg){
+return `<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">${msg}</p></div>`;
+}
+
+async function apiCall(action,data,onSuccess,onError){
+try{
+const r=await fetch(API,{method:'POST',body:JSON.stringify({action,...data})});
+const d=await r.json();
+if(d.success){if(onSuccess)onSuccess(d)}
+else{msg(d.message||'Error','error');if(onError)onError(d)}
+}catch(e){msg('❌ '+e.message,'error')}
+}
 
 function switchTab(i){
 document.querySelectorAll('.tab-content,.tab').forEach(e=>e.classList.remove('active'));
 document.querySelectorAll('.tab')[i].classList.add('active');
 document.querySelectorAll('.tab-content')[i].classList.add('active');
-if(i===0)loadPendingRequests();
-if(i===1)loadStudents();
-if(i===2)loadOfferings();
-if(i===3)loadAttendanceTab();
+// Initialize attendance tab on first visit (just sets date, doesn't load data)
+if(i===1&&!attendanceLoaded){
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('attendanceDate').value=today;
+attendanceLoaded=true;
+}
 }
 
 async function loadPendingRequests(){
 try{
+pendingLoaded=true;
 document.getElementById('pendingContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading...</div>';
 const r=await fetch(`${API}?action=getPendingRequests`);
 const d=await r.json();
 pending=d.requests||[];
-document.getElementById('totalPending').textContent=pending.length;
-const uniqueStudents=new Set(pending.map(p=>p.studentName));
-document.getElementById('totalStudentsWaiting').textContent=uniqueStudents.size;
 renderPendingRequests();
 msg('✅ Loaded','success');
 }catch(e){msg('❌ '+e.message,'error')}
@@ -512,52 +542,49 @@ c.innerHTML=html;
 
 async function approveClass(requestId,offeringId,studentName,className){
 if(!confirm(`Approve "${className}" for ${studentName}?`))return;
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'approveClass',requestId:requestId,offeringId:offeringId})});
-const d=await r.json();
-if(d.success){msg(`✅ Approved: ${className}`,'success');await loadPendingRequests();await loadStudents();}
-else{msg('❌ '+d.message,'error');}
-}catch(e){msg('❌ '+e.message,'error')}
+apiCall('approveClass',{requestId,offeringId},async()=>{
+msg(`✅ Approved: ${className}`,'success');
+await loadPendingRequests();
+await loadStudents();
+});
 }
 
 async function denyClass(requestId,offeringId,studentName,className){
 if(!confirm(`Deny "${className}" for ${studentName}?`))return;
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'denyClass',requestId:requestId,offeringId:offeringId})});
-const d=await r.json();
-if(d.success){msg(`✅ Denied: ${className}`,'success');await loadPendingRequests();}
-else{msg('❌ '+d.message,'error');}
-}catch(e){msg('❌ '+e.message,'error')}
+apiCall('denyClass',{requestId,offeringId},async()=>{
+msg(`✅ Denied: ${className}`,'success');
+await loadPendingRequests();
+});
+}
 }
 
 async function approveAllForStudent(baseRequestId,studentName){
 if(!confirm(`Approve ALL classes for ${studentName}?`))return;
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'approveAllClasses',requestId:baseRequestId})});
-const d=await r.json();
-if(d.success){msg(`✅ Approved ${d.count} class(es)`,'success');await loadPendingRequests();await loadStudents();}
-else{msg('❌ '+d.message,'error');}
-}catch(e){msg('❌ '+e.message,'error')}
+apiCall('approveAllClasses',{requestId:baseRequestId},async(d)=>{
+msg(`✅ Approved ${d.count} class(es)`,'success');
+await loadPendingRequests();
+await loadStudents();
+});
 }
 
 async function denyAllForStudent(baseRequestId,studentName){
 if(!confirm(`Deny ALL classes for ${studentName}?`))return;
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'denyAllClasses',requestId:baseRequestId})});
-const d=await r.json();
-if(d.success){msg(`✅ Denied ${d.count} class(es)`,'success');await loadPendingRequests();}
-else{msg('❌ '+d.message,'error');}
-}catch(e){msg('❌ '+e.message,'error')}
+apiCall('denyAllClasses',{requestId:baseRequestId},async(d)=>{
+msg(`✅ Denied ${d.count} class(es)`,'success');
+await loadPendingRequests();
+});
 }
 
 async function loadStudents(){
 try{
+studentsLoaded=true;
 document.getElementById('studentsContainer').innerHTML='<div class="loading"><div class="spinner"></div></div>';
 const r=await fetch(`${API}?action=loadAll`);
 const d=await r.json();
 students=d.students||[];
 
-// Load ALL students from Students sheet (master list)
+// Load ALL students from Students sheet (master list) (only if not already loaded)
+if(allStudentNames.length===0){
 const r2=await fetch(`${API}?action=getAllStudents`);
 const d2=await r2.json();
 if(d2.success){
@@ -567,6 +594,7 @@ allStudentNames=d2.students||[];
 const r3=await fetch(`${API}?action=loadStudents`);
 const d3=await r3.json();
 allStudentNames=d3.students?d3.students.map(name=>({id:'',name:name})):[];
+}
 }
 
 renderStudents();
@@ -666,14 +694,12 @@ alert('Error loading schedule: '+e.message);
 }
 }
 
-function closeStudentScheduleModal(){
-document.getElementById('studentScheduleModal').style.display='none';
-}
+function closeStudentScheduleModal(){closeModal('studentScheduleModal')}
 const studentName=document.getElementById('studentSelect').value;
 const container=document.getElementById('studentsContainer');
 
 if(!studentName){
-container.innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">Select a student to view their schedule</p></div>';
+container.innerHTML=emptyState('Select a student to view their schedule');
 return;
 }
 
@@ -754,18 +780,22 @@ container.innerHTML=`<div style="text-align:center;padding:60px 20px;color:#999"
 
 async function loadOfferings(){
 try{
+offeringsLoaded=true;
 document.getElementById('offeringsContainer').innerHTML='<div class="loading"><div class="spinner"></div></div>';
 const r=await fetch(`${API}?action=loadOfferings`);
 const d=await r.json();
 offerings=d.offerings||[];
 document.getElementById('totalOfferings').textContent=offerings.length;
 
-// Also load students to calculate enrollment
+// Also load students to calculate enrollment (only if not already loaded)
+if(students.length===0){
 const r2=await fetch(`${API}?action=loadAll`);
 const d2=await r2.json();
 students=d2.students||[];
+}
 
-// Load ALL students from Students sheet (master list) for dropdown
+// Load ALL students from Students sheet (master list) for dropdown (only if not already loaded)
+if(allStudentNames.length===0){
 const r3=await fetch(`${API}?action=getAllStudents`);
 const d3=await r3.json();
 if(d3.success){
@@ -775,6 +805,7 @@ allStudentNames=d3.students||[];
 const r4=await fetch(`${API}?action=loadStudents`);
 const d4=await r4.json();
 allStudentNames=d4.students?d4.students.map(name=>({id:'',name:name})):[];
+}
 }
 
 renderOfferings();
@@ -933,10 +964,7 @@ document.getElementById('editCapacity').value=o.capacity||12;
 document.getElementById('editModal').style.display='block';
 }
 
-function closeEditModal(){
-document.getElementById('editModal').style.display='none';
-currentEditId=null;
-}
+function closeEditModal(){closeModal('editModal',['currentEditId'])}
 
 function showCreateOfferingModal(){
 document.getElementById('createName').value='';
@@ -953,9 +981,7 @@ document.getElementById('createPreview').style.display='none';
 document.getElementById('createModal').style.display='block';
 }
 
-function closeCreateModal(){
-document.getElementById('createModal').style.display='none';
-}
+function closeCreateModal(){closeModal('createModal')}
 
 function toggleMultipleCreation(){
 updateCreatePreview();
@@ -1112,7 +1138,7 @@ msg('❌ '+d.message,'error');
 
 function showEnrollModal(offeringId,offeringName){
 currentEnrollOfferingId=offeringId;
-document.getElementById('enrollModalTitle').textContent='Add Students to Offering';
+document.getElementById('enrollModalTitle').textContent='Add Learners to Offering';
 document.getElementById('enrollClassName').textContent=offeringName;
 const select=document.getElementById('enrollStudent');
 select.innerHTML='';
@@ -1156,17 +1182,14 @@ preview.style.display='none';
 }
 }
 
-function closeEnrollModal(){
-document.getElementById('enrollModal').style.display='none';
-currentEnrollOfferingId=null;
-}
+function closeEnrollModal(){closeModal('enrollModal',['currentEnrollOfferingId'])}
 
 function showEnrolledModal(offeringId,offeringName){
 const offering=offerings.find(o=>o.id===offeringId);
 const enrolled=getEnrolledStudents(offeringId);
 const capacity=offering?offering.capacity||999:999;
 
-document.getElementById('enrolledModalTitle').textContent='Enrolled Students';
+document.getElementById('enrolledModalTitle').textContent='Enrolled Learners';
 document.getElementById('enrolledClassName').textContent=offeringName;
 
 let html='<div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px">';
@@ -1179,7 +1202,7 @@ html+=`<p style="margin:5px 0 0;color:#4CAF50">${capacity-enrolled.length} spot(
 html+='</div>';
 
 if(enrolled.length===0){
-html+='<p style="text-align:center;color:#999;padding:40px 20px">No students enrolled yet</p>';
+html+='<p style="text-align:center;color:#999;padding:40px 20px">No learners enrolled yet</p>';
 }else{
 html+='<div style="max-height:400px;overflow-y:auto">';
 enrolled.sort().forEach((name,index)=>{
@@ -1195,9 +1218,7 @@ document.getElementById('enrolledList').innerHTML=html;
 document.getElementById('enrolledModal').style.display='block';
 }
 
-function closeEnrolledModal(){
-document.getElementById('enrolledModal').style.display='none';
-}
+function closeEnrolledModal(){closeModal('enrolledModal')}
 
 async function removeStudentFromClass(studentName,offeringId,className){
 if(!confirm(`Remove ${studentName} from ${className}?`))return;
@@ -1224,13 +1245,13 @@ const select=document.getElementById('enrollStudent');
 const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
 
 if(selectedStudents.length===0){
-alert('Please select at least one student');
+alert('Please select at least one learner');
 return;
 }
 if(!currentEnrollOfferingId)return;
 
 const count=selectedStudents.length;
-const studentText=count===1?selectedStudents[0]:`${count} students`;
+const studentText=count===1?selectedStudents[0]:`${count} learners`;
 if(!confirm(`Add ${studentText} to this offering?`))return;
 
 try{
@@ -1254,7 +1275,7 @@ errors.push(`${studentName}: ${d.message}`);
 }
 
 if(succeeded>0){
-msg(`✅ Added ${succeeded} student(s) to offering`,'success');
+msg(`✅ Added ${succeeded} learner(s) to offering`,'success');
 await loadStudents();
 await loadOfferings();
 }
@@ -1283,9 +1304,15 @@ function loadAttendanceTab(){
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 
+// Check if offerings are loaded
+if(offerings.length===0){
+document.getElementById('attendanceContainer').innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">Please load Offerings first (go to Offerings tab and click Refresh)</p></div>';
+return;
+}
+
 // Populate offerings dropdown
 const select=document.getElementById('attendanceOffering');
-select.innerHTML='<option value="">-- Select Class --</option>';
+select.innerHTML='<option value="">-- Select Offering --</option>';
 offerings.forEach(o=>{
 const day=o.day.charAt(0).toUpperCase()+o.day.slice(1);
 select.innerHTML+=`<option value="${o.id}">${o.name} - ${day} ${o.time}</option>`;
@@ -1464,11 +1491,12 @@ preview.style.display='none';
 }
 }
 
-function closeOtherStudentModal(){
-document.getElementById('otherStudentModal').style.display='none';
-currentAttendanceOfferingId=null;
-currentAttendanceDate=null;
-}
+
+function closeOtherStudentModal(){closeModal("otherStudentModal",["currentAttendanceOfferingId","currentAttendanceDate"])}
+
+
+
+
 
 async function addOtherStudentsToAttendance(){
 const select=document.getElementById('otherStudentSelect');
@@ -1504,7 +1532,7 @@ currentAttendanceDate=date;
 const offering=offerings.find(o=>o.id==offeringId);
 const offeringName=offering?offering.name:'Unknown';
 
-document.getElementById('otherStudentModalTitle').textContent='Add Other Students to Attendance';
+document.getElementById('otherStudentModalTitle').textContent='Add Other Learners to Attendance';
 document.getElementById('otherOfferingName').textContent=offeringName;
 
 const enrolled=getEnrolledStudents(offeringId);
@@ -1517,7 +1545,7 @@ const select=document.getElementById('otherStudentSelect');
 select.innerHTML='';
 
 if(other.length===0){
-select.innerHTML='<option value="">All students are enrolled</option>';
+select.innerHTML='<option value="">All learners are enrolled</option>';
 document.getElementById('otherStudentModal').style.display='block';
 return;
 }
@@ -1605,7 +1633,7 @@ failed++;
 }
 
 if(succeeded>0){
-msg(`✅ Added ${succeeded} other student(s) to attendance`,'success');
+msg(`✅ Added ${succeeded} other learner(s) to attendance`,'success');
 closeOtherStudentModal();
 loadAttendanceRoster();
 }
@@ -1658,7 +1686,10 @@ window.onclick=e=>{
 if(e.target.classList.contains('modal'))e.target.style.display='none';
 }
 
-window.onload=()=>loadPendingRequests();
+// Load instantly - no API calls on startup
+window.onload=()=>{
+console.log('Page loaded - ready for interaction');
+}
 </script>
 </body>
 </html>
