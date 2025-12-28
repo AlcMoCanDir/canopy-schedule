@@ -44,10 +44,10 @@ h1{text-align:center;color:#4CAF50;margin:10px 0}
 .type-private{background:#ffe0b2;color:#e65100}
 .link-icon{font-size:14px;color:#2196F3}
 input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
-.my-schedule-table{width:100%;border-collapse:collapse}
-.my-schedule-table th,.my-schedule-table td{border:1px solid #ddd;padding:10px;font-size:13px}
+.my-schedule-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.my-schedule-table th,.my-schedule-table td{border:1px solid #ddd;padding:10px;font-size:13px;height:80px;vertical-align:top}
 .my-schedule-table th{background:#2196F3;color:white}
-.my-schedule-card{background:#f0f7ff;padding:8px;margin:4px 0;border-left:3px solid #2196F3;border-radius:3px}
+.my-schedule-card{background:#f0f7ff;padding:8px;margin:4px 0;border-left:3px solid #2196F3;border-radius:3px;min-height:60px}
 .empty-state{text-align:center;padding:40px;color:#999;font-size:48px}
 @media print{
 .controls,.tabs,#allClasses{display:none!important}
@@ -457,38 +457,34 @@ const key=`${day}-${block.time}`;
 const ids=selected[key]||[];
 
 if(ids.length===0){
-cell.innerHTML='<div style="color:#ccc;text-align:center;padding:10px">-</div>';
+cell.innerHTML='<div style="color:#ccc;text-align:center;padding:20px">-</div>';
 }else{
 ids.forEach(id=>{
 const o=offerings.find(of=>of.id===id);
 if(o){
-const enrolled=enrollmentCounts[o.id]||0;
-const capacity=Number(o.capacity)||999;
 const desc=descriptions[o.name]||o.description||'';
 
 const div=document.createElement('div');
 div.className='my-schedule-card';
 div.style.cursor=desc?'pointer':'default';
+div.style.minHeight='60px';
 div.innerHTML=`
-<div style="display:flex;justify-content:space-between;align-items:start">
-<div style="flex:1">
-<strong style="font-size:14px">${o.name}</strong>
-${desc?'<span style="font-size:10px;color:#999;margin-left:5px">▼</span>':''}
-<div style="font-size:11px;color:#666;margin-top:4px">
-👤 ${o.instructor}<br>
-📍 ${o.location||'TBA'}<br>
-${o.level?`📊 ${o.level.charAt(0).toUpperCase()+o.level.slice(1)}<br>`:''}
-👥 ${enrolled}/${capacity} enrolled
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<strong style="font-size:13px;white-space:nowrap">${o.name}</strong>
+${desc?'<span style="font-size:10px;color:#999">▼</span>':''}
+<span style="font-size:11px;color:#666">|</span>
+<span style="font-size:11px;color:#666">👤 ${o.instructor}</span>
+<span style="font-size:11px;color:#666">|</span>
+<span style="font-size:11px;color:#666">📍 ${o.location||'TBA'}</span>
+${o.level?`<span style="font-size:11px;color:#666">|</span><span style="font-size:11px;color:#666">📊 ${o.level.charAt(0).toUpperCase()+o.level.slice(1)}</span>`:''}
 </div>
 ${desc?`<div class="class-desc" style="display:none;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #ddd;line-height:1.4">${desc}</div>`:''}
-</div>
-</div>
 `;
 
 if(desc){
 div.onclick=function(){
 const descDiv=this.querySelector('.class-desc');
-const arrow=this.querySelector('span');
+const arrow=this.querySelector('span[style*="font-size:10px"]');
 if(descDiv.style.display==='none'){
 descDiv.style.display='block';
 arrow.textContent='▲';
