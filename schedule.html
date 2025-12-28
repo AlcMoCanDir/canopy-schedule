@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canopy Schedule Builder</title>
+<title>ALC Mosaic - Session 3</title>
 <style>
 *{box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#fafafa;margin:0;padding:20px}
@@ -47,11 +47,27 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 .my-schedule-table{width:100%;border-collapse:collapse;table-layout:fixed}
 .my-schedule-table th,.my-schedule-table td{border:1px solid #ddd;padding:10px;font-size:13px;height:80px;vertical-align:top}
 .my-schedule-table th{background:#2196F3;color:white}
-.my-schedule-card{background:#f0f7ff;padding:8px;margin:4px 0;border-left:3px solid #2196F3;border-radius:3px;min-height:60px}
+.my-schedule-card{background:#f0f7ff;padding:8px;margin:4px 0;border-left:3px solid #2196F3;border-radius:3px;min-height:60px;position:relative}
 .empty-state{text-align:center;padding:40px;color:#999;font-size:48px}
 @media print{
-.controls,.tabs,#allClasses{display:none!important}
+@page{size:landscape;margin:0.5in}
+body{background:white;padding:0;margin:0}
+.container{max-width:100%;box-shadow:none;margin:0;padding:10px}
+.controls,.tabs,#scheduleBuilder,button,.btn{display:none!important}
 #mySchedule{display:block!important}
+h1{display:none}
+.my-schedule-table{width:100%;border-collapse:collapse;table-layout:fixed;page-break-inside:avoid}
+.my-schedule-table th,.my-schedule-table td{border:2px solid #000!important;padding:6px!important;font-size:10px!important;color:#000!important;background:white!important;vertical-align:top;height:auto!important}
+.my-schedule-table th{background:white!important;color:#000!important;font-weight:bold;border:2px solid #000!important}
+.time-col{font-weight:bold;background:white!important;color:#000!important;border:2px solid #000!important;text-align:center;font-size:9px!important}
+.time-col div{color:#000!important}
+.my-schedule-card{background:white!important;border:1px solid #000!important;border-left:2px solid #000!important;padding:4px!important;margin:2px 0!important;page-break-inside:avoid;color:#000!important;min-height:auto!important}
+.my-schedule-card strong{color:#000!important;font-size:10px!important}
+.my-schedule-card strong span{background:#fff!important;color:#000!important;border:1px solid #000!important;padding:1px 4px!important;font-size:7px!important}
+.my-schedule-card span{color:#000!important;font-size:9px!important}
+.class-desc{display:block!important;color:#000!important;border-top:1px solid #000!important;margin-top:3px!important;padding-top:3px!important;font-size:8px!important;line-height:1.3!important}
+#scheduleTitle{color:#000!important;font-size:14px!important;text-align:center;margin:5px 0 10px 0!important;font-weight:bold}
+#printDate{display:block!important;color:#000!important;font-size:10px!important;text-align:center;margin:0 0 10px 0!important}
 }
 @media (max-width:768px){
 .controls{flex-direction:column}
@@ -63,7 +79,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 </head>
 <body>
 <div class="container">
-<h1>🌳 Canopy Schedule Builder - Session 3</h1>
+<h1>ALC Mosaic - Session 3</h1>
 
 <div class="controls">
 <select id="studentName" onchange="loadSchedule()" style="flex:1;min-width:200px;padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd">
@@ -102,6 +118,7 @@ Click classes to select • Max 2 per time block • 🔗 = Multi-block class �
 
 <div id="mySchedule" class="tab-content">
 <h2 style="text-align:center;color:#2196F3;margin-bottom:20px" id="scheduleTitle"></h2>
+<div id="printDate" style="text-align:center;font-size:12px;color:#666;margin-bottom:15px;display:none"></div>
 <table class="my-schedule-table" id="myScheduleTable">
 <thead>
 <tr>
@@ -132,6 +149,7 @@ const TIMES=[
 const DAYS=['monday','tuesday','wednesday','thursday','friday'];
 
 let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[];
+let approvedOfferings=[],pendingOfferings=[];
 
 async function init(){
 try{
@@ -444,6 +462,11 @@ tbody.innerHTML='';
 const name=document.getElementById('studentName').value;
 document.getElementById('scheduleTitle').textContent=name?`${name}'s Schedule`:'My Schedule';
 
+// Set print date
+const today=new Date();
+const dateStr=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('printDate').textContent=`Printed: ${dateStr}`;
+
 TIMES.forEach(block=>{
 const row=document.createElement('tr');
 const timeCell=document.createElement('td');
@@ -463,20 +486,30 @@ ids.forEach(id=>{
 const o=offerings.find(of=>of.id===id);
 if(o){
 const desc=descriptions[o.name]||o.description||'';
+const isPending=pendingOfferings.includes(id);
+
+// Build info line with separator
+const infoParts=[];
+if(o.instructor)infoParts.push(`👤 ${o.instructor}`);
+if(o.location)infoParts.push(`📍 ${o.location}`);
+if(o.level)infoParts.push(`📊 ${o.level.charAt(0).toUpperCase()+o.level.slice(1)}`);
+const infoLine=infoParts.join(' • ');
 
 const div=document.createElement('div');
 div.className='my-schedule-card';
+if(isPending)div.style.opacity='0.7';
 div.style.cursor=desc?'pointer':'default';
 div.style.minHeight='60px';
 div.innerHTML=`
-<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-<strong style="font-size:13px;white-space:nowrap">${o.name}</strong>
-${desc?'<span style="font-size:10px;color:#999">▼</span>':''}
-<span style="font-size:11px;color:#666">|</span>
-<span style="font-size:11px;color:#666">👤 ${o.instructor}</span>
-<span style="font-size:11px;color:#666">|</span>
-<span style="font-size:11px;color:#666">📍 ${o.location||'TBA'}</span>
-${o.level?`<span style="font-size:11px;color:#666">|</span><span style="font-size:11px;color:#666">📊 ${o.level.charAt(0).toUpperCase()+o.level.slice(1)}</span>`:''}
+<div>
+<strong style="font-size:13px;display:block;margin-bottom:4px">
+${o.name}
+${isPending?'<span style="background:#ff9800;color:white;font-size:9px;padding:2px 6px;border-radius:3px;margin-left:6px;font-weight:bold">PENDING</span>':''}
+</strong>
+${desc?'<span style="font-size:10px;color:#999;position:absolute;top:8px;right:8px">▼</span>':''}
+<div style="font-size:11px;color:#666">
+${infoLine||'TBA'}
+</div>
 </div>
 ${desc?`<div class="class-desc" style="display:none;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #ddd;line-height:1.4">${desc}</div>`:''}
 `;
@@ -484,13 +517,13 @@ ${desc?`<div class="class-desc" style="display:none;font-size:11px;color:#555;ma
 if(desc){
 div.onclick=function(){
 const descDiv=this.querySelector('.class-desc');
-const arrow=this.querySelector('span[style*="font-size:10px"]');
+const arrow=this.querySelector('span[style*="position:absolute"]');
 if(descDiv.style.display==='none'){
 descDiv.style.display='block';
-arrow.textContent='▲';
+if(arrow)arrow.textContent='▲';
 }else{
 descDiv.style.display='none';
-arrow.textContent='▼';
+if(arrow)arrow.textContent='▼';
 }
 };
 }
@@ -512,17 +545,47 @@ const name=document.getElementById('studentName').value;
 if(!name){showStatus('⚠️ Please select a student','error');return}
 
 try{
+// Load approved schedule
 const data=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json());
 
-selected={};
+// Load pending requests
+const pending=await fetch(`${API}?action=getPendingRequests`).then(r=>r.json()).catch(e=>({requests:[]}));
 
+selected={};
+approvedOfferings=[];
+pendingOfferings=[];
+
+// Process approved schedule
 if(data.success&&data.offerings){
 data.offerings.forEach(o=>{
 const key=`${o.day}-${o.time}`;
 if(!selected[key])selected[key]=[];
 selected[key].push(o.id);
+approvedOfferings.push(o.id);
 });
-showStatus('✅ Schedule loaded successfully','success');
+}
+
+// Process pending requests for this student
+if(pending.requests){
+pending.requests.filter(r=>r.studentName.toLowerCase()===name.toLowerCase()&&r.status==='pending').forEach(r=>{
+const offering=offerings.find(o=>o.id===r.offeringId);
+if(offering){
+const key=`${offering.day}-${offering.time}`;
+if(!selected[key])selected[key]=[];
+if(!selected[key].includes(r.offeringId)){
+selected[key].push(r.offeringId);
+pendingOfferings.push(r.offeringId);
+}
+}
+});
+}
+
+const totalClasses=Object.values(selected).flat().length;
+const approvedCount=approvedOfferings.length;
+const pendingCount=pendingOfferings.length;
+
+if(totalClasses>0){
+showStatus(`✅ Schedule loaded: ${approvedCount} approved, ${pendingCount} pending approval`,'success');
 }else{
 showStatus('ℹ️ No saved schedule found','error');
 }
