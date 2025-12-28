@@ -243,7 +243,7 @@ function showCreateOfferingModal(){}
 </div>
 <div class="form-group">
 <label>Time *</label>
-<input type="text" id="editTime" placeholder="10:00-10:45" required>
+<input type="text" id="editTime" placeholder="Block 1" required>
 </div>
 <div class="form-group">
 <label>Type *</label>
@@ -314,11 +314,11 @@ function showCreateOfferingModal(){}
 <div class="form-group">
 <label>Time Blocks * (Hold Ctrl/Cmd to select multiple)</label>
 <select id="createBlocks" multiple size="6" required style="height:auto">
-<option value="10:00-10:45">Block 1: 10:00-10:45 am</option>
-<option value="10:50-11:35">Block 2: 10:50-11:35 am</option>
-<option value="12:10-12:55">Block 3: 12:10-12:55 pm</option>
-<option value="1:00-1:50">Block 4: 1:00-1:50 pm</option>
-<option value="1:55-2:45">Block 5: 1:55-2:45 pm</option>
+<option value="Block 1">Block 1: 10:00-10:45 am</option>
+<option value="Block 2">Block 2: 10:50-11:35 am</option>
+<option value="Block 3">Block 3: 12:10-12:55 pm</option>
+<option value="Block 4">Block 4: 1:00-1:50 pm</option>
+<option value="Block 5">Block 5: 1:55-2:45 pm</option>
 </select>
 <p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple blocks</p>
 </div>
@@ -684,7 +684,8 @@ DAYS.forEach(day=>{
 const offering=d.offerings.find(o=>{
 const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
 const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
-return offeringDays.includes(day)&&offeringTimes.includes(block.time);
+// Match by block name (e.g., "Block 1") OR by time (e.g., "10:00-10:45")
+return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
 });
 
 if(offering){
