@@ -233,18 +233,26 @@ function archiveOffering(){}
 <input type="text" id="editLocation" placeholder="Room 101">
 </div>
 <div class="form-group">
-<label>Day *</label>
-<select id="editDay" required>
+<label>Days * (Hold Ctrl/Cmd to select multiple)</label>
+<select id="editDays" multiple size="5" required style="height:auto">
 <option value="monday">Monday</option>
 <option value="tuesday">Tuesday</option>
 <option value="wednesday">Wednesday</option>
 <option value="thursday">Thursday</option>
 <option value="friday">Friday</option>
 </select>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple days</p>
 </div>
 <div class="form-group">
-<label>Time *</label>
-<input type="text" id="editTime" placeholder="Block 1" required>
+<label>Time Blocks * (Hold Ctrl/Cmd to select multiple)</label>
+<select id="editBlocks" multiple size="6" required style="height:auto">
+<option value="Block 1">Block 1: 10:00-10:45 am</option>
+<option value="Block 2">Block 2: 10:50-11:35 am</option>
+<option value="Block 3">Block 3: 12:10-12:55 pm</option>
+<option value="Block 4">Block 4: 1:00-1:50 pm</option>
+<option value="Block 5">Block 5: 1:55-2:45 pm</option>
+</select>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple blocks</p>
 </div>
 <div class="form-group">
 <label>Type *</label>
@@ -898,8 +906,25 @@ document.getElementById('editModalTitle').textContent='Edit: '+o.name;
 document.getElementById('editName').value=o.name;
 document.getElementById('editInstructor').value=o.instructor;
 document.getElementById('editLocation').value=o.location||'';
-document.getElementById('editDay').value=o.day;
-document.getElementById('editTime').value=o.time;
+
+// Handle multi-select days
+const daysSelect=document.getElementById('editDays');
+const selectedDays=o.day.split(',').map(d=>d.trim().toLowerCase());
+Array.from(daysSelect.options).forEach(opt=>{
+if(selectedDays.includes(opt.value)){
+opt.selected=true;
+}
+});
+
+// Handle multi-select times
+const blocksSelect=document.getElementById('editBlocks');
+const selectedBlocks=o.time.split(',').map(t=>t.trim());
+Array.from(blocksSelect.options).forEach(opt=>{
+if(selectedBlocks.includes(opt.value)){
+opt.selected=true;
+}
+});
+
 document.getElementById('editType').value=o.type;
 document.getElementById('editLevel').value=o.level||'';
 document.getElementById('editDescription').value=o.description||'';
@@ -1045,12 +1070,21 @@ if(!o)return;
 
 const name=document.getElementById('editName').value.trim();
 const instructor=document.getElementById('editInstructor').value.trim();
-const day=document.getElementById('editDay').value;
-const time=document.getElementById('editTime').value.trim();
+
+// Get selected days from multi-select
+const daysSelect=document.getElementById('editDays');
+const selectedDays=Array.from(daysSelect.selectedOptions).map(opt=>opt.value);
+const day=selectedDays.join(',');
+
+// Get selected time blocks from multi-select
+const blocksSelect=document.getElementById('editBlocks');
+const selectedBlocks=Array.from(blocksSelect.selectedOptions).map(opt=>opt.value);
+const time=selectedBlocks.join(',');
+
 const type=document.getElementById('editType').value;
 
-if(!name||!instructor||!day||!time||!type){
-alert('Please fill in all required fields (marked with *)');
+if(!name||!instructor||selectedDays.length===0||selectedBlocks.length===0||!type){
+alert('Please fill in all required fields:\n- Name\n- Instructor\n- At least one Day\n- At least one Time Block\n- Type');
 return;
 }
 
