@@ -66,6 +66,13 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .attendance-stat{text-align:center}
 .attendance-stat-number{font-size:28px;font-weight:bold;color:#4CAF50}
 .attendance-stat-label{font-size:12px;color:#666;margin-top:3px}
+.student-schedule-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+.student-schedule-table th,.student-schedule-table td{border:2px solid #ddd;padding:10px;vertical-align:top;height:100px}
+.student-schedule-table th{background:#2196F3;color:white;font-weight:bold;text-align:center;position:sticky;top:0}
+.student-schedule-table .time-col{font-weight:bold;background:#f8f9fa;text-align:center;width:120px}
+.student-offering-card{background:#e3f2fd;border-left:3px solid #2196F3;padding:10px;margin:4px 0;border-radius:4px;font-size:12px}
+.student-offering-name{font-weight:bold;margin-bottom:5px;font-size:13px}
+.student-offering-info{color:#666;font-size:11px;line-height:1.4}
 .editable-cell{cursor:pointer;position:relative;padding:8px;border-radius:4px}
 .editable-cell:hover{background:#e3f2fd}
 .edit-icon{font-size:10px;color:#999;margin-left:5px}
@@ -387,6 +394,53 @@ This will add the offering to the selected students' approved schedules.
 </div>
 </div>
 
+<!-- STUDENT SCHEDULE MODAL -->
+<div id="studentScheduleModal" class="modal">
+<div class="modal-content" style="max-width:1200px">
+<div class="modal-header">
+<span class="close" onclick="closeStudentScheduleModal()">&times;</span>
+<h2 id="studentScheduleModalTitle">Student Schedule</h2>
+</div>
+<div class="modal-body">
+<div id="studentScheduleGrid"></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeStudentScheduleModal()">Close</button>
+</div>
+</div>
+</div>
+
+<!-- ADD OTHER STUDENT TO ATTENDANCE MODAL -->
+<div id="otherStudentModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close" onclick="closeOtherStudentModal()">&times;</span>
+<h2 id="otherStudentModalTitle">Add Other Student to Attendance</h2>
+</div>
+<div class="modal-body">
+<p id="otherOfferingName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
+<div class="form-group">
+<label>Select Students (Hold Ctrl/Cmd to select multiple)</label>
+<select id="otherStudentSelect" multiple size="10">
+<option value="">-- Loading students... --</option>
+</select>
+<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple students</p>
+</div>
+<div id="otherStudentPreview" style="background:#f8f9fa;padding:10px;border-radius:4px;margin-top:10px;display:none">
+<strong>Selected students:</strong>
+<div id="otherStudentPreviewList" style="margin-top:5px;font-size:13px"></div>
+</div>
+<p style="font-size:12px;color:#666;margin-top:10px">
+These students are not enrolled in this offering but will be marked as present.
+</p>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" onclick="closeOtherStudentModal()">Cancel</button>
+<button class="btn btn-primary" onclick="addOtherStudentsToAttendance()">✅ Mark Present</button>
+</div>
+</div>
+</div>
+
 <script>
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 let pending=[],students=[],offerings=[],allStudentNames=[];
@@ -522,14 +576,180 @@ msg('✅ Loaded','success');
 
 function renderStudents(){
 const c=document.getElementById('studentsContainer');
-if(!students.length){c.innerHTML='<div class="empty">👥<br>No approved students yet</div>';return}
-let html='<table><thead><tr><th>Name</th><th>Classes</th><th>Updated</th></tr></thead><tbody>';
-students.forEach(s=>{
+if(!students.length){
+c.innerHTML='<div class="empty">👥<br>No approved students yet</div>';
+return;
+}
+
+// Sort students alphabetically
+const sorted=[...students].sort((a,b)=>a.name.localeCompare(b.name));
+
+let html='<table><thead><tr><th>Name</th><th>Total Offerings</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>';
+sorted.forEach(s=>{
 const date=s.timestamp?new Date(s.timestamp).toLocaleDateString():'N/A';
-html+=`<tr><td><strong>${s.name}</strong></td><td>${s.totalClasses||0}</td><td>${date}</td></tr>`;
+const encodedName=s.name.replace(/'/g,"\\'");
+html+=`<tr>
+<td><strong>${s.name}</strong></td>
+<td>${s.totalClasses||0}</td>
+<td>${date}</td>
+<td><button class="btn btn-secondary btn-small" onclick="showStudentSchedule('${encodedName}')">📅 View Schedule</button></td>
+</tr>`;
 });
 html+='</tbody></table>';
 c.innerHTML=html;
+}
+
+async function showStudentSchedule(studentName){
+try{
+const r=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`);
+const d=await r.json();
+
+document.getElementById('studentScheduleModalTitle').textContent=`${studentName}'s Schedule`;
+
+if(!d.success||!d.offerings||d.offerings.length===0){
+document.getElementById('studentScheduleGrid').innerHTML='<div style="text-align:center;padding:40px;color:#999">No offerings in schedule</div>';
+document.getElementById('studentScheduleModal').style.display='block';
+return;
+}
+
+// Build schedule grid
+const TIMES=[
+{name:'Block 1',time:'10:00-10:45'},
+{name:'Block 2',time:'10:50-11:35'},
+{name:'LUNCH',time:'11:35-12:05'},
+{name:'Block 3',time:'12:10-12:55'},
+{name:'Block 4',time:'1:00-1:50'},
+{name:'Block 5',time:'1:55-2:45'}
+];
+const DAYS=['monday','tuesday','wednesday','thursday','friday'];
+
+let html='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+html+='<thead><tr><th style="background:#4CAF50;color:white;padding:10px;border:1px solid #ddd">Time</th>';
+DAYS.forEach(day=>{
+html+=`<th style="background:#4CAF50;color:white;padding:10px;border:1px solid #ddd">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
+});
+html+='</tr></thead><tbody>';
+
+TIMES.forEach(block=>{
+if(block.time==='11:35-12:05'){
+html+=`<tr><td style="background:#ffe0b2;padding:10px;border:1px solid #ddd;font-weight:bold;text-align:center">🍽️ ${block.name}</td>`;
+html+='<td colspan="5" style="background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd">Lunch Break</td></tr>';
+return;
+}
+
+html+=`<tr><td style="background:#f8f9fa;padding:10px;border:1px solid #ddd;font-weight:bold;text-align:center">${block.name}<br><small style="font-weight:normal;color:#666">${block.time}</small></td>`;
+
+DAYS.forEach(day=>{
+const offering=d.offerings.find(o=>{
+const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
+const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
+return offeringDays.includes(day)&&offeringTimes.includes(block.time);
+});
+
+if(offering){
+html+=`<td style="padding:10px;border:1px solid #ddd;background:#e6f0ff">
+<strong style="color:#2196F3">${offering.name}</strong><br>
+<small style="color:#666">👤 ${offering.instructor}<br>📍 ${offering.location||'TBA'}</small>
+</td>`;
+}else{
+html+=`<td style="padding:10px;border:1px solid #ddd;text-align:center;color:#ccc">-</td>`;
+}
+});
+html+='</tr>';
+});
+
+html+='</tbody></table>';
+document.getElementById('studentScheduleGrid').innerHTML=html;
+document.getElementById('studentScheduleModal').style.display='block';
+}catch(e){
+alert('Error loading schedule: '+e.message);
+}
+}
+
+function closeStudentScheduleModal(){
+document.getElementById('studentScheduleModal').style.display='none';
+}
+const studentName=document.getElementById('studentSelect').value;
+const container=document.getElementById('studentsContainer');
+
+if(!studentName){
+container.innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">Select a student to view their schedule</p></div>';
+return;
+}
+
+try{
+const r=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`);
+const d=await r.json();
+
+if(!d.success||!d.offerings||d.offerings.length===0){
+container.innerHTML=`<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">${studentName} has no approved offerings yet</p></div>`;
+return;
+}
+
+const studentOfferings=d.offerings;
+
+// Build schedule grid
+const TIMES=[
+{name:'Block 1',time:'10:00-10:45',display:'10:00-10:45 am'},
+{name:'Block 2',time:'10:50-11:35',display:'10:50-11:35 am'},
+{name:'🍽️ LUNCH',time:'11:35-12:05',display:'11:35 am-12:05 pm'},
+{name:'Block 3',time:'12:10-12:55',display:'12:10-12:55 pm'},
+{name:'Block 4',time:'1:00-1:50',display:'1:00-1:50 pm'},
+{name:'Block 5',time:'1:55-2:45',display:'1:55-2:45 pm'}
+];
+const DAYS=['monday','tuesday','wednesday','thursday','friday'];
+
+let html=`<h3 style="text-align:center;color:#2196F3;margin:20px 0">${studentName}'s Schedule</h3>`;
+html+=`<table class="student-schedule-table"><thead><tr>`;
+html+=`<th class="time-col">Time</th>`;
+DAYS.forEach(day=>{
+html+=`<th>${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
+});
+html+=`</tr></thead><tbody>`;
+
+TIMES.forEach(block=>{
+if(block.time==='11:35-12:05'){
+// Lunch row
+html+=`<tr><td class="time-col" style="background:#ffe0b2"><strong>${block.name}</strong><br><small>${block.display}</small></td>`;
+html+=`<td colspan="5" style="background:#fff9e6;text-align:center;color:#999">Lunch Break</td></tr>`;
+return;
+}
+
+html+=`<tr><td class="time-col"><strong>${block.name}</strong><br><small>${block.display}</small></td>`;
+DAYS.forEach(day=>{
+const cell=`<td>`;
+// Find offerings for this day/time
+const dayOfferings=studentOfferings.filter(o=>{
+const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
+const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
+return offeringDays.includes(day)&&offeringTimes.includes(block.time);
+});
+
+if(dayOfferings.length===0){
+html+=`${cell}<div style="color:#ccc;text-align:center;padding:10px">-</div></td>`;
+}else{
+html+=cell;
+dayOfferings.forEach(o=>{
+html+=`<div class="student-offering-card">
+<div class="student-offering-name">${o.name}</div>
+<div class="student-offering-info">
+👤 ${o.instructor}<br>
+📍 ${o.location||'TBA'}
+</div>
+</div>`;
+});
+html+=`</td>`;
+}
+});
+html+=`</tr>`;
+});
+
+html+=`</tbody></table>`;
+container.innerHTML=html;
+
+}catch(e){
+container.innerHTML=`<div style="text-align:center;padding:60px 20px;color:#999"><p>Error loading schedule: ${e.message}</p></div>`;
+}
 }
 
 async function loadOfferings(){
@@ -1152,7 +1372,7 @@ let html=`<div class="attendance-summary">
 <div class="attendance-stat-number">${enrolled.length}</div>
 <div class="attendance-stat-label">Enrolled</div>
 </div>
-<button class="btn btn-secondary btn-small" onclick="showAddOtherModal(${offeringId},'${date}')" style="margin-left:15px">➕ Add Other Student</button>
+<button class="btn btn-secondary btn-small" onclick="showAddOtherStudentModal(${offeringId},'${date}')" style="margin-left:15px">➕ Add Other Student</button>
 </div>`;
 
 if(studentStatuses.size===0){
@@ -1187,19 +1407,213 @@ html+='</div>';
 container.innerHTML=html;
 }
 
-function showAddOtherModal(offeringId,date){
-const allNames=allStudentNames.map(s=>s.name||s);
-const enrolled=getEnrolledStudents(offeringId);
-const other=allNames.filter(name=>!enrolled.includes(name));
+let currentAttendanceOfferingId=null;
+let currentAttendanceDate=null;
 
-if(other.length===0){
-alert('All students are already enrolled in this offering');
+function showAddOtherStudentModal(offeringId,date){
+currentAttendanceOfferingId=offeringId;
+currentAttendanceDate=date;
+
+const offering=offerings.find(o=>o.id==offeringId);
+const enrolled=getEnrolledStudents(offeringId);
+
+document.getElementById('otherStudentModalTitle').textContent='Add Other Student to Attendance';
+document.getElementById('otherOfferingName').textContent=offering?offering.name:'';
+
+const select=document.getElementById('otherStudentSelect');
+select.innerHTML='';
+
+// Sort all students, filter out already enrolled
+const sortedStudents=[...allStudentNames].sort((a,b)=>{
+const nameA=a.name||a;
+const nameB=b.name||b;
+return nameA.localeCompare(nameB);
+});
+
+sortedStudents.forEach(student=>{
+const name=student.name||student;
+// Skip if already enrolled
+if(enrolled.includes(name))return;
+
+const id=student.id||'';
+const grade=student.grade||'';
+const level=student.level||'';
+let displayText=name;
+if(id)displayText+=` (ID: ${id})`;
+if(grade)displayText+=` - Grade ${grade}`;
+if(level)displayText+=` - ${level}`;
+select.innerHTML+=`<option value="${name}">${displayText}</option>`;
+});
+
+select.addEventListener('change',updateOtherStudentPreview);
+document.getElementById('otherStudentPreview').style.display='none';
+document.getElementById('otherStudentModal').style.display='block';
+}
+
+function updateOtherStudentPreview(){
+const select=document.getElementById('otherStudentSelect');
+const selectedOptions=Array.from(select.selectedOptions);
+const preview=document.getElementById('otherStudentPreview');
+const previewList=document.getElementById('otherStudentPreviewList');
+
+if(selectedOptions.length>0){
+preview.style.display='block';
+previewList.innerHTML=selectedOptions.map((opt,i)=>`${i+1}. ${opt.text}`).join('<br>');
+}else{
+preview.style.display='none';
+}
+}
+
+function closeOtherStudentModal(){
+document.getElementById('otherStudentModal').style.display='none';
+currentAttendanceOfferingId=null;
+currentAttendanceDate=null;
+}
+
+async function addOtherStudentsToAttendance(){
+const select=document.getElementById('otherStudentSelect');
+const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
+
+if(selectedStudents.length===0){
+alert('Please select at least one student');
 return;
 }
 
-const name=prompt('Enter student name (other):\n\nSuggestions:\n'+other.slice(0,10).join(', ')+(other.length>10?'...':''));
-if(name&&name.trim()){
-toggleAttendance(name.trim(),offeringId,date,true);
+const count=selectedStudents.length;
+const studentText=count===1?selectedStudents[0]:`${count} students`;
+if(!confirm(`Mark ${studentText} as present (other)?`))return;
+
+try{
+for(const studentName of selectedStudents){
+await toggleAttendance(studentName,currentAttendanceOfferingId,currentAttendanceDate,true);
+}
+msg(`✅ Added ${count} other student(s) to attendance`,'success');
+closeOtherStudentModal();
+}catch(e){
+msg('❌ '+e.message,'error');
+}
+}
+
+let currentAttendanceOfferingId=null;
+let currentAttendanceDate=null;
+
+function showAddOtherModal(offeringId,date){
+currentAttendanceOfferingId=offeringId;
+currentAttendanceDate=date;
+
+const offering=offerings.find(o=>o.id==offeringId);
+const offeringName=offering?offering.name:'Unknown';
+
+document.getElementById('otherStudentModalTitle').textContent='Add Other Students to Attendance';
+document.getElementById('otherOfferingName').textContent=offeringName;
+
+const enrolled=getEnrolledStudents(offeringId);
+const other=allStudentNames.filter(s=>{
+const name=s.name||s;
+return !enrolled.includes(name);
+});
+
+const select=document.getElementById('otherStudentSelect');
+select.innerHTML='';
+
+if(other.length===0){
+select.innerHTML='<option value="">All students are enrolled</option>';
+document.getElementById('otherStudentModal').style.display='block';
+return;
+}
+
+// Sort and populate
+const sorted=[...other].sort((a,b)=>{
+const nameA=a.name||a;
+const nameB=b.name||b;
+return nameA.localeCompare(nameB);
+});
+
+sorted.forEach(student=>{
+const name=student.name||student;
+const id=student.id||'';
+const grade=student.grade||'';
+const level=student.level||'';
+let displayText=name;
+if(id)displayText+=` (ID: ${id})`;
+if(grade)displayText+=` - Grade ${grade}`;
+if(level)displayText+=` - ${level}`;
+select.innerHTML+=`<option value="${name}">${displayText}</option>`;
+});
+
+// Add event listener for preview
+select.addEventListener('change',updateOtherStudentPreview);
+document.getElementById('otherStudentPreview').style.display='none';
+document.getElementById('otherStudentModal').style.display='block';
+}
+
+function updateOtherStudentPreview(){
+const select=document.getElementById('otherStudentSelect');
+const selectedOptions=Array.from(select.selectedOptions);
+const preview=document.getElementById('otherStudentPreview');
+const previewList=document.getElementById('otherStudentPreviewList');
+
+if(selectedOptions.length>0){
+preview.style.display='block';
+previewList.innerHTML=selectedOptions.map((opt,i)=>`${i+1}. ${opt.text}`).join('<br>');
+}else{
+preview.style.display='none';
+}
+}
+
+function closeOtherStudentModal(){
+document.getElementById('otherStudentModal').style.display='none';
+currentAttendanceOfferingId=null;
+currentAttendanceDate=null;
+}
+
+async function addOtherStudentsToAttendance(){
+const select=document.getElementById('otherStudentSelect');
+const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
+
+if(selectedStudents.length===0){
+alert('Please select at least one student');
+return;
+}
+
+if(!currentAttendanceOfferingId||!currentAttendanceDate)return;
+
+try{
+let succeeded=0;
+let failed=0;
+
+for(const studentName of selectedStudents){
+const r=await fetch(API,{method:'POST',body:JSON.stringify({
+action:'markAttendance',
+studentName:studentName,
+offeringId:currentAttendanceOfferingId,
+date:currentAttendanceDate,
+present:true
+})});
+const d=await r.json();
+if(d.success){
+succeeded++;
+// Update local data
+const key=`${currentAttendanceDate}_${currentAttendanceOfferingId}`;
+if(!attendanceData[key])attendanceData[key]=[];
+if(!attendanceData[key].includes(studentName)){
+attendanceData[key].push(studentName);
+}
+}else{
+failed++;
+}
+}
+
+if(succeeded>0){
+msg(`✅ Added ${succeeded} other student(s) to attendance`,'success');
+closeOtherStudentModal();
+loadAttendanceRoster();
+}
+if(failed>0){
+msg(`⚠️ ${failed} failed to add`,'error');
+}
+}catch(e){
+msg('❌ '+e.message,'error');
 }
 }
 
