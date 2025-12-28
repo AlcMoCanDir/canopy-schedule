@@ -93,6 +93,7 @@ function loadOfferings(){}
 function loadPendingRequests(){}
 function applyOfferingFilters(){}
 function showCreateOfferingModal(){}
+function archiveOffering(){}
 </script>
 </head>
 <body>
@@ -838,6 +839,7 @@ html+=`<tr style="${isFull?'background:#ffe6e6':''}">
 <td>
 <button class="btn btn-warning btn-small" onclick="editOffering(${o.id})">✏️ Edit</button>
 <button class="btn btn-primary btn-small" onclick="showEnrollModal(${o.id},'${o.name}')">➕ Add</button>
+<button class="btn btn-danger btn-small" onclick="archiveOffering(${o.id},'${o.name}')">🗄️ Archive</button>
 </td>
 </tr>`;
 });
@@ -877,6 +879,15 @@ await loadOfferings();
 msg('❌ '+d.message,'error');
 }
 }catch(e){msg('❌ '+e.message,'error')}
+}
+
+async function archiveOffering(id,name){
+if(!confirm(`Archive "${name}"?\n\nThis will:\n• Remove it from the active offerings list\n• Keep it in the database for records\n• Remove all student enrollments\n\nThis action can be undone by editing the Google Sheet.`))return;
+apiCall('archiveOffering',{offeringId:id},async()=>{
+msg(`✅ Archived: ${name}`,'success');
+await loadOfferings();
+await loadStudents();
+});
 }
 
 function editOffering(id){
