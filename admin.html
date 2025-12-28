@@ -71,6 +71,20 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .edit-icon{font-size:10px;color:#999;margin-left:5px}
 @media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr}}
 </style>
+<script>
+// Essential functions needed by onclick handlers
+let attendanceLoaded=false;
+function switchTab(i){
+document.querySelectorAll('.tab-content,.tab').forEach(e=>e.classList.remove('active'));
+document.querySelectorAll('.tab')[i].classList.add('active');
+document.querySelectorAll('.tab-content')[i].classList.add('active');
+if(i===1&&!attendanceLoaded){
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('attendanceDate').value=today;
+attendanceLoaded=true;
+}
+}
+</script>
 </head>
 <body>
 <div class="container">
@@ -120,10 +134,8 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 
 <!-- OFFERINGS TAB -->
 <div id="offerings" class="tab-content">
-<div class="stats">
-<div class="stat-card"><h3 id="totalOfferings">-</h3><p>Offerings</p></div>
-</div>
 <div class="actions">
+<span style="font-size:14px;color:#666;margin-right:15px">Total: <strong id="totalOfferings" style="color:#2196F3">-</strong></span>
 <button class="btn btn-primary" onclick="showCreateOfferingModal()">➕ Create New Offering</button>
 <button class="btn btn-secondary" onclick="loadOfferings()">🔄 Refresh</button>
 </div>
@@ -450,7 +462,7 @@ These learners are not enrolled in this offering but will be marked as present.
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 let pending=[],students=[],offerings=[],allStudentNames=[];
 let currentEditId=null,currentEnrollOfferingId=null;
-let studentsLoaded=false,offeringsLoaded=false,attendanceLoaded=false,pendingLoaded=false;
+let studentsLoaded=false,offeringsLoaded=false,pendingLoaded=false;
 let currentAttendanceOfferingId=null,currentAttendanceDate=null;
 let attendanceData={};
 
@@ -479,18 +491,6 @@ const d=await r.json();
 if(d.success){if(onSuccess)onSuccess(d)}
 else{msg(d.message||'Error','error');if(onError)onError(d)}
 }catch(e){msg('❌ '+e.message,'error')}
-}
-
-function switchTab(i){
-document.querySelectorAll('.tab-content,.tab').forEach(e=>e.classList.remove('active'));
-document.querySelectorAll('.tab')[i].classList.add('active');
-document.querySelectorAll('.tab-content')[i].classList.add('active');
-// Initialize attendance tab on first visit (just sets date, doesn't load data)
-if(i===1&&!attendanceLoaded){
-const today=new Date().toISOString().split('T')[0];
-document.getElementById('attendanceDate').value=today;
-attendanceLoaded=true;
-}
 }
 
 async function loadPendingRequests(){
@@ -560,7 +560,6 @@ apiCall('denyClass',{requestId,offeringId},async()=>{
 msg(`✅ Denied: ${className}`,'success');
 await loadPendingRequests();
 });
-}
 }
 
 async function approveAllForStudent(baseRequestId,studentName){
@@ -700,88 +699,6 @@ alert('Error loading schedule: '+e.message);
 }
 
 function closeStudentScheduleModal(){closeModal('studentScheduleModal')}
-const studentName=document.getElementById('studentSelect').value;
-const container=document.getElementById('studentsContainer');
-
-if(!studentName){
-container.innerHTML=emptyState('Select a student to view their schedule');
-return;
-}
-
-try{
-const r=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`);
-const d=await r.json();
-
-if(!d.success||!d.offerings||d.offerings.length===0){
-container.innerHTML=`<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">${studentName} has no approved offerings yet</p></div>`;
-return;
-}
-
-const studentOfferings=d.offerings;
-
-// Build schedule grid
-const TIMES=[
-{name:'Block 1',time:'10:00-10:45',display:'10:00-10:45 am'},
-{name:'Block 2',time:'10:50-11:35',display:'10:50-11:35 am'},
-{name:'🍽️ LUNCH',time:'11:35-12:05',display:'11:35 am-12:05 pm'},
-{name:'Block 3',time:'12:10-12:55',display:'12:10-12:55 pm'},
-{name:'Block 4',time:'1:00-1:50',display:'1:00-1:50 pm'},
-{name:'Block 5',time:'1:55-2:45',display:'1:55-2:45 pm'}
-];
-const DAYS=['monday','tuesday','wednesday','thursday','friday'];
-
-let html=`<h3 style="text-align:center;color:#2196F3;margin:20px 0">${studentName}'s Schedule</h3>`;
-html+=`<table class="student-schedule-table"><thead><tr>`;
-html+=`<th class="time-col">Time</th>`;
-DAYS.forEach(day=>{
-html+=`<th>${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
-});
-html+=`</tr></thead><tbody>`;
-
-TIMES.forEach(block=>{
-if(block.time==='11:35-12:05'){
-// Lunch row
-html+=`<tr><td class="time-col" style="background:#ffe0b2"><strong>${block.name}</strong><br><small>${block.display}</small></td>`;
-html+=`<td colspan="5" style="background:#fff9e6;text-align:center;color:#999">Lunch Break</td></tr>`;
-return;
-}
-
-html+=`<tr><td class="time-col"><strong>${block.name}</strong><br><small>${block.display}</small></td>`;
-DAYS.forEach(day=>{
-const cell=`<td>`;
-// Find offerings for this day/time
-const dayOfferings=studentOfferings.filter(o=>{
-const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
-const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
-return offeringDays.includes(day)&&offeringTimes.includes(block.time);
-});
-
-if(dayOfferings.length===0){
-html+=`${cell}<div style="color:#ccc;text-align:center;padding:10px">-</div></td>`;
-}else{
-html+=cell;
-dayOfferings.forEach(o=>{
-html+=`<div class="student-offering-card">
-<div class="student-offering-name">${o.name}</div>
-<div class="student-offering-info">
-👤 ${o.instructor}<br>
-📍 ${o.location||'TBA'}
-</div>
-</div>`;
-});
-html+=`</td>`;
-}
-});
-html+=`</tr>`;
-});
-
-html+=`</tbody></table>`;
-container.innerHTML=html;
-
-}catch(e){
-container.innerHTML=`<div style="text-align:center;padding:60px 20px;color:#999"><p>Error loading schedule: ${e.message}</p></div>`;
-}
-}
 
 async function loadOfferings(){
 try{
@@ -1420,7 +1337,6 @@ html+='</div>';
 container.innerHTML=html;
 }
 
-let currentAttendanceOfferingId=null;
 let currentAttendanceDate=null;
 
 function showAddOtherStudentModal(offeringId,date){
@@ -1508,7 +1424,6 @@ msg('❌ '+e.message,'error');
 }
 }
 
-let currentAttendanceOfferingId=null;
 let currentAttendanceDate=null;
 
 function showAddOtherModal(offeringId,date){
