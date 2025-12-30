@@ -915,21 +915,21 @@ html+=`</ul>
 }
 
 html+='<div class="schedule-table-wrapper">';
-html+='<table class="schedule-table" style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px">';
-html+='<thead><tr><th style="width:100px;background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">Time</th>';
+html+='<table class="schedule-table" style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;display:table">';
+html+='<thead style="display:table-header-group"><tr style="display:table-row"><th style="display:table-cell;width:100px;background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">Time</th>';
 DAYS.forEach(day=>{
-html+=`<th style="background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
+html+=`<th style="display:table-cell;background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
 });
-html+='</tr></thead><tbody>';
+html+='</tr></thead><tbody style="display:table-row-group">';
 
 TIMES.forEach(block=>{
 if(block.time==='11:35-12:05'){
-html+=`<tr style="height:50px"><td style="background:#ffe0b2;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px">🍽️ ${block.name}</td>`;
-html+='<td colspan="5" style="background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd;font-size:10px">Lunch Break</td></tr>';
+html+=`<tr style="display:table-row;height:50px"><td style="display:table-cell;background:#ffe0b2;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px">🍽️ ${block.name}</td>`;
+html+='<td colspan="5" style="display:table-cell;background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd;font-size:10px">Lunch Break</td></tr>';
 return;
 }
 
-html+=`<tr style="height:85px"><td style="background:#f8f9fa;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;vertical-align:middle;font-size:10px;line-height:1.3">${block.name}<br><small style="font-weight:normal;color:#666;font-size:9px">${block.time}</small></td>`;
+html+=`<tr style="display:table-row;height:85px"><td style="display:table-cell;background:#f8f9fa;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;vertical-align:middle;font-size:10px;line-height:1.3">${block.name}<br><small style="font-weight:normal;color:#666;font-size:9px">${block.time}</small></td>`;
 
 DAYS.forEach(day=>{
 // Find ALL offerings for this day/time (not just first one)
@@ -943,7 +943,7 @@ return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offering
 if(offerings.length>0){
 // Check if there's an overlap (multiple offerings in same slot)
 const hasOverlap=offerings.length>1;
-const cellStyle=hasOverlap?'padding:6px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444;vertical-align:top;overflow:hidden':'padding:6px;border:1px solid #ddd;background:#e6f0ff;vertical-align:top;overflow:hidden';
+const cellStyle=hasOverlap?'display:table-cell;padding:6px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444;vertical-align:top;overflow:hidden':'display:table-cell;padding:6px;border:1px solid #ddd;background:#e6f0ff;vertical-align:top;overflow:hidden';
 
 html+=`<td style="${cellStyle}">`;
 if(hasOverlap){
@@ -984,7 +984,7 @@ html+=`<div style="font-size:9px;color:#666;line-height:1.2">📍 ${offering.loc
 }
 html+=`</td>`;
 }else{
-html+=`<td style="padding:6px;border:1px solid #ddd;text-align:center;color:#ccc;vertical-align:middle;font-size:10px">-</td>`;
+html+=`<td style="display:table-cell;padding:6px;border:1px solid #ddd;text-align:center;color:#ccc;vertical-align:middle;font-size:10px">-</td>`;
 }
 });
 html+='</tr>';
@@ -1042,13 +1042,13 @@ html+=`<div id="offeringNotesLegend" style="margin-top:20px;padding:15px;backgro
 <div style="font-weight:bold;font-size:14px;margin-bottom:10px;color:#333">
 <span style="color:#ff4444;font-weight:bold">*</span> Schedule Notes
 </div>
-<table class="notes-table" style="width:100%;font-size:12px;border-collapse:collapse">
-<thead><tr>
-<th style="background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd;width:25%">Offering</th>
-<th style="background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd;width:60%">Note</th>
-<th style="background:#f0f0f0;color:#333;padding:8px;text-align:center;border:1px solid #ddd;width:15%">Actions</th>
+<table class="notes-table" style="display:table;width:100%;font-size:12px;border-collapse:collapse">
+<thead style="display:table-header-group"><tr style="display:table-row">
+<th style="display:table-cell;background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd;width:25%">Offering</th>
+<th style="display:table-cell;background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd;width:60%">Note</th>
+<th style="display:table-cell;background:#f0f0f0;color:#333;padding:8px;text-align:center;border:1px solid #ddd;width:15%">Actions</th>
 </tr></thead>
-<tbody>`;
+<tbody style="display:table-row-group">`;
 uniqueNotes.forEach(note=>{
 const isOverride=note.id==='override';
 const rowStyle=isOverride?'background:#e8f5e9':'';
@@ -1057,10 +1057,10 @@ const editButton=isOverride
 ?`<button class="btn btn-warning btn-small" onclick="showOverrideModal()" style="padding:4px 8px;font-size:11px">✏️ Edit</button>`
 :`<button class="btn btn-secondary btn-small" onclick="showOfferingNoteModal('${note.id}','${note.name.replace(/'/g,"\\'")}');" style="padding:4px 8px;font-size:11px">✏️ Edit</button>`;
 
-html+=`<tr style="${rowStyle}">
-<td style="padding:8px;border:1px solid #ddd;vertical-align:top">${offeringLabel}</td>
-<td style="padding:8px;border:1px solid #ddd">${note.note}</td>
-<td style="padding:8px;border:1px solid #ddd;text-align:center">${editButton}</td>
+html+=`<tr style="display:table-row;${rowStyle}">
+<td style="display:table-cell;padding:8px;border:1px solid #ddd;vertical-align:top">${offeringLabel}</td>
+<td style="display:table-cell;padding:8px;border:1px solid #ddd">${note.note}</td>
+<td style="display:table-cell;padding:8px;border:1px solid #ddd;text-align:center">${editButton}</td>
 </tr>`;
 });
 html+=`</tbody></table>
