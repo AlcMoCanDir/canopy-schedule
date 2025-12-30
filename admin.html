@@ -94,6 +94,7 @@ function loadPendingRequests(){}
 function applyOfferingFilters(){}
 function showCreateOfferingModal(){}
 function archiveOffering(){}
+function showStudentSchedule(){}
 </script>
 </head>
 <body>
@@ -649,7 +650,7 @@ html+='</tbody></table>';
 c.innerHTML=html;
 }
 
-async function showStudentSchedule(studentName){
+showStudentSchedule = async function(studentName){
 try{
 const r=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`);
 const d=await r.json();
