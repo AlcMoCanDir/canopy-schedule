@@ -883,11 +883,13 @@ window.currentOfferingNotes={};
 
 // Check if override exception exists for this student
 let hasOverrideException=false;
+let overrideExceptionData=null;
 try{
 const exRes=await fetch(`${API}?action=getScheduleException&studentName=${encodeURIComponent(studentName)}`);
 const exData=await exRes.json();
 if(exData.success&&exData.exception&&exData.exception.note){
 hasOverrideException=true;
+overrideExceptionData=exData.exception;
 }
 }catch(e){
 console.error('Error checking override exception:',e);
@@ -994,11 +996,7 @@ html+='</tbody></table></div>'; // Close schedule-table-wrapper
 
 // Check if override exception exists and add it as a schedule note
 let overrideNote = null;
-if(hasAnyOverlaps){
-try{
-const exRes=await fetch(`${API}?action=getScheduleException&studentName=${encodeURIComponent(studentName)}`);
-const exData=await exRes.json();
-if(exData.success&&exData.exception&&exData.exception.note){
+if(hasAnyOverlaps&&overrideExceptionData){
 // Extract all unique conflicting offering names from overlapDetails
 const conflictingOfferings=new Set();
 overlapDetails.forEach(overlap=>{
@@ -1010,13 +1008,9 @@ const offeringNames=Array.from(conflictingOfferings).join(' / ');
 overrideNote={
 id:'override',
 name:offeringNames,
-note:`<strong style="color:#2e7d32">✓ Schedule Conflict Approved:</strong> ${exData.exception.note}`,
-timestamp:exData.exception.timestamp
+note:`<strong style="color:#2e7d32">✓ Schedule Conflict Approved:</strong> ${overrideExceptionData.note}`,
+timestamp:overrideExceptionData.timestamp
 };
-}
-}catch(e){
-console.error('Error loading override exception:',e);
-}
 }
 
 // Add offering notes legend if any notes exist
