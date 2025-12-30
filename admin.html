@@ -86,20 +86,11 @@ button[title="Add note"]{display:none!important}
 .print-title{font-size:20px;font-weight:bold;color:#333;margin:5px 0}
 .print-subtitle{font-size:14px;color:#666;margin:3px 0}
 .modal-body>div[style*="background:#fff3cd"]{display:none!important}
-.schedule-table-wrapper{width:100%;overflow:visible}
-.schedule-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important}
-.schedule-table thead{display:table-header-group!important}
-.schedule-table tbody{display:table-row-group!important}
-.schedule-table tr{display:table-row!important}
-.schedule-table th,.schedule-table td{display:table-cell!important;border:1px solid #333!important;padding:6px 4px!important;vertical-align:top!important}
-.schedule-table th{background:#4CAF50!important;color:white!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.schedule-table thead th:first-child{width:80px!important}
-.schedule-table strong{font-size:9px!important}
-.schedule-table td>div{font-size:8px!important;line-height:1.2!important}
-.schedule-table td[style*="background:#ffe6e6"] div[style*="display:flex"]{flex-direction:column!important;gap:2px!important}
-.schedule-table td[style*="background:#ffe6e6"] div[style*="border-left"]{border-left:none!important;padding-left:0!important;margin-top:3px;padding-top:3px;border-top:1px dashed #999!important}
+.schedule-grid{display:grid!important;grid-template-columns:100px repeat(5,1fr)!important;gap:0!important;width:100%!important;page-break-inside:avoid}
+.schedule-grid>div{border:1px solid #333!important;padding:6px!important}
+.schedule-grid>div:nth-child(-n+6){background:#4CAF50!important;color:white!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #offeringNotesLegend{page-break-inside:avoid;margin-top:15px;padding:10px!important;background:#f8f9fa!important;border:1px solid #333!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:block!important}
-.notes-table{width:100%!important;border-collapse:collapse!important;table-layout:auto!important;font-size:10px!important}
+.notes-table{width:100%!important;border-collapse:collapse!important;table-layout:auto!important;font-size:10px!important;display:table!important}
 .notes-table thead{display:table-header-group!important}
 .notes-table tbody{display:table-row-group!important}
 .notes-table tr{display:table-row!important}
@@ -916,22 +907,25 @@ html+=`</ul>
 </div>`;
 }
 
-html+='<div class="schedule-table-wrapper">';
-html+='<table class="schedule-table" style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;display:table">';
-html+='<thead style="display:table-header-group"><tr style="display:table-row"><th style="display:table-cell;width:100px;background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">Time</th>';
+// Use CSS Grid instead of table for reliable printing
+html+='<div class="schedule-grid" style="display:grid;grid-template-columns:100px repeat(5,1fr);gap:0;width:100%;border:1px solid #ddd;font-size:11px">';
+
+// Headers
+html+='<div style="background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:11px">Time</div>';
 DAYS.forEach(day=>{
-html+=`<th style="display:table-cell;background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
+html+=`<div style="background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:11px">${day.charAt(0).toUpperCase()+day.slice(1)}</div>`;
 });
-html+='</tr></thead><tbody style="display:table-row-group">';
 
 TIMES.forEach(block=>{
 if(block.time==='11:35-12:05'){
-html+=`<tr style="display:table-row;height:50px"><td style="display:table-cell;background:#ffe0b2;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px">🍽️ ${block.name}</td>`;
-html+='<td colspan="5" style="display:table-cell;background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd;font-size:10px">Lunch Break</td></tr>';
+// Lunch row
+html+=`<div style="background:#ffe0b2;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px">🍽️ ${block.name}</div>`;
+html+='<div style="grid-column:2/7;background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd;font-size:10px;padding:6px">Lunch Break</div>';
 return;
 }
 
-html+=`<tr style="display:table-row;height:85px"><td style="display:table-cell;background:#f8f9fa;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;vertical-align:middle;font-size:10px;line-height:1.3">${block.name}<br><small style="font-weight:normal;color:#666;font-size:9px">${block.time}</small></td>`;
+// Time column
+html+=`<div style="background:#f8f9fa;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px;line-height:1.3">${block.name}<br><small style="font-weight:normal;color:#666;font-size:9px">${block.time}</small></div>`;
 
 DAYS.forEach(day=>{
 // Find ALL offerings for this day/time (not just first one)
@@ -945,9 +939,9 @@ return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offering
 if(offerings.length>0){
 // Check if there's an overlap (multiple offerings in same slot)
 const hasOverlap=offerings.length>1;
-const cellStyle=hasOverlap?'display:table-cell;padding:6px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444;vertical-align:top;overflow:hidden':'display:table-cell;padding:6px;border:1px solid #ddd;background:#e6f0ff;vertical-align:top;overflow:hidden';
+const cellStyle=hasOverlap?'padding:6px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444;min-height:85px':'padding:6px;border:1px solid #ddd;background:#e6f0ff;min-height:85px';
 
-html+=`<td style="${cellStyle}">`;
+html+=`<div style="${cellStyle}">`;
 if(hasOverlap){
 html+=`<div style="background:#ff4444;color:white;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;margin-bottom:4px;display:inline-block">⚠️ OVERLAP</div>`;
 // Horizontal layout for overlapping offerings
@@ -984,15 +978,14 @@ html+=`<div style="font-size:9px;color:#666;line-height:1.2">👤 ${offering.ins
 html+=`<div style="font-size:9px;color:#666;line-height:1.2">📍 ${offering.location||'TBA'}</div>`;
 });
 }
-html+=`</td>`;
+html+=`</div>`;
 }else{
-html+=`<td style="display:table-cell;padding:6px;border:1px solid #ddd;text-align:center;color:#ccc;vertical-align:middle;font-size:10px">-</td>`;
+html+=`<div style="padding:6px;border:1px solid #ddd;text-align:center;color:#ccc;min-height:85px;display:flex;align-items:center;justify-content:center;font-size:10px">-</div>`;
 }
 });
-html+='</tr>';
 });
 
-html+='</tbody></table></div>'; // Close schedule-table-wrapper
+html+='</div>'; // Close schedule-grid
 
 // Check if override exception exists and add it as a schedule note
 let overrideNote = null;
