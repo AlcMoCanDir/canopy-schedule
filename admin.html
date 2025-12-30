@@ -113,6 +113,7 @@ if(i===1&&!attendanceLoaded){
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 attendanceLoaded=true;
+loadAttendanceTab(); // Load attendance data automatically
 }
 }
 // Stub functions that will be replaced by full implementations in main script
@@ -1758,6 +1759,12 @@ loadAttendanceTab = async function(){
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 
+// Auto-load students if not loaded
+if(students.length===0){
+document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading students...</div>';
+await loadStudents();
+}
+
 // Auto-load offerings if not loaded
 if(offerings.length===0){
 document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading offerings...</div>';
@@ -1795,6 +1802,8 @@ const offeringId=document.getElementById('attendanceOffering').value;
 const date=document.getElementById('attendanceDate').value;
 const container=document.getElementById('attendanceContainer');
 
+console.log('Loading attendance roster:', {date, offeringId, studentsCount: students.length, offeringsCount: offerings.length});
+
 if(!offeringId||!date){
 container.innerHTML=emptyState('Select a date and class to mark attendance');
 return;
@@ -1807,8 +1816,11 @@ return;
 }
 
 const enrolled=getEnrolledStudents(offeringId);
+console.log('Enrolled students found:', enrolled.length, enrolled);
+
 const key=`${date}_${offeringId}`;
 const presentList=attendanceData[key]||[];
+console.log('Attendance data key:', key, 'Present list:', presentList);
 
 // Default: all enrolled students are checked (present) unless marked absent
 let studentStatuses=new Map();
