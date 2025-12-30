@@ -70,6 +70,31 @@ tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
 .editable-cell:hover{background:#e3f2fd}
 .edit-icon{font-size:10px;color:#999;margin-left:5px}
 @media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr}}
+@media print{
+body{background:white;padding:0;margin:0}
+.container{box-shadow:none;padding:10px}
+.modal{position:static;background:none;width:100%;height:auto;overflow:visible}
+.modal-content{box-shadow:none;max-width:100%;width:100%;margin:0;max-height:none;overflow:visible}
+.modal-header{background:white;color:#333;border-bottom:2px solid #333;padding:10px 0}
+.modal-header h2{color:#333}
+.modal-body{padding:10px 0}
+.modal-footer,.close,.tabs,.tab-content:not(.active),.btn,h1,h2:not(#studentScheduleModalTitle){display:none!important}
+button[title="Add note"]{display:none!important}
+.print-header{display:block!important;text-align:center;margin-bottom:15px}
+.print-title{font-size:20px;font-weight:bold;color:#333;margin:5px 0}
+.print-subtitle{font-size:14px;color:#666;margin:3px 0}
+table{page-break-inside:avoid;font-size:9px}
+th{background:#4CAF50!important;color:white!important;padding:6px 4px!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+td{padding:5px 3px!important;border:1px solid #333!important}
+tr{page-break-inside:avoid}
+#offeringNotesLegend{page-break-inside:avoid;margin-top:15px;padding:10px;background:#f8f9fa!important;border:1px solid #333!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#offeringNotesLegend table{font-size:9px;margin-top:5px}
+#offeringNotesLegend th{background:#e0e0e0!important;color:#333!important;font-size:9px;padding:4px!important}
+#offeringNotesLegend td{padding:4px!important;font-size:9px}
+body.print-without-notes #offeringNotesLegend{display:none!important}
+body.print-without-notes .note-asterisk{display:none!important}
+#scheduleNotes{display:none!important}
+}
 </style>
 <script>
 // Essential functions needed by onclick handlers - defined early so they're available
@@ -98,6 +123,16 @@ function showEnrollModal(){}
 function duplicateOffering(){}
 function archiveOffering(){}
 function showStudentSchedule(){}
+function printStudentSchedule(){}
+function showOverrideModal(){}
+function closeOverrideModal(){}
+function saveOverrideException(){}
+function loadScheduleExceptions(){}
+function removeOverrideException(){}
+function showOfferingNoteModal(){}
+function closeOfferingNoteModal(){}
+function saveOfferingNote(){}
+function deleteOfferingNote(){}
 </script>
 </head>
 <body>
@@ -441,10 +476,85 @@ This will add the offering to the selected learners' approved schedules.
 <h2 id="studentScheduleModalTitle">Learner Schedule</h2>
 </div>
 <div class="modal-body">
+<div class="print-header" style="display:none">
+<div class="print-title" id="printStudentName"></div>
+<div class="print-subtitle">Session 3 Schedule</div>
+<div class="print-subtitle" id="printLastUpdated"></div>
+</div>
 <div id="studentScheduleGrid"></div>
 </div>
 <div class="modal-footer">
+<div style="flex:1;text-align:left">
+<label style="font-size:13px;color:#666;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+<input type="checkbox" id="printWithNotes" checked style="width:16px;height:16px;cursor:pointer">
+<span>Include offering notes when printing</span>
+</label>
+</div>
+<button class="btn btn-primary" onclick="printStudentSchedule()">🖨️ Print Schedule</button>
 <button class="btn btn-secondary" onclick="closeStudentScheduleModal()">Close</button>
+</div>
+</div>
+</div>
+
+<!-- OVERRIDE EXCEPTION MODAL -->
+<div id="overrideModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close" onclick="closeOverrideModal()">&times;</span>
+<h2>Approve Schedule Override</h2>
+</div>
+<div class="modal-body">
+<p style="color:#856404;margin-bottom:15px">
+<strong>⚠️ This will approve the schedule conflict as an intentional exception.</strong><br>
+Please provide a reason for the override.
+</p>
+<div class="form-group">
+<label>Student Name</label>
+<input type="text" id="overrideStudentName" readonly style="background:#f5f5f5">
+</div>
+<div class="form-group">
+<label>Override Reason/Note *</label>
+<textarea id="overrideNote" placeholder="Example: Student approved for dual enrollment in both Math sections for advanced learning" rows="4" required></textarea>
+<p style="font-size:11px;color:#666;margin-top:5px">This note will be displayed below the student's schedule.</p>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-primary" onclick="saveOverrideException()">✓ Approve Override</button>
+<button class="btn btn-secondary" onclick="closeOverrideModal()">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- OFFERING NOTE MODAL -->
+<div id="offeringNoteModal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<span class="close" onclick="closeOfferingNoteModal()">&times;</span>
+<h2>Add Schedule Note</h2>
+</div>
+<div class="modal-body">
+<p style="color:#666;margin-bottom:15px">
+Add a note about this offering on the student's schedule. The note will appear with an asterisk (*) and be listed below the schedule when printed.
+</p>
+<div class="form-group">
+<label>Offering</label>
+<input type="text" id="noteOfferingName" readonly style="background:#f5f5f5">
+<input type="hidden" id="noteOfferingId">
+</div>
+<div class="form-group">
+<label>Student</label>
+<input type="text" id="noteStudentName" readonly style="background:#f5f5f5">
+</div>
+<div class="form-group">
+<label>Note *</label>
+<textarea id="offeringNoteText" placeholder="Example: Student will attend first half only due to medical appointment" rows="3" required></textarea>
+<p style="font-size:11px;color:#666;margin-top:5px">This note will be displayed below the student's schedule with an asterisk.</p>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-primary" onclick="saveOfferingNote()">💾 Save Note</button>
+<button class="btn btn-danger" onclick="deleteOfferingNote()" id="deleteNoteBtn" style="display:none">🗑️ Delete Note</button>
+<button class="btn btn-secondary" onclick="closeOfferingNoteModal()">Cancel</button>
 </div>
 </div>
 </div>
@@ -673,6 +783,12 @@ console.log(`  Location: ${o.location}`);
 
 document.getElementById('studentScheduleModalTitle').textContent=`${studentName}'s Schedule`;
 
+// Set print header info
+document.getElementById('printStudentName').textContent=studentName;
+const now=new Date();
+const lastUpdated=`Last Updated: ${now.toLocaleDateString()}`;
+document.getElementById('printLastUpdated').textContent=lastUpdated;
+
 if(!d.success||!d.offerings||d.offerings.length===0){
 document.getElementById('studentScheduleGrid').innerHTML='<div style="text-align:center;padding:40px;color:#999">No offerings in schedule</div>';
 document.getElementById('studentScheduleModal').style.display='block';
@@ -730,14 +846,36 @@ console.log('Number of overlaps:', overlapDetails.length);
 console.log('Overlap details:', overlapDetails);
 console.log('================================\n');
 
+// Store current student name for overlap overrides and offering notes
+window.currentScheduleStudent = studentName;
+window.currentScheduleOfferings = d.offerings; // Store for notes modal
+
 let html='';
+let offeringNotes = []; // Track offerings with notes
+
+// Load offering notes for this student
+try{
+const notesRes=await fetch(`${API}?action=getOfferingNotes&studentName=${encodeURIComponent(studentName)}`);
+const notesData=await notesRes.json();
+if(notesData.success&&notesData.notes){
+window.currentOfferingNotes=notesData.notes; // Store globally
+}else{
+window.currentOfferingNotes={};
+}
+}catch(e){
+console.error('Error loading offering notes:',e);
+window.currentOfferingNotes={};
+}
 
 // Show overlap warning if any exist
 if(hasAnyOverlaps){
 html+=`<div style="background:#fff3cd;border:2px solid #ff9800;border-radius:8px;padding:15px;margin-bottom:15px">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+<div style="display:flex;align-items:center;gap:10px">
 <span style="font-size:24px">⚠️</span>
 <strong style="color:#856404;font-size:16px">Schedule Conflicts Detected</strong>
+</div>
+<button class="btn btn-warning btn-small" onclick="showOverrideModal()" style="background:#ff9800;color:white">✓ Approve Override</button>
 </div>
 <div style="color:#856404;font-size:13px;line-height:1.6">
 This student is enrolled in multiple offerings during the same time block(s). Please review and resolve:
@@ -750,21 +888,21 @@ html+=`</ul>
 </div>`;
 }
 
-html+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
-html+='<thead><tr><th style="background:#4CAF50;color:white;padding:10px;border:1px solid #ddd">Time</th>';
+html+='<table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px">';
+html+='<thead><tr><th style="width:100px;background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">Time</th>';
 DAYS.forEach(day=>{
-html+=`<th style="background:#4CAF50;color:white;padding:10px;border:1px solid #ddd">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
+html+=`<th style="background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-size:11px">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
 });
 html+='</tr></thead><tbody>';
 
 TIMES.forEach(block=>{
 if(block.time==='11:35-12:05'){
-html+=`<tr><td style="background:#ffe0b2;padding:10px;border:1px solid #ddd;font-weight:bold;text-align:center">🍽️ ${block.name}</td>`;
-html+='<td colspan="5" style="background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd">Lunch Break</td></tr>';
+html+=`<tr style="height:50px"><td style="background:#ffe0b2;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px">🍽️ ${block.name}</td>`;
+html+='<td colspan="5" style="background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd;font-size:10px">Lunch Break</td></tr>';
 return;
 }
 
-html+=`<tr><td style="background:#f8f9fa;padding:10px;border:1px solid #ddd;font-weight:bold;text-align:center">${block.name}<br><small style="font-weight:normal;color:#666">${block.time}</small></td>`;
+html+=`<tr style="height:85px"><td style="background:#f8f9fa;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;vertical-align:middle;font-size:10px;line-height:1.3">${block.name}<br><small style="font-weight:normal;color:#666;font-size:9px">${block.time}</small></td>`;
 
 DAYS.forEach(day=>{
 // Find ALL offerings for this day/time (not just first one)
@@ -778,27 +916,85 @@ return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offering
 if(offerings.length>0){
 // Check if there's an overlap (multiple offerings in same slot)
 const hasOverlap=offerings.length>1;
-const cellStyle=hasOverlap?'padding:10px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444':'padding:10px;border:1px solid #ddd;background:#e6f0ff';
+const cellStyle=hasOverlap?'padding:6px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444;vertical-align:top;overflow:hidden':'padding:6px;border:1px solid #ddd;background:#e6f0ff;vertical-align:top;overflow:hidden';
 
 html+=`<td style="${cellStyle}">`;
 if(hasOverlap){
-html+=`<div style="background:#ff4444;color:white;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;margin-bottom:8px;display:inline-block">⚠️ OVERLAP</div><br>`;
-}
+html+=`<div style="background:#ff4444;color:white;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;margin-bottom:4px;display:inline-block">⚠️ OVERLAP</div>`;
+// Horizontal layout for overlapping offerings
+html+=`<div style="display:flex;gap:6px;margin-top:4px">`;
 offerings.forEach((offering,idx)=>{
-if(idx>0)html+=`<div style="border-top:1px dashed #ccc;margin:8px 0"></div>`;
-html+=`<strong style="color:${hasOverlap?'#d32f2f':'#2196F3'}">${offering.name}</strong><br>`;
-html+=`<small style="color:#666">👤 ${offering.instructor}<br>📍 ${offering.location||'TBA'}</small>`;
+const hasNote=window.currentOfferingNotes&&window.currentOfferingNotes[offering.id];
+if(hasNote){
+offeringNotes.push({id:offering.id,name:offering.name,note:hasNote});
+}
+const asterisk=hasNote?'<span class="note-asterisk" style="color:#ff4444;font-weight:bold">*</span>':'';
+html+=`<div style="flex:1;${idx>0?'border-left:2px solid #ff4444;padding-left:6px':''}">`;
+html+=`<div style="font-size:10px;line-height:1.3;margin-bottom:2px">
+<strong style="color:#d32f2f">${offering.name}${asterisk}</strong>
+<button onclick="showOfferingNoteModal('${offering.id}','${offering.name.replace(/'/g,"\\'")}');" style="background:none;border:none;color:#666;cursor:pointer;font-size:10px;padding:0 2px" title="Add note">📝</button>
+</div>`;
+html+=`<div style="font-size:9px;color:#666;line-height:1.2">👤 ${offering.instructor}</div>`;
+html+=`<div style="font-size:9px;color:#666;line-height:1.2">📍 ${offering.location||'TBA'}</div>`;
+html+=`</div>`;
 });
+html+=`</div>`;
+}else{
+// Single offering - normal display
+offerings.forEach((offering,idx)=>{
+const hasNote=window.currentOfferingNotes&&window.currentOfferingNotes[offering.id];
+if(hasNote){
+offeringNotes.push({id:offering.id,name:offering.name,note:hasNote});
+}
+const asterisk=hasNote?'<span class="note-asterisk" style="color:#ff4444;font-weight:bold">*</span>':'';
+html+=`<div style="font-size:10px;line-height:1.3;margin-bottom:2px">
+<strong style="color:#2196F3">${offering.name}${asterisk}</strong>
+<button onclick="showOfferingNoteModal('${offering.id}','${offering.name.replace(/'/g,"\\'")}');" style="background:none;border:none;color:#666;cursor:pointer;font-size:10px;padding:0 2px" title="Add note">📝</button>
+</div>`;
+html+=`<div style="font-size:9px;color:#666;line-height:1.2">👤 ${offering.instructor}</div>`;
+html+=`<div style="font-size:9px;color:#666;line-height:1.2">📍 ${offering.location||'TBA'}</div>`;
+});
+}
 html+=`</td>`;
 }else{
-html+=`<td style="padding:10px;border:1px solid #ddd;text-align:center;color:#ccc">-</td>`;
+html+=`<td style="padding:6px;border:1px solid #ddd;text-align:center;color:#ccc;vertical-align:middle;font-size:10px">-</td>`;
 }
 });
 html+='</tr>';
 });
 
 html+='</tbody></table>';
+
+// Add offering notes legend if any notes exist
+if(offeringNotes.length>0){
+html+=`<div id="offeringNotesLegend" style="margin-top:20px;padding:15px;background:#f8f9fa;border:1px solid #ddd;border-radius:8px">
+<div style="font-weight:bold;font-size:14px;margin-bottom:10px;color:#333">
+<span style="color:#ff4444">*</span> Schedule Notes
+</div>
+<table style="width:100%;font-size:12px;border:none">
+<thead><tr>
+<th style="background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd">Offering</th>
+<th style="background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd">Note</th>
+</tr></thead>
+<tbody>`;
+offeringNotes.forEach(note=>{
+html+=`<tr>
+<td style="padding:8px;border:1px solid #ddd;vertical-align:top"><strong>${note.name}</strong></td>
+<td style="padding:8px;border:1px solid #ddd">${note.note}</td>
+</tr>`;
+});
+html+=`</tbody></table>
+</div>`;
+}
+
+// Add notes section for approved override exceptions
+html+=`<div id="scheduleNotes" style="margin-top:20px"></div>`;
+
 document.getElementById('studentScheduleGrid').innerHTML=html;
+
+// Load and display any approved override exceptions
+loadScheduleExceptions(studentName);
+
 document.getElementById('studentScheduleModal').style.display='block';
 }catch(e){
 alert('Error loading schedule: '+e.message);
@@ -806,6 +1002,160 @@ alert('Error loading schedule: '+e.message);
 }
 
 function closeStudentScheduleModal(){closeModal('studentScheduleModal')}
+
+printStudentSchedule = function(){
+// Check if notes should be included
+const includeNotes = document.getElementById('printWithNotes').checked;
+
+// Add or remove body class based on checkbox
+if (!includeNotes) {
+document.body.classList.add('print-without-notes');
+} else {
+document.body.classList.remove('print-without-notes');
+}
+
+// Trigger browser print dialog
+window.print();
+
+// Clean up class after print (with delay to ensure print dialog uses it)
+setTimeout(() => {
+document.body.classList.remove('print-without-notes');
+}, 1000);
+}
+
+showOverrideModal = function(){
+if(!window.currentScheduleStudent){
+alert('Error: No student schedule loaded');
+return;
+}
+document.getElementById('overrideStudentName').value=window.currentScheduleStudent;
+document.getElementById('overrideNote').value='';
+document.getElementById('overrideModal').style.display='block';
+}
+
+closeOverrideModal = function(){
+closeModal('overrideModal');
+}
+
+saveOverrideException = async function(){
+const studentName=document.getElementById('overrideStudentName').value;
+const note=document.getElementById('overrideNote').value.trim();
+
+if(!note){
+alert('Please provide a reason for the override');
+return;
+}
+
+apiCall('saveScheduleException',{studentName:studentName,note:note},async()=>{
+msg('✅ Override exception approved and saved','success');
+closeOverrideModal();
+// Reload schedule to show updated notes
+await showStudentSchedule(studentName);
+});
+}
+
+loadScheduleExceptions = async function(studentName){
+try{
+const r=await fetch(`${API}?action=getScheduleException&studentName=${encodeURIComponent(studentName)}`);
+const d=await r.json();
+
+const notesDiv=document.getElementById('scheduleNotes');
+if(d.success&&d.exception&&d.exception.note){
+notesDiv.innerHTML=`
+<div style="background:#e8f5e9;border:2px solid #4CAF50;border-radius:8px;padding:15px;margin-top:15px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+<span style="font-size:20px">✓</span>
+<strong style="color:#2e7d32;font-size:15px">Approved Schedule Override</strong>
+</div>
+<div style="color:#1b5e20;font-size:13px;line-height:1.6">
+<strong>Administrator Note:</strong> ${d.exception.note}
+</div>
+<div style="color:#666;font-size:11px;margin-top:8px">
+Approved: ${new Date(d.exception.timestamp).toLocaleDateString()}
+<button class="btn btn-danger btn-small" onclick="removeOverrideException('${studentName.replace(/'/g,"\\'")}');" style="margin-left:10px;padding:3px 8px;font-size:10px">Remove Override</button>
+</div>
+</div>`;
+}else{
+notesDiv.innerHTML='';
+}
+}catch(e){
+console.error('Error loading schedule exceptions:',e);
+}
+}
+
+removeOverrideException = async function(studentName){
+if(!confirm('Remove the approved override exception for this student?')){
+return;
+}
+apiCall('removeScheduleException',{studentName:studentName},async()=>{
+msg('✅ Override exception removed','success');
+await showStudentSchedule(studentName);
+});
+}
+
+showOfferingNoteModal = function(offeringId,offeringName){
+if(!window.currentScheduleStudent){
+alert('Error: No student schedule loaded');
+return;
+}
+document.getElementById('noteOfferingId').value=offeringId;
+document.getElementById('noteOfferingName').value=offeringName;
+document.getElementById('noteStudentName').value=window.currentScheduleStudent;
+
+// Load existing note if it exists
+const existingNote=window.currentOfferingNotes&&window.currentOfferingNotes[offeringId];
+document.getElementById('offeringNoteText').value=existingNote||'';
+
+// Show/hide delete button based on whether note exists
+document.getElementById('deleteNoteBtn').style.display=existingNote?'inline-block':'none';
+
+document.getElementById('offeringNoteModal').style.display='block';
+}
+
+closeOfferingNoteModal = function(){
+closeModal('offeringNoteModal');
+}
+
+saveOfferingNote = async function(){
+const studentName=document.getElementById('noteStudentName').value;
+const offeringId=document.getElementById('noteOfferingId').value;
+const offeringName=document.getElementById('noteOfferingName').value;
+const note=document.getElementById('offeringNoteText').value.trim();
+
+if(!note){
+alert('Please enter a note');
+return;
+}
+
+apiCall('saveOfferingNote',{
+studentName:studentName,
+offeringId:offeringId,
+offeringName:offeringName,
+note:note
+},async()=>{
+msg('✅ Note saved','success');
+closeOfferingNoteModal();
+await showStudentSchedule(studentName);
+});
+}
+
+deleteOfferingNote = async function(){
+if(!confirm('Delete this note?')){
+return;
+}
+
+const studentName=document.getElementById('noteStudentName').value;
+const offeringId=document.getElementById('noteOfferingId').value;
+
+apiCall('deleteOfferingNote',{
+studentName:studentName,
+offeringId:offeringId
+},async()=>{
+msg('✅ Note deleted','success');
+closeOfferingNoteModal();
+await showStudentSchedule(studentName);
+});
+}
 
 loadOfferings = async function(){
 try{
