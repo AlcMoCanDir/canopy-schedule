@@ -94,6 +94,7 @@ function loadPendingRequests(){}
 function applyOfferingFilters(){}
 function showCreateOfferingModal(){}
 function archiveOffering(){}
+function duplicateOffering(){}
 function showStudentSchedule(){}
 </script>
 </head>
@@ -655,6 +656,19 @@ try{
 const r=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`);
 const d=await r.json();
 
+console.log('=== STUDENT SCHEDULE DEBUG ===');
+console.log('Student:', studentName);
+console.log('API Response:', d);
+console.log('Number of offerings:', d.offerings?.length);
+d.offerings?.forEach((o,idx)=>{
+console.log(`Offering ${idx+1}: "${o.name}"`);
+console.log(`  ID: ${o.id}`);
+console.log(`  Day: "${o.day}" (type: ${typeof o.day})`);
+console.log(`  Time: "${o.time}" (type: ${typeof o.time})`);
+console.log(`  Instructor: ${o.instructor}`);
+console.log(`  Location: ${o.location}`);
+});
+
 document.getElementById('studentScheduleModalTitle').textContent=`${studentName}'s Schedule`;
 
 if(!d.success||!d.offerings||d.offerings.length===0){
@@ -677,15 +691,27 @@ const DAYS=['monday','tuesday','wednesday','thursday','friday'];
 // Detect overlaps before building grid
 let hasAnyOverlaps=false;
 const overlapDetails=[];
+console.log('\n=== CHECKING FOR OVERLAPS ===');
 TIMES.forEach(block=>{
 if(block.time==='11:35-12:05')return; // Skip lunch
 DAYS.forEach(day=>{
 const matchingOfferings=d.offerings.filter(o=>{
 const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
 const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
-return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
+console.log(`Checking ${day} ${block.name} against ${o.name}:`);
+console.log(`  Offering days: [${offeringDays.join(', ')}]`);
+console.log(`  Offering times: [${offeringTimes.join(', ')}]`);
+console.log(`  Day match? ${offeringDays.includes(day)} (looking for "${day}")`);
+console.log(`  Time match? ${offeringTimes.includes(block.name)} || ${offeringTimes.includes(block.time)} (looking for "${block.name}" or "${block.time}")`);
+const matches=offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
+console.log(`  → MATCHES: ${matches}`);
+return matches;
 });
+if(matchingOfferings.length>0){
+console.log(`\n✓ ${day} ${block.name}: ${matchingOfferings.length} offering(s) -`, matchingOfferings.map(o=>o.name));
+}
 if(matchingOfferings.length>1){
+console.log('  ⚠️⚠️⚠️ OVERLAP DETECTED! ⚠️⚠️⚠️');
 hasAnyOverlaps=true;
 overlapDetails.push({
 day:day.charAt(0).toUpperCase()+day.slice(1),
@@ -695,6 +721,12 @@ offerings:matchingOfferings.map(o=>o.name).join(', ')
 }
 });
 });
+
+console.log('\n=== OVERLAP DETECTION SUMMARY ===');
+console.log('Has any overlaps?', hasAnyOverlaps);
+console.log('Number of overlaps:', overlapDetails.length);
+console.log('Overlap details:', overlapDetails);
+console.log('================================\n');
 
 let html='';
 
@@ -900,6 +932,7 @@ html+=`<tr style="${isFull?'background:#ffe6e6':''}">
 <td>${enrolledBtn}</td>
 <td>
 <button class="btn btn-warning btn-small" onclick="editOffering(${o.id})">✏️ Edit</button>
+<button class="btn btn-secondary btn-small" onclick="duplicateOffering(${o.id})">📋 Duplicate</button>
 <button class="btn btn-primary btn-small" onclick="showEnrollModal(${o.id},'${o.name}')">➕ Add</button>
 <button class="btn btn-danger btn-small" onclick="archiveOffering(${o.id},'${o.name}')">🗄️ Archive</button>
 </td>
@@ -950,6 +983,45 @@ msg(`✅ Archived: ${name}`,'success');
 await loadOfferings();
 await loadStudents();
 });
+}
+
+duplicateOffering = function(id){
+const o=offerings.find(of=>of.id===id);
+if(!o)return;
+
+// Pre-fill create modal with offering data
+document.getElementById('createName').value=o.name+' (Copy)';
+document.getElementById('createInstructor').value=o.instructor;
+document.getElementById('createLocation').value=o.location||'';
+
+// Handle multi-select days
+const daysSelect=document.getElementById('createDays');
+Array.from(daysSelect.options).forEach(opt=>opt.selected=false); // Clear first
+const selectedDays=o.day.split(',').map(d=>d.trim().toLowerCase());
+Array.from(daysSelect.options).forEach(opt=>{
+if(selectedDays.includes(opt.value)){
+opt.selected=true;
+}
+});
+
+// Handle multi-select times
+const blocksSelect=document.getElementById('createBlocks');
+Array.from(blocksSelect.options).forEach(opt=>opt.selected=false); // Clear first
+const selectedBlocks=o.time.split(',').map(t=>t.trim());
+Array.from(blocksSelect.options).forEach(opt=>{
+if(selectedBlocks.includes(opt.value)){
+opt.selected=true;
+}
+});
+
+document.getElementById('createType').value=o.type;
+document.getElementById('createLevel').value=o.level||'';
+document.getElementById('createDescription').value=o.description||'';
+document.getElementById('createCapacity').value=o.capacity||12;
+
+// Open create modal
+document.getElementById('createModal').style.display='block';
+msg(`💡 Duplicating "${o.name}" - Edit details and click Create`,'info');
 }
 
 function editOffering(id){
