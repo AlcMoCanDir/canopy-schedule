@@ -93,8 +93,10 @@ function loadOfferings(){}
 function loadPendingRequests(){}
 function applyOfferingFilters(){}
 function showCreateOfferingModal(){}
-function archiveOffering(){}
+function editOffering(){}
+function showEnrollModal(){}
 function duplicateOffering(){}
+function archiveOffering(){}
 function showStudentSchedule(){}
 </script>
 </head>
@@ -932,8 +934,8 @@ html+=`<tr style="${isFull?'background:#ffe6e6':''}">
 <td>${enrolledBtn}</td>
 <td>
 <button class="btn btn-warning btn-small" onclick="editOffering(${o.id})">✏️ Edit</button>
+<button class="btn btn-primary btn-small" onclick="showEnrollModal(${o.id},'${o.name}')">➕ Add Learner</button>
 <button class="btn btn-secondary btn-small" onclick="duplicateOffering(${o.id})">📋 Duplicate</button>
-<button class="btn btn-primary btn-small" onclick="showEnrollModal(${o.id},'${o.name}')">➕ Add</button>
 <button class="btn btn-danger btn-small" onclick="archiveOffering(${o.id},'${o.name}')">🗄️ Archive</button>
 </td>
 </tr>`;
@@ -976,7 +978,7 @@ msg('❌ '+d.message,'error');
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
-async function archiveOffering(id,name){
+archiveOffering = async function(id,name){
 if(!confirm(`Archive "${name}"?\n\nThis will:\n• Remove it from the active offerings list\n• Keep it in the database for records\n• Remove all student enrollments\n\nThis action can be undone by editing the Google Sheet.`))return;
 apiCall('archiveOffering',{offeringId:id},async()=>{
 msg(`✅ Archived: ${name}`,'success');
@@ -1024,7 +1026,7 @@ document.getElementById('createModal').style.display='block';
 msg(`💡 Duplicating "${o.name}" - Edit details and click Create`,'info');
 }
 
-function editOffering(id){
+editOffering = function(id){
 const o=offerings.find(of=>of.id===id);
 if(!o)return;
 currentEditId=id;
@@ -1239,7 +1241,7 @@ msg('❌ '+d.message,'error');
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
-function showEnrollModal(offeringId,offeringName){
+showEnrollModal = function(offeringId,offeringName){
 currentEnrollOfferingId=offeringId;
 document.getElementById('enrollModalTitle').textContent='Add Learners to Offering';
 document.getElementById('enrollClassName').textContent=offeringName;
