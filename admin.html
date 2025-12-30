@@ -113,7 +113,6 @@ if(i===1&&!attendanceLoaded){
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 attendanceLoaded=true;
-loadAttendanceTab(); // Load attendance data automatically
 }
 }
 // Stub functions that will be replaced by full implementations in main script
@@ -177,11 +176,12 @@ function deleteOfferingNote(){}
 <option value="">-- Select Offering --</option>
 </select>
 
-<button class="btn btn-secondary" onclick="loadAttendanceTab()">🔄 Refresh</button>
+<button class="btn btn-primary" onclick="loadAttendanceTab()" style="background:#4CAF50">🔄 Load Attendance</button>
 </div>
 <div id="attendanceContainer">
 <div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Select a date and offering to mark attendance</p>
+<p style="font-size:18px;margin-bottom:10px">👆 Click "Load Attendance" to get started</p>
+<p style="font-size:14px;color:#666">This will load students and offerings data</p>
 </div>
 </div>
 </div>
@@ -1755,45 +1755,72 @@ closeEnrollModal();
 // ATTENDANCE FUNCTIONS
 
 loadAttendanceTab = async function(){
+try{
+console.log('Loading attendance tab...');
+
 // Set today's date
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 
 // Auto-load students if not loaded
 if(students.length===0){
+console.log('Loading students...');
 document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading students...</div>';
 await loadStudents();
+console.log('Students loaded:', students.length);
 }
 
 // Auto-load offerings if not loaded
 if(offerings.length===0){
+console.log('Loading offerings...');
 document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading offerings...</div>';
 await loadOfferings();
+console.log('Offerings loaded:', offerings.length);
 }
 
 // Populate offerings dropdown
 const select=document.getElementById('attendanceOffering');
 select.innerHTML='<option value="">-- Select Offering --</option>';
 offerings.forEach(o=>{
-const day=o.day.charAt(0).toUpperCase()+o.day.slice(1);
-select.innerHTML+=`<option value="${o.id}">${o.name} - ${day} ${o.time}</option>`;
+// Handle multi-day offerings
+const days=o.day.split(',').map(d=>d.trim().charAt(0).toUpperCase()+d.trim().slice(1)).join(', ');
+const times=o.time.split(',').map(t=>t.trim()).join(', ');
+select.innerHTML+=`<option value="${o.id}">${o.name} - ${days} ${times}</option>`;
 });
 
-loadAttendanceForDate();
+console.log('Attendance dropdown populated with', offerings.length, 'offerings');
+
+await loadAttendanceForDate();
+
+// Show default message
+document.getElementById('attendanceContainer').innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">Select an offering to mark attendance</p></div>';
+
+}catch(e){
+console.error('Error loading attendance tab:', e);
+document.getElementById('attendanceContainer').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#d32f2f"><p style="font-size:18px">Error loading attendance</p><p>${e.message}</p></div>`;
+}
 }
 
 loadAttendanceForDate = async function(){
 const date=document.getElementById('attendanceDate').value;
-if(!date)return;
+if(!date){
+console.log('No date selected');
+return;
+}
+
+console.log('Loading attendance for date:', date);
 
 try{
 const r=await fetch(`${API}?action=getAttendance&date=${date}`);
 const d=await r.json();
+console.log('Attendance data received:', d);
 attendanceData=d.attendance||{};
+console.log('Attendance keys:', Object.keys(attendanceData));
 loadAttendanceRoster();
 }catch(e){
 console.error('Error loading attendance:',e);
 attendanceData={};
+msg('Error loading attendance: '+e.message,'error');
 }
 }
 
