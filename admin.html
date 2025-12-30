@@ -90,14 +90,13 @@ button[title="Add note"]{display:none!important}
 .schedule-grid>div{border:1px solid #333!important;padding:6px!important}
 .schedule-grid>div:nth-child(-n+6){background:#4CAF50!important;color:white!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #offeringNotesLegend{page-break-inside:avoid;margin-top:15px;padding:10px!important;background:#f8f9fa!important;border:1px solid #333!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:block!important}
-.notes-table{width:100%!important;border-collapse:collapse!important;table-layout:auto!important;font-size:10px!important;display:table!important}
-.notes-table thead{display:table-header-group!important}
-.notes-table tbody{display:table-row-group!important}
-.notes-table tr{display:table-row!important}
-.notes-table th,.notes-table td{display:table-cell!important;border:1px solid #333!important;padding:6px!important;vertical-align:top!important}
-.notes-table th{background:#e0e0e0!important;color:#333!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.notes-table thead th:nth-child(3),.notes-table tbody td:nth-child(3){display:none!important}
-.notes-table tr[style*="background:#e8f5e9"]{background:#e8f5e9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.notes-grid{display:grid!important;grid-template-columns:30% 70%!important;gap:0!important;width:100%!important}
+.notes-grid>div{border:1px solid #333!important;padding:8px!important}
+.notes-grid>div:nth-child(3),
+.notes-grid>div:nth-child(3n+3){display:none!important}
+.notes-grid>div:nth-child(1),
+.notes-grid>div:nth-child(2){background:#f0f0f0!important;color:#333!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.notes-grid>div[style*="background:#e8f5e9"]{background:#e8f5e9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body.print-without-notes #offeringNotesLegend{display:none!important}
 body.print-without-notes .note-asterisk{display:none!important}
 @page{margin:0.5in;size:letter portrait}
@@ -1029,29 +1028,26 @@ html+=`<div id="offeringNotesLegend" style="margin-top:20px;padding:15px;backgro
 <div style="font-weight:bold;font-size:14px;margin-bottom:10px;color:#333">
 <span style="color:#ff4444;font-weight:bold">*</span> Schedule Notes
 </div>
-<table class="notes-table" style="display:table;width:100%;font-size:12px;border-collapse:collapse">
-<thead style="display:table-header-group"><tr style="display:table-row">
-<th style="display:table-cell;background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd;width:25%">Offering</th>
-<th style="display:table-cell;background:#f0f0f0;color:#333;padding:8px;text-align:left;border:1px solid #ddd;width:60%">Note</th>
-<th style="display:table-cell;background:#f0f0f0;color:#333;padding:8px;text-align:center;border:1px solid #ddd;width:15%">Actions</th>
-</tr></thead>
-<tbody style="display:table-row-group">`;
+<div class="notes-grid" style="display:grid;grid-template-columns:25% 60% 15%;gap:0;width:100%;border:1px solid #ddd;font-size:12px">
+<!-- Headers -->
+<div style="background:#f0f0f0;color:#333;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:left">Offering</div>
+<div style="background:#f0f0f0;color:#333;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:left">Note</div>
+<div style="background:#f0f0f0;color:#333;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:center">Actions</div>`;
+
 uniqueNotes.forEach(note=>{
 const isOverride=note.id==='override';
-const rowStyle=isOverride?'background:#e8f5e9':'';
+const rowBg=isOverride?'background:#e8f5e9;':'';
 const offeringLabel=isOverride?`<strong style="color:#2e7d32">${note.name}</strong>`:`<strong>${note.name}</strong>`;
 const editButton=isOverride
 ?`<button class="btn btn-warning btn-small" onclick="showOverrideModal()" style="padding:4px 8px;font-size:11px">✏️ Edit</button>`
 :`<button class="btn btn-secondary btn-small" onclick="showOfferingNoteModal('${note.id}','${note.name.replace(/'/g,"\\'")}');" style="padding:4px 8px;font-size:11px">✏️ Edit</button>`;
 
-html+=`<tr style="display:table-row;${rowStyle}">
-<td style="display:table-cell;padding:8px;border:1px solid #ddd;vertical-align:top">${offeringLabel}</td>
-<td style="display:table-cell;padding:8px;border:1px solid #ddd">${note.note}</td>
-<td style="display:table-cell;padding:8px;border:1px solid #ddd;text-align:center">${editButton}</td>
+html+=`<div style="${rowBg}padding:8px;border:1px solid #ddd;vertical-align:top">${offeringLabel}</div>
+<div style="${rowBg}padding:8px;border:1px solid #ddd">${note.note}</div>
+<div style="${rowBg}padding:8px;border:1px solid #ddd;text-align:center">${editButton}</div>`;
 </tr>`;
 });
-html+=`</tbody></table>
-</div>`;
+html+=`</div></div>`; // Close notes-grid and offeringNotesLegend
 }
 
 document.getElementById('studentScheduleGrid').innerHTML=html;
