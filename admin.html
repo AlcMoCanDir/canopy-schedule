@@ -674,7 +674,49 @@ const TIMES=[
 ];
 const DAYS=['monday','tuesday','wednesday','thursday','friday'];
 
-let html='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+// Detect overlaps before building grid
+let hasAnyOverlaps=false;
+const overlapDetails=[];
+TIMES.forEach(block=>{
+if(block.time==='11:35-12:05')return; // Skip lunch
+DAYS.forEach(day=>{
+const matchingOfferings=d.offerings.filter(o=>{
+const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
+const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
+return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
+});
+if(matchingOfferings.length>1){
+hasAnyOverlaps=true;
+overlapDetails.push({
+day:day.charAt(0).toUpperCase()+day.slice(1),
+block:block.name,
+offerings:matchingOfferings.map(o=>o.name).join(', ')
+});
+}
+});
+});
+
+let html='';
+
+// Show overlap warning if any exist
+if(hasAnyOverlaps){
+html+=`<div style="background:#fff3cd;border:2px solid #ff9800;border-radius:8px;padding:15px;margin-bottom:15px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+<span style="font-size:24px">⚠️</span>
+<strong style="color:#856404;font-size:16px">Schedule Conflicts Detected</strong>
+</div>
+<div style="color:#856404;font-size:13px;line-height:1.6">
+This student is enrolled in multiple offerings during the same time block(s). Please review and resolve:
+<ul style="margin:8px 0;padding-left:20px">`;
+overlapDetails.forEach(overlap=>{
+html+=`<li><strong>${overlap.day} ${overlap.block}:</strong> ${overlap.offerings}</li>`;
+});
+html+=`</ul>
+</div>
+</div>`;
+}
+
+html+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
 html+='<thead><tr><th style="background:#4CAF50;color:white;padding:10px;border:1px solid #ddd">Time</th>';
 DAYS.forEach(day=>{
 html+=`<th style="background:#4CAF50;color:white;padding:10px;border:1px solid #ddd">${day.charAt(0).toUpperCase()+day.slice(1)}</th>`;
@@ -691,18 +733,29 @@ return;
 html+=`<tr><td style="background:#f8f9fa;padding:10px;border:1px solid #ddd;font-weight:bold;text-align:center">${block.name}<br><small style="font-weight:normal;color:#666">${block.time}</small></td>`;
 
 DAYS.forEach(day=>{
-const offering=d.offerings.find(o=>{
+// Find ALL offerings for this day/time (not just first one)
+const offerings=d.offerings.filter(o=>{
 const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
 const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
 // Match by block name (e.g., "Block 1") OR by time (e.g., "10:00-10:45")
 return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
 });
 
-if(offering){
-html+=`<td style="padding:10px;border:1px solid #ddd;background:#e6f0ff">
-<strong style="color:#2196F3">${offering.name}</strong><br>
-<small style="color:#666">👤 ${offering.instructor}<br>📍 ${offering.location||'TBA'}</small>
-</td>`;
+if(offerings.length>0){
+// Check if there's an overlap (multiple offerings in same slot)
+const hasOverlap=offerings.length>1;
+const cellStyle=hasOverlap?'padding:10px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444':'padding:10px;border:1px solid #ddd;background:#e6f0ff';
+
+html+=`<td style="${cellStyle}">`;
+if(hasOverlap){
+html+=`<div style="background:#ff4444;color:white;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;margin-bottom:8px;display:inline-block">⚠️ OVERLAP</div><br>`;
+}
+offerings.forEach((offering,idx)=>{
+if(idx>0)html+=`<div style="border-top:1px dashed #ccc;margin:8px 0"></div>`;
+html+=`<strong style="color:${hasOverlap?'#d32f2f':'#2196F3'}">${offering.name}</strong><br>`;
+html+=`<small style="color:#666">👤 ${offering.instructor}<br>📍 ${offering.location||'TBA'}</small>`;
+});
+html+=`</td>`;
 }else{
 html+=`<td style="padding:10px;border:1px solid #ddd;text-align:center;color:#ccc">-</td>`;
 }
