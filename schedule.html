@@ -154,6 +154,27 @@ const TIMES=[
 ];
 const DAYS=['monday','tuesday','wednesday','thursday','friday'];
 
+// Map block names to times for flexibility
+const BLOCK_TIME_MAP={
+'Block 1':'10:00-10:45',
+'Block 2':'10:50-11:35',
+'Block 3':'12:10-12:55',
+'Block 4':'1:00-1:50',
+'Block 5':'1:55-2:45',
+'Lunch':'11:35-12:05',
+'LUNCH':'11:35-12:05'
+};
+
+// Helper function to normalize time format
+function normalizeTime(time){
+if(!time) return '';
+const trimmed = time.trim();
+// If it's already in HH:MM-HH:MM format, return it
+if(trimmed.match(/^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/)) return trimmed;
+// Otherwise check if it's a block name
+return BLOCK_TIME_MAP[trimmed] || trimmed;
+}
+
 let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[];
 let approvedOfferings=[],pendingOfferings=[];
 
@@ -216,6 +237,7 @@ console.log('Total offerings loaded:', offerings.length);
 console.log('Sample offering:', offerings.length > 0 ? offerings[0] : 'No offerings');
 if(offerings.length > 0){
 console.log('First offering details:', JSON.stringify(offerings[0], null, 2));
+console.log('First offering time normalized:', normalizeTime(offerings[0].time));
 }
 
 // Detect session from offerings
@@ -318,13 +340,11 @@ option.textContent = student;
 } else {
 const name = student.name || '';
 const id = student.id || '';
-const grade = student.grade || '';
-const level = student.level || '';
+const group = student.grade || ''; // "grade" field contains Group (EC, Saplings, Canopy, Acorns)
 option.value = name;
 let displayText = name;
 if (id) displayText += ` (ID: ${id})`;
-if (grade) displayText += ` - Grade ${grade}`;
-if (level) displayText += ` - ${level}`;
+if (group) displayText += ` - ${group}`;
 option.textContent = displayText;
 }
 select.appendChild(option);
@@ -374,7 +394,7 @@ cell.id=`${day}-${block.time}`;
 const dayOfferings=offerings.filter(o=>{
 // Split days and times if comma-separated
 const offeringDays = o.day ? o.day.split(',').map(d=>d.trim().toLowerCase()) : [];
-const offeringTimes = o.time ? o.time.split(',').map(t=>t.trim()) : [];
+const offeringTimes = o.time ? o.time.split(',').map(t=>normalizeTime(t.trim())) : [];
 
 // Check if this offering matches current day and time
 // Compare day case-insensitively
