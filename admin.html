@@ -1227,6 +1227,8 @@ console.log('Total students in system:', students.length);
 const offeringIdStr = String(offeringId);
 const offeringIdNum = parseInt(offeringId);
 
+console.log('Looking for offering:', offeringIdStr, '(string) or', offeringIdNum, '(number)');
+
 // Log first student to see data structure
 if(students.length > 0){
 console.log('Sample student data:', JSON.stringify(students[0], null, 2));
@@ -1237,31 +1239,34 @@ try{
 // Check if classes is already an array or a string
 let classes;
 if(typeof s.classes === 'string'){
-console.log(`Student ${s.name} classes (string):`, s.classes);
 classes=JSON.parse(s.classes||'[]');
 }else if(Array.isArray(s.classes)){
-console.log(`Student ${s.name} classes (array):`, s.classes);
 classes=s.classes;
 }else{
-console.log(`Student ${s.name} classes (unknown type):`, typeof s.classes, s.classes);
 classes=[];
 }
 
-console.log(`Student ${s.name} parsed classes:`, classes, '(types:', classes.map(c => typeof c).join(', ') + ')');
+// Only log students with enrollments
+if(classes.length > 0){
+console.log(`${s.name} has ${classes.length} class(es):`, JSON.stringify(classes), '- Types:', classes.map(c => typeof c).join(', '));
+}
 
 // Check if offering ID matches (handle both string and number)
 const isEnrolled = classes.some(classId => {
-return classId === offeringIdStr || 
+const match = classId === offeringIdStr || 
        classId === offeringIdNum || 
        String(classId) === offeringIdStr ||
        parseInt(classId) === offeringIdNum;
+if(match){
+console.log(`  ✓ MATCH: ${s.name} class "${classId}" matches offering "${offeringId}"`);
+}
+return match;
 });
 
 if(isEnrolled){
 enrolled.push(s.name);
-console.log(`✓ ${s.name} is enrolled in offering ${offeringId}`);
-}else{
-console.log(`✗ ${s.name} is NOT enrolled (classes: ${classes.join(', ')})`);
+}else if(classes.length > 0){
+console.log(`  ✗ NO MATCH: ${s.name} classes ${JSON.stringify(classes)} vs offering "${offeringId}"`);
 }
 }catch(e){
 console.error(`Error parsing classes for ${s.name}:`, e, s.classes);
