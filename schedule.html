@@ -420,6 +420,11 @@ card.dataset.time=block.time;
 card.dataset.group=isMultiBlock?getGroupKey(o):'';
 
 const desc=descriptions[o.name]||o.description||'';
+if(!desc){
+console.log(`No description for: "${o.name}"`);
+}else{
+console.log(`Has description for: "${o.name}"`);
+}
 card.innerHTML=`
 <label style="display:flex;align-items:start;cursor:pointer">
 <input type="checkbox" ${full?'disabled':''} onclick="event.stopPropagation();toggleClass(this)">
@@ -529,10 +534,20 @@ updateUI();
 }
 
 function toggleDesc(element){
+console.log('toggleDesc called on:', element);
 const card=element.closest('.class-card');
+console.log('Found card:', card);
+if(!card){
+console.error('Could not find .class-card parent!');
+return;
+}
 card.classList.toggle('expanded');
+console.log('Card expanded?', card.classList.contains('expanded'));
 const icon=card.querySelector('.expand-icon');
 if(icon)icon.textContent=card.classList.contains('expanded')?'▲':'▼';
+const descDiv=card.querySelector('.class-desc');
+console.log('Description div:', descDiv);
+console.log('Description display:', descDiv ? window.getComputedStyle(descDiv).display : 'N/A');
 }
 
 function updateUI(){
