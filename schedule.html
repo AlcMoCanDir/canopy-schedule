@@ -343,7 +343,8 @@ const id = student.id || '';
 const group = student.grade || ''; // "grade" field contains Group (EC, Saplings, Canopy, Acorns)
 option.value = name;
 let displayText = name;
-if (id) displayText += ` (ID: ${id})`;
+// Don't show ID in dropdown for privacy (it's the password)
+// if (id) displayText += ` (ID: ${id})`;
 if (group) displayText += ` - ${group}`;
 option.textContent = displayText;
 }
