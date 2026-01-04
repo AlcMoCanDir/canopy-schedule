@@ -1220,8 +1220,12 @@ msg('✅ Loaded','success');
 
 function getEnrolledStudents(offeringId){
 const enrolled=[];
-console.log('Getting enrolled students for offering:', offeringId);
+console.log('Getting enrolled students for offering:', offeringId, '(type:', typeof offeringId + ')');
 console.log('Total students in system:', students.length);
+
+// Convert offeringId to both string and number for comparison
+const offeringIdStr = String(offeringId);
+const offeringIdNum = parseInt(offeringId);
 
 // Log first student to see data structure
 if(students.length > 0){
@@ -1243,11 +1247,21 @@ console.log(`Student ${s.name} classes (unknown type):`, typeof s.classes, s.cla
 classes=[];
 }
 
-console.log(`Student ${s.name} parsed classes:`, classes);
+console.log(`Student ${s.name} parsed classes:`, classes, '(types:', classes.map(c => typeof c).join(', ') + ')');
 
-if(classes.includes(offeringId) || classes.includes(parseInt(offeringId)) || classes.includes(String(offeringId))){
+// Check if offering ID matches (handle both string and number)
+const isEnrolled = classes.some(classId => {
+return classId === offeringIdStr || 
+       classId === offeringIdNum || 
+       String(classId) === offeringIdStr ||
+       parseInt(classId) === offeringIdNum;
+});
+
+if(isEnrolled){
 enrolled.push(s.name);
 console.log(`✓ ${s.name} is enrolled in offering ${offeringId}`);
+}else{
+console.log(`✗ ${s.name} is NOT enrolled (classes: ${classes.join(', ')})`);
 }
 }catch(e){
 console.error(`Error parsing classes for ${s.name}:`, e, s.classes);
