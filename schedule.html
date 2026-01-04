@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALC Mosaic - Session 3</title>
+<title>ALC Mosaic Schedule</title>
 <style>
 *{box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#fafafa;margin:0;padding:20px}
@@ -79,7 +79,7 @@ h1{display:none}
 </head>
 <body>
 <div class="container">
-<h1>ALC Mosaic - Session 3</h1>
+<h1 id="pageTitle">ALC Mosaic - Loading...</h1>
 
 <div class="controls">
 <select id="studentName" onchange="loadSchedule()" style="flex:1;min-width:200px;padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd">
@@ -206,6 +206,9 @@ enrollmentCounts=enroll.counts||{};
 console.log('Final studentNames array:', studentNames);
 console.log('Number of students:', studentNames.length);
 
+// Detect session from offerings
+detectAndSetSession();
+
 loadDescriptions();
 populateStudentDropdown();
 drawSchedule();
@@ -216,6 +219,58 @@ document.getElementById('status').style.display='none';
 console.error('Init error:', e);
 showStatus('Error loading: '+e.message,'error');
 }
+}
+
+function detectAndSetSession(){
+// ALC Mosaic session schedule:
+// Session 1: August - October
+// Session 2: November - December
+// Session 3: January - February
+// Session 4: March - April
+// Session 5: May - June
+
+const now = new Date();
+const currentMonth = now.getMonth(); // 0-11 (0=Jan, 1=Feb, etc.)
+const currentYear = now.getFullYear();
+
+let sessionNum = 3;
+let sessionName = 'Session 3';
+
+// Determine session based on current month
+if(currentMonth >= 7 && currentMonth <= 9){ // Aug(7) - Oct(9)
+sessionNum = 1;
+sessionName = 'Session 1';
+}else if(currentMonth >= 10 && currentMonth <= 11){ // Nov(10) - Dec(11)
+sessionNum = 2;
+sessionName = 'Session 2';
+}else if(currentMonth >= 0 && currentMonth <= 1){ // Jan(0) - Feb(1)
+sessionNum = 3;
+sessionName = 'Session 3';
+}else if(currentMonth >= 2 && currentMonth <= 3){ // Mar(2) - Apr(3)
+sessionNum = 4;
+sessionName = 'Session 4';
+}else if(currentMonth >= 4 && currentMonth <= 5){ // May(4) - Jun(5)
+sessionNum = 5;
+sessionName = 'Session 5';
+}else if(currentMonth === 6){ // Jul(6) - Summer break
+sessionName = 'Summer Break';
+}
+
+// Check if offerings have session info in metadata
+if(offerings.length > 0 && offerings[0].session){
+sessionName = offerings[0].session;
+}else{
+// Add year context
+sessionName = `${sessionName} (${currentYear})`;
+}
+
+console.log('Detected session:', sessionName);
+
+// Update page title
+document.getElementById('pageTitle').textContent = `ALC Mosaic - ${sessionName}`;
+
+// Update document title
+document.title = `ALC Mosaic - ${sessionName}`;
 }
 
 function populateStudentDropdown(){
