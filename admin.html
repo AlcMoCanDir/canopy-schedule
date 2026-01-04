@@ -1212,14 +1212,23 @@ msg('✅ Loaded','success');
 
 function getEnrolledStudents(offeringId){
 const enrolled=[];
+console.log('Getting enrolled students for offering:', offeringId);
+console.log('Total students in system:', students.length);
+
 students.forEach(s=>{
 try{
 const classes=JSON.parse(s.classes||'[]');
+console.log(`Student ${s.name} classes:`, classes);
 if(classes.includes(offeringId)){
 enrolled.push(s.name);
+console.log(`✓ ${s.name} is enrolled in offering ${offeringId}`);
 }
-}catch(e){}
+}catch(e){
+console.error(`Error parsing classes for ${s.name}:`, e);
+}
 });
+
+console.log(`Total enrolled in offering ${offeringId}:`, enrolled.length, enrolled);
 return enrolled;
 }
 
