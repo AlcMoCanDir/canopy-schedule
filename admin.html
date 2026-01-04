@@ -724,6 +724,14 @@ const r=await fetch(`${API}?action=loadAll`);
 const d=await r.json();
 students=d.students||[];
 
+console.log('=== STUDENTS LOADED ===');
+console.log('Total students:', students.length);
+if(students.length > 0){
+console.log('First student:', JSON.stringify(students[0], null, 2));
+console.log('First student classes field:', students[0].classes);
+console.log('First student classes type:', typeof students[0].classes);
+}
+
 // Load ALL students from Students sheet (master list) (only if not already loaded)
 if(allStudentNames.length===0){
 const r2=await fetch(`${API}?action=getAllStudents`);
@@ -1215,16 +1223,34 @@ const enrolled=[];
 console.log('Getting enrolled students for offering:', offeringId);
 console.log('Total students in system:', students.length);
 
+// Log first student to see data structure
+if(students.length > 0){
+console.log('Sample student data:', JSON.stringify(students[0], null, 2));
+}
+
 students.forEach(s=>{
 try{
-const classes=JSON.parse(s.classes||'[]');
-console.log(`Student ${s.name} classes:`, classes);
-if(classes.includes(offeringId)){
+// Check if classes is already an array or a string
+let classes;
+if(typeof s.classes === 'string'){
+console.log(`Student ${s.name} classes (string):`, s.classes);
+classes=JSON.parse(s.classes||'[]');
+}else if(Array.isArray(s.classes)){
+console.log(`Student ${s.name} classes (array):`, s.classes);
+classes=s.classes;
+}else{
+console.log(`Student ${s.name} classes (unknown type):`, typeof s.classes, s.classes);
+classes=[];
+}
+
+console.log(`Student ${s.name} parsed classes:`, classes);
+
+if(classes.includes(offeringId) || classes.includes(parseInt(offeringId)) || classes.includes(String(offeringId))){
 enrolled.push(s.name);
 console.log(`✓ ${s.name} is enrolled in offering ${offeringId}`);
 }
 }catch(e){
-console.error(`Error parsing classes for ${s.name}:`, e);
+console.error(`Error parsing classes for ${s.name}:`, e, s.classes);
 }
 });
 
