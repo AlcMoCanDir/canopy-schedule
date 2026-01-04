@@ -1764,27 +1764,22 @@ closeEnrollModal();
 
 loadAttendanceTab = async function(){
 try{
-console.log('Loading attendance tab...');
+console.log('=== LOADING ATTENDANCE TAB ===');
+document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div><p>Loading students and offerings...</p></div>';
 
 // Set today's date
 const today=new Date().toISOString().split('T')[0];
 document.getElementById('attendanceDate').value=today;
 
-// Auto-load students if not loaded
-if(students.length===0){
+// ALWAYS load students (fresh data)
 console.log('Loading students...');
-document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading students...</div>';
 await loadStudents();
-console.log('Students loaded:', students.length);
-}
+console.log('✓ Students loaded:', students.length);
 
-// Auto-load offerings if not loaded
-if(offerings.length===0){
+// ALWAYS load offerings (fresh data)
 console.log('Loading offerings...');
-document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading offerings...</div>';
 await loadOfferings();
-console.log('Offerings loaded:', offerings.length);
-}
+console.log('✓ Offerings loaded:', offerings.length);
 
 // Populate offerings dropdown
 const select=document.getElementById('attendanceOffering');
@@ -1796,16 +1791,23 @@ const times=o.time.split(',').map(t=>t.trim()).join(', ');
 select.innerHTML+=`<option value="${o.id}">${o.name} - ${days} ${times}</option>`;
 });
 
-console.log('Attendance dropdown populated with', offerings.length, 'offerings');
+console.log('✓ Attendance dropdown populated with', offerings.length, 'offerings');
 
 await loadAttendanceForDate();
 
-// Show default message
-document.getElementById('attendanceContainer').innerHTML='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">Select an offering to mark attendance</p></div>';
+// Show success message
+document.getElementById('attendanceContainer').innerHTML=`<div style="text-align:center;padding:60px 20px">
+<p style="font-size:18px;color:#4CAF50;margin-bottom:10px">✅ Data loaded successfully!</p>
+<p style="font-size:14px;color:#666">${students.length} students and ${offerings.length} offerings</p>
+<p style="font-size:14px;color:#999;margin-top:20px">Select an offering above to mark attendance</p>
+</div>`;
+
+msg('✅ Attendance data loaded','success');
 
 }catch(e){
 console.error('Error loading attendance tab:', e);
-document.getElementById('attendanceContainer').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#d32f2f"><p style="font-size:18px">Error loading attendance</p><p>${e.message}</p></div>`;
+document.getElementById('attendanceContainer').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#d32f2f"><p style="font-size:18px">❌ Error loading attendance</p><p>${e.message}</p></div>`;
+msg('❌ '+e.message,'error');
 }
 }
 
