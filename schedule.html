@@ -49,6 +49,27 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 .my-schedule-table th{background:#2196F3;color:white}
 .my-schedule-card{background:#f0f7ff;padding:8px;margin:4px 0;border-left:3px solid #2196F3;border-radius:3px;min-height:60px;position:relative}
 .empty-state{text-align:center;padding:40px;color:#999;font-size:48px}
+.catalog-course{background:white;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:box-shadow 0.2s}
+.catalog-course:hover{box-shadow:0 4px 8px rgba(0,0,0,0.15)}
+.catalog-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;gap:15px}
+.catalog-title{font-size:18px;font-weight:bold;color:#2c3e50;margin:0;flex:1}
+.catalog-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.catalog-badge{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
+.catalog-type-commit{background:#ffebee;color:#c62828}
+.catalog-type-drop-in{background:#e8f5e9;color:#2e7d32}
+.catalog-level{background:#e3f2fd;color:#1565c0}
+.catalog-instructor{color:#666;font-size:14px;margin-bottom:8px}
+.catalog-instructor-icon{margin-right:4px}
+.catalog-schedule{background:#f8f9fa;padding:10px;border-radius:4px;margin-bottom:12px;font-size:13px}
+.catalog-schedule-item{margin:4px 0;color:#555}
+.catalog-description{color:#444;line-height:1.6;font-size:14px}
+.catalog-no-desc{color:#999;font-style:italic}
+.catalog-capacity{font-size:12px;color:#666;margin-top:8px}
+.catalog-search{width:100%;padding:12px;font-size:16px;border:2px solid #ddd;border-radius:8px;margin-bottom:20px;box-sizing:border-box}
+.catalog-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.catalog-filter-btn{padding:8px 16px;border:2px solid #ddd;background:white;border-radius:6px;cursor:pointer;font-size:14px;transition:all 0.2s}
+.catalog-filter-btn:hover{background:#f0f0f0}
+.catalog-filter-btn.active{background:#4CAF50;color:white;border-color:#4CAF50}
 @media print{
 @page{size:landscape;margin:0.5in}
 body{background:white;padding:0;margin:0}
@@ -100,6 +121,7 @@ h1{display:none}
 <div class="tabs">
 <div class="tab active" onclick="switchTab(0)">📅 All Classes</div>
 <div class="tab" onclick="switchTab(1)">✅ My Schedule</div>
+<div class="tab" onclick="switchTab(2)">📚 Course Catalog</div>
 </div>
 
 <div id="allClasses" class="tab-content active">
@@ -137,6 +159,14 @@ Click classes to select • Max 2 per time block • 🔗 = Multi-block class �
 </thead>
 <tbody id="myScheduleBody"></tbody>
 </table>
+</div>
+
+<div id="courseCatalog" class="tab-content">
+<h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">📚 Course Catalog</h2>
+<p style="text-align:center;color:#666;font-size:14px;margin-bottom:20px">
+Browse all available offerings with full descriptions
+</p>
+<div id="catalogContainer" style="max-width:900px;margin:0 auto"></div>
 </div>
 
 </div>
@@ -796,6 +826,78 @@ showStatus('❌ Error: '+result.message,'error');
 }catch(e){showStatus('❌ Error saving: '+e.message,'error')}
 }
 
+function renderCourseCatalog(){
+const container = document.getElementById('catalogContainer');
+if(!offerings || offerings.length === 0){
+container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No offerings available</p>';
+return;
+}
+
+// Group offerings by level
+const groupedByLevel = {};
+offerings.forEach(o => {
+const level = o.level || 'Other';
+if(!groupedByLevel[level]) groupedByLevel[level] = [];
+groupedByLevel[level].push(o);
+});
+
+let html = '';
+
+// Render each level group
+const levelOrder = ['Acorns', 'EC', 'Saplings', 'Saplings+', 'Canopy', 'Canopy+', 'Other'];
+levelOrder.forEach(level => {
+if(!groupedByLevel[level] || groupedByLevel[level].length === 0) return;
+
+html += `<div style="margin-bottom:40px">`;
+html += `<h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">${level}</h3>`;
+
+// Sort offerings within level by name
+groupedByLevel[level].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
+const desc = descriptions[o.name] || o.description || '';
+const enrolled = enrollmentCounts[o.id] || 0;
+const capacity = Number(o.capacity) || 999;
+
+// Format schedule info
+const days = o.day ? o.day.split(',').map(d => {
+const day = d.trim();
+return day.charAt(0).toUpperCase() + day.slice(1);
+}).join(', ') : '';
+
+const times = o.time ? o.time.split(',').map(t => {
+const normalized = normalizeTime(t.trim());
+const block = TIMES.find(b => b.time === normalized);
+return block ? block.display : normalized;
+}).join(', ') : '';
+
+html += `
+<div class="catalog-course">
+<div class="catalog-header">
+<h4 class="catalog-title">${o.name}</h4>
+</div>
+<div class="catalog-meta">
+<span class="catalog-badge catalog-type-${o.type.toLowerCase()}">${o.type}</span>
+<span class="catalog-badge catalog-level">${o.level}</span>
+</div>
+<div class="catalog-instructor">
+<span class="catalog-instructor-icon">👤</span> ${o.instructor}
+${o.location ? ` • 📍 ${o.location}` : ''}
+</div>
+<div class="catalog-schedule">
+<div class="catalog-schedule-item">📅 ${days || 'Schedule TBA'}</div>
+<div class="catalog-schedule-item">🕐 ${times || 'Time TBA'}</div>
+<div class="catalog-schedule-item">👥 Enrollment: ${enrolled}/${capacity === 999 ? '∞' : capacity}</div>
+</div>
+${desc ? `<div class="catalog-description">${desc}</div>` : '<div class="catalog-no-desc">No description available</div>'}
+</div>
+`;
+});
+
+html += `</div>`;
+});
+
+container.innerHTML = html;
+}
+
 function switchTab(i){
 // If switching to "My Schedule" tab (index 1), check if student has been loaded
 if(i === 1){
@@ -811,6 +913,11 @@ if(!hasSchedule){
 showStatus('⚠️ Please load schedule with correct passcode first','error');
 return;
 }
+}
+
+// If switching to Course Catalog tab (index 2), render catalog
+if(i === 2){
+renderCourseCatalog();
 }
 
 document.querySelectorAll('.tab').forEach((t,idx)=>{
