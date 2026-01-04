@@ -82,15 +82,20 @@ h1{display:none}
 <h1 id="pageTitle">ALC Mosaic - Loading...</h1>
 
 <div class="controls">
-<select id="studentName" onchange="loadSchedule()" style="flex:1;min-width:200px;padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd">
+<select id="studentName" style="flex:1;min-width:200px;padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd">
 <option value="">-- Select Student Name --</option>
 </select>
+<input type="password" id="studentPasscode" placeholder="Enter passcode" style="padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd;min-width:150px">
 <button onclick="loadSchedule()">📥 Load Schedule</button>
 <button onclick="saveSchedule()">💾 Save Schedule</button>
 <button class="secondary" onclick="window.print()">🖨️ Print</button>
 </div>
 
 <div id="status"></div>
+
+<p style="text-align:center;color:#666;font-size:12px;margin:10px 0;padding:10px;background:#f8f9fa;border-radius:4px">
+🔒 To view "My Schedule": Select your name, enter your passcode (student ID or ask your facilitator), then click Load Schedule
+</p>
 
 <div class="tabs">
 <div class="tab active" onclick="switchTab(0)">📅 All Classes</div>
@@ -137,6 +142,7 @@ Click classes to select • Max 2 per time block • 🔗 = Multi-block class �
 </div>
 
 <script>
+console.log('===== SCHEDULE.HTML VERSION: 2026-01-04 DEBUG =====');
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 const TIMES=[
 {name:'Block 1',time:'10:00-10:45',display:'10:00-10:45 am'},
@@ -205,6 +211,12 @@ enrollmentCounts=enroll.counts||{};
 
 console.log('Final studentNames array:', studentNames);
 console.log('Number of students:', studentNames.length);
+console.log('===== OFFERINGS DEBUG =====');
+console.log('Total offerings loaded:', offerings.length);
+console.log('Sample offering:', offerings.length > 0 ? offerings[0] : 'No offerings');
+if(offerings.length > 0){
+console.log('First offering details:', JSON.stringify(offerings[0], null, 2));
+}
 
 // Detect session from offerings
 detectAndSetSession();
@@ -344,6 +356,9 @@ function drawSchedule(){
 const tbody=document.getElementById('scheduleBody');
 tbody.innerHTML='';
 
+console.log('===== DRAWING SCHEDULE =====');
+console.log('Total offerings available:', offerings.length);
+
 TIMES.forEach(block=>{
 const row=document.createElement('tr');
 const timeCell=document.createElement('td');
@@ -362,8 +377,13 @@ const offeringDays = o.day ? o.day.split(',').map(d=>d.trim().toLowerCase()) : [
 const offeringTimes = o.time ? o.time.split(',').map(t=>t.trim()) : [];
 
 // Check if this offering matches current day and time
-return offeringDays.includes(day) && offeringTimes.includes(block.time);
+// Compare day case-insensitively
+return offeringDays.includes(day.toLowerCase()) && offeringTimes.includes(block.time);
 });
+
+if(dayOfferings.length > 0){
+console.log(`Found ${dayOfferings.length} offering(s) for ${day} ${block.time}:`, dayOfferings.map(o => o.name));
+}
 
 dayOfferings.forEach(o=>{
 const enrolled=enrollmentCounts[o.id]||0;
@@ -419,7 +439,7 @@ updateUI();
 function isPartOfMultiBlock(offering){
 return offerings.filter(o=>
 o.name===offering.name&&
-o.day===offering.day&&
+o.day.toLowerCase()===offering.day.toLowerCase()&&
 o.instructor===offering.instructor
 ).length>1;
 }
@@ -438,7 +458,7 @@ const key=`${day}-${time}`;
 
 if(checkbox.checked){
 if(group){
-const groupOfferings=offerings.filter(o=>getGroupKey(o)===group&&o.day===day);
+const groupOfferings=offerings.filter(o=>getGroupKey(o)===group&&o.day.toLowerCase()===day.toLowerCase());
 let canSelectAll=true;
 
 groupOfferings.forEach(o=>{
@@ -474,7 +494,7 @@ selected[key].push(id);
 }
 }else{
 if(group){
-const groupOfferings=offerings.filter(o=>getGroupKey(o)===group&&o.day===day);
+const groupOfferings=offerings.filter(o=>getGroupKey(o)===group&&o.day.toLowerCase()===day.toLowerCase());
 groupOfferings.forEach(o=>{
 const k=`${o.day}-${o.time}`;
 if(selected[k])selected[k]=selected[k].filter(i=>i!==o.id);
@@ -597,7 +617,47 @@ tbody.appendChild(row);
 
 async function loadSchedule(){
 const name=document.getElementById('studentName').value;
-if(!name){showStatus('⚠️ Please select a student','error');return}
+const passcode=document.getElementById('studentPasscode').value.trim();
+
+if(!name){
+showStatus('⚠️ Please select a student','error');
+return;
+}
+
+if(!passcode){
+showStatus('⚠️ Please enter passcode','error');
+return;
+}
+
+// Verify passcode
+const student = studentNames.find(s => {
+const studentName = typeof s === 'string' ? s : s.name;
+return studentName === name;
+});
+
+// Check passcode (uses student ID as passcode, or fallback to simple code)
+let isValid = false;
+if(student && typeof student === 'object'){
+// If student object has ID, use that as passcode
+if(student.id && student.id === passcode){
+isValid = true;
+}
+// Allow generic passcode "alc2026" as backup
+else if(passcode.toLowerCase() === 'alc2026'){
+isValid = true;
+}
+}else{
+// For students without ID, only allow generic passcode
+if(passcode.toLowerCase() === 'alc2026'){
+isValid = true;
+}
+}
+
+if(!isValid){
+showStatus('❌ Incorrect passcode','error');
+document.getElementById('studentPasscode').value = '';
+return;
+}
 
 try{
 // Load approved schedule
@@ -676,6 +736,22 @@ showStatus('❌ Error: '+result.message,'error');
 }
 
 function switchTab(i){
+// If switching to "My Schedule" tab (index 1), check if student has been loaded
+if(i === 1){
+const studentName = document.getElementById('studentName').value;
+const hasSchedule = Object.keys(selected).length > 0;
+
+if(!studentName){
+showStatus('⚠️ Please select a student and enter passcode first','error');
+return;
+}
+
+if(!hasSchedule){
+showStatus('⚠️ Please load schedule with correct passcode first','error');
+return;
+}
+}
+
 document.querySelectorAll('.tab').forEach((t,idx)=>{
 t.classList.toggle('active',idx===i);
 });
