@@ -708,8 +708,12 @@ if(data.success&&data.offerings){
 console.log('Processing approved offerings...');
 data.offerings.forEach(o=>{
 console.log('Offering:', o.name, 'Day:', o.day, 'Time:', o.time);
-const key=`${o.day}-${o.time}`;
-console.log('Key:', key);
+// Normalize day to lowercase and time to actual time format
+const normalizedDay = o.day.toLowerCase();
+const normalizedTime = normalizeTime(o.time);
+const key=`${normalizedDay}-${normalizedTime}`;
+console.log('Original key would be:', `${o.day}-${o.time}`);
+console.log('Normalized key:', key);
 if(!selected[key])selected[key]=[];
 selected[key].push(o.id);
 approvedOfferings.push(o.id);
@@ -724,7 +728,10 @@ if(pending.requests){
 pending.requests.filter(r=>r.studentName.toLowerCase()===name.toLowerCase()&&r.status==='pending').forEach(r=>{
 const offering=offerings.find(o=>o.id===r.offeringId);
 if(offering){
-const key=`${offering.day}-${offering.time}`;
+// Normalize day and time to match the format used everywhere else
+const normalizedDay = offering.day.toLowerCase();
+const normalizedTime = normalizeTime(offering.time);
+const key=`${normalizedDay}-${normalizedTime}`;
 if(!selected[key])selected[key]=[];
 if(!selected[key].includes(r.offeringId)){
 selected[key].push(r.offeringId);
