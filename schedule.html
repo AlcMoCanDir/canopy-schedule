@@ -555,6 +555,10 @@ function renderMySchedule(){
 const tbody=document.getElementById('myScheduleBody');
 tbody.innerHTML='';
 
+console.log('===== RENDER MY SCHEDULE =====');
+console.log('Selected object:', selected);
+console.log('Selected keys:', Object.keys(selected));
+
 const name=document.getElementById('studentName').value;
 document.getElementById('scheduleTitle').textContent=name?`${name}'s Schedule`:'My Schedule';
 
@@ -574,6 +578,8 @@ DAYS.forEach(day=>{
 const cell=document.createElement('td');
 const key=`${day}-${block.time}`;
 const ids=selected[key]||[];
+
+console.log(`Checking ${key}: found ${ids.length} offering(s)`);
 
 if(ids.length===0){
 cell.innerHTML='<div style="color:#ccc;text-align:center;padding:20px">-</div>';
@@ -684,8 +690,14 @@ try{
 // Load approved schedule
 const data=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json());
 
+console.log('===== LOAD SCHEDULE DEBUG =====');
+console.log('API response:', data);
+console.log('Offerings in response:', data.offerings);
+
 // Load pending requests
 const pending=await fetch(`${API}?action=getPendingRequests`).then(r=>r.json()).catch(e=>({requests:[]}));
+
+console.log('Pending requests:', pending);
 
 selected={};
 approvedOfferings=[];
@@ -693,13 +705,19 @@ pendingOfferings=[];
 
 // Process approved schedule
 if(data.success&&data.offerings){
+console.log('Processing approved offerings...');
 data.offerings.forEach(o=>{
+console.log('Offering:', o.name, 'Day:', o.day, 'Time:', o.time);
 const key=`${o.day}-${o.time}`;
+console.log('Key:', key);
 if(!selected[key])selected[key]=[];
 selected[key].push(o.id);
 approvedOfferings.push(o.id);
 });
 }
+
+console.log('Selected object:', selected);
+console.log('Total selected keys:', Object.keys(selected).length);
 
 // Process pending requests for this student
 if(pending.requests){
