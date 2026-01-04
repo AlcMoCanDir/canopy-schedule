@@ -121,7 +121,7 @@ h1{display:none}
 <div class="tabs">
 <div class="tab active" onclick="switchTab(0)">📅 All Classes</div>
 <div class="tab" onclick="switchTab(1)">✅ My Schedule</div>
-<div class="tab" onclick="switchTab(2)">📚 Course Catalog</div>
+<div class="tab" onclick="switchTab(2)">📋 Offering Descriptions</div>
 </div>
 
 <div id="allClasses" class="tab-content active">
@@ -162,10 +162,41 @@ Click classes to select • Max 2 per time block • 🔗 = Multi-block class �
 </div>
 
 <div id="courseCatalog" class="tab-content">
-<h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">📚 Course Catalog</h2>
+<h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">📋 Offering Descriptions</h2>
 <p style="text-align:center;color:#666;font-size:14px;margin-bottom:20px">
 Browse all available offerings with full descriptions
 </p>
+
+<div style="max-width:900px;margin:0 auto 20px auto">
+<input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Search by name, instructor, or description..." onkeyup="filterCatalog()">
+
+<div class="catalog-filters">
+<strong style="margin-right:10px;align-self:center">Filter by Level:</strong>
+<button class="catalog-filter-btn active" data-filter="all" onclick="setLevelFilter('all')">All Levels</button>
+<button class="catalog-filter-btn" data-filter="EC" onclick="setLevelFilter('EC')">EC</button>
+<button class="catalog-filter-btn" data-filter="Saplings" onclick="setLevelFilter('Saplings')">Saplings</button>
+<button class="catalog-filter-btn" data-filter="Canopy" onclick="setLevelFilter('Canopy')">Canopy</button>
+<button class="catalog-filter-btn" data-filter="Acorns" onclick="setLevelFilter('Acorns')">Acorns</button>
+</div>
+
+<div class="catalog-filters">
+<strong style="margin-right:10px;align-self:center">Filter by Type:</strong>
+<button class="catalog-filter-btn active" data-type="all" onclick="setTypeFilter('all')">All Types</button>
+<button class="catalog-filter-btn" data-type="Commit" onclick="setTypeFilter('Commit')">Commitment</button>
+<button class="catalog-filter-btn" data-type="Drop-in" onclick="setTypeFilter('Drop-in')">Drop-in</button>
+</div>
+
+<div class="catalog-filters">
+<strong style="margin-right:10px;align-self:center">Filter by Day:</strong>
+<button class="catalog-filter-btn active" data-day="all" onclick="setDayFilter('all')">All Days</button>
+<button class="catalog-filter-btn" data-day="Monday" onclick="setDayFilter('Monday')">Monday</button>
+<button class="catalog-filter-btn" data-day="Tuesday" onclick="setDayFilter('Tuesday')">Tuesday</button>
+<button class="catalog-filter-btn" data-day="Wednesday" onclick="setDayFilter('Wednesday')">Wednesday</button>
+<button class="catalog-filter-btn" data-day="Thursday" onclick="setDayFilter('Thursday')">Thursday</button>
+<button class="catalog-filter-btn" data-day="Friday" onclick="setDayFilter('Friday')">Friday</button>
+</div>
+</div>
+
 <div id="catalogContainer" style="max-width:900px;margin:0 auto"></div>
 </div>
 
@@ -207,6 +238,7 @@ return BLOCK_TIME_MAP[trimmed] || trimmed;
 
 let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[];
 let approvedOfferings=[],pendingOfferings=[];
+let catalogFilters={level:'all',type:'all',day:'all',search:''};
 
 async function init(){
 try{
@@ -826,6 +858,72 @@ showStatus('❌ Error: '+result.message,'error');
 }catch(e){showStatus('❌ Error saving: '+e.message,'error')}
 }
 
+function setLevelFilter(level){
+catalogFilters.level = level;
+document.querySelectorAll('[data-filter]').forEach(btn => {
+btn.classList.toggle('active', btn.dataset.filter === level);
+});
+renderCourseCatalog();
+}
+
+function setTypeFilter(type){
+catalogFilters.type = type;
+document.querySelectorAll('[data-type]').forEach(btn => {
+btn.classList.toggle('active', btn.dataset.type === type);
+});
+renderCourseCatalog();
+}
+
+function setDayFilter(day){
+catalogFilters.day = day;
+document.querySelectorAll('[data-day]').forEach(btn => {
+btn.classList.toggle('active', btn.dataset.day === day);
+});
+renderCourseCatalog();
+}
+
+function filterCatalog(){
+catalogFilters.search = document.getElementById('catalogSearch').value.toLowerCase();
+renderCourseCatalog();
+}
+
+function matchesFilters(offering){
+// Check level filter
+if(catalogFilters.level !== 'all' && offering.level !== catalogFilters.level){
+return false;
+}
+
+// Check type filter
+if(catalogFilters.type !== 'all' && offering.type !== catalogFilters.type){
+return false;
+}
+
+// Check day filter
+if(catalogFilters.day !== 'all'){
+const days = offering.day ? offering.day.toLowerCase().split(',').map(d => d.trim()) : [];
+if(!days.includes(catalogFilters.day.toLowerCase())){
+return false;
+}
+}
+
+// Check search filter
+if(catalogFilters.search){
+const desc = descriptions[offering.name] || offering.description || '';
+const searchText = (
+offering.name + ' ' + 
+offering.instructor + ' ' + 
+offering.location + ' ' + 
+desc
+).toLowerCase();
+
+if(!searchText.includes(catalogFilters.search)){
+return false;
+}
+}
+
+return true;
+}
+
 function renderCourseCatalog(){
 const container = document.getElementById('catalogContainer');
 if(!offerings || offerings.length === 0){
@@ -833,26 +931,36 @@ container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No o
 return;
 }
 
+// Filter offerings based on current filters
+const filteredOfferings = offerings.filter(matchesFilters);
+
+if(filteredOfferings.length === 0){
+container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No offerings match your filters</p>';
+return;
+}
+
 // Group offerings by level
 const groupedByLevel = {};
-offerings.forEach(o => {
+filteredOfferings.forEach(o => {
 const level = o.level || 'Other';
 if(!groupedByLevel[level]) groupedByLevel[level] = [];
 groupedByLevel[level].push(o);
 });
 
 let html = '';
+let totalCount = 0;
 
 // Render each level group
-const levelOrder = ['Acorns', 'EC', 'Saplings', 'Saplings+', 'Canopy', 'Canopy+', 'Other'];
+const levelOrder = ['EC', 'Saplings', 'Canopy', 'Acorns', 'Other'];
 levelOrder.forEach(level => {
 if(!groupedByLevel[level] || groupedByLevel[level].length === 0) return;
 
 html += `<div style="margin-bottom:40px">`;
-html += `<h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">${level}</h3>`;
+html += `<h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">${level} <span style="color:#666;font-size:16px;font-weight:normal">(${groupedByLevel[level].length} offering${groupedByLevel[level].length !== 1 ? 's' : ''})</span></h3>`;
 
 // Sort offerings within level by name
 groupedByLevel[level].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
+totalCount++;
 const desc = descriptions[o.name] || o.description || '';
 const enrolled = enrollmentCounts[o.id] || 0;
 const capacity = Number(o.capacity) || 999;
@@ -895,7 +1003,12 @@ ${desc ? `<div class="catalog-description">${desc}</div>` : '<div class="catalog
 html += `</div>`;
 });
 
-container.innerHTML = html;
+// Add total count at top
+const filterSummary = `<div style="text-align:center;margin-bottom:20px;padding:10px;background:#f0f7ff;border-radius:6px;color:#666">
+Showing <strong>${totalCount}</strong> of <strong>${offerings.length}</strong> total offerings
+</div>`;
+
+container.innerHTML = filterSummary + html;
 }
 
 function switchTab(i){
@@ -915,7 +1028,7 @@ return;
 }
 }
 
-// If switching to Course Catalog tab (index 2), render catalog
+// If switching to Offering Descriptions tab (index 2), render catalog
 if(i === 2){
 renderCourseCatalog();
 }
