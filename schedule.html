@@ -18,7 +18,7 @@ h1{text-align:center;color:#4CAF50;margin:10px 0}
 #status{text-align:center;padding:10px;margin:10px 0;border-radius:4px;font-weight:bold;display:none}
 .status-success{background:#d4edda;color:#155724}
 .status-error{background:#f8d7da;color:#721c24}
-.tabs{display:flex;gap:5px;border-bottom:2px solid #ddd;margin:20px 0}
+.tabs{display:flex;gap:5px;border-bottom:2px solid #ddd;margin:20px 0;flex-wrap:wrap}
 .tab{padding:12px 20px;background:#f0f0f0;border:none;cursor:pointer;font-size:15px;border-radius:8px 8px 0 0;font-weight:600}
 .tab:hover{background:#e0e0e0}
 .tab.active{background:white;color:#4CAF50;border-bottom:3px solid #4CAF50}
@@ -70,11 +70,43 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 .catalog-filter-btn{padding:8px 16px;border:2px solid #ddd;background:white;border-radius:6px;cursor:pointer;font-size:14px;transition:all 0.2s}
 .catalog-filter-btn:hover{background:#f0f0f0}
 .catalog-filter-btn.active{background:#4CAF50;color:white;border-color:#4CAF50}
+
+/* ===== Add Offering Form ===== */
+.form-section{max-width:760px;margin:0 auto;padding:10px 20px 30px}
+.form-help{background:#fff3cd;border-left:4px solid #ffc107;padding:12px 15px;margin-bottom:25px;border-radius:4px;font-size:13px;color:#856404;line-height:1.5}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-weight:600;color:#2c3e50;margin-bottom:8px;font-size:14px}
+.form-group .hint{font-size:12px;color:#888;font-weight:normal;margin-left:6px}
+.form-group .req{color:#d32f2f;margin-left:2px}
+.form-group input[type="text"],.form-group input[type="number"],.form-group select,.form-group textarea{
+width:100%;padding:10px 12px;font-size:14px;border:2px solid #ddd;border-radius:6px;
+font-family:inherit;background:white;transition:border-color 0.2s;box-sizing:border-box;color:#333
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#4CAF50}
+.form-group textarea{resize:vertical;min-height:90px;line-height:1.5}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.checkbox-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;padding:12px;background:#f8f9fa;border-radius:6px;border:2px solid #ddd}
+.checkbox-grid label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-weight:normal;padding:8px 10px;border-radius:4px;transition:background 0.15s;margin:0;line-height:1.3}
+.checkbox-grid label:hover{background:#e8f5e9}
+.checkbox-grid label.checked{background:#c8e6c9}
+.checkbox-grid input[type="checkbox"]{margin:2px 0 0 0;flex-shrink:0}
+.checkbox-grid .cb-text{flex:1}
+.checkbox-grid .cb-sub{display:block;font-size:11px;color:#888;margin-top:2px}
+.form-actions{display:flex;gap:10px;margin-top:30px;padding-top:20px;border-top:2px solid #f0f0f0}
+.form-actions button{padding:12px 24px;font-size:15px;font-weight:600;border-radius:6px;cursor:pointer;border:none;transition:background 0.2s}
+.form-actions .submit-btn{background:#4CAF50;color:white;flex:1}
+.form-actions .submit-btn:hover{background:#45a049}
+.form-actions .submit-btn:disabled{background:#a5d6a7;cursor:not-allowed}
+.form-actions .reset-btn{background:#f0f0f0;color:#333}
+.form-actions .reset-btn:hover{background:#e0e0e0}
+.form-success{background:#d4edda;border-left:4px solid #28a745;padding:15px 20px;border-radius:4px;color:#155724;margin-bottom:20px;display:none}
+.form-success.show{display:block}
+
 @media print{
 @page{size:landscape;margin:0.5in}
 body{background:white;padding:0;margin:0}
 .container{max-width:100%;box-shadow:none;margin:0;padding:10px}
-.controls,.tabs,#scheduleBuilder,button,.btn{display:none!important}
+.controls,.tabs,#scheduleBuilder,button,.btn,#addOffering{display:none!important}
 #mySchedule{display:block!important}
 h1{display:none}
 .my-schedule-table{width:100%;border-collapse:collapse;table-layout:fixed;page-break-inside:avoid}
@@ -95,6 +127,7 @@ h1{display:none}
 .controls input,.controls button{width:100%}
 .schedule-table{font-size:11px}
 .class-card{font-size:11px;padding:6px}
+.form-row{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -122,6 +155,7 @@ h1{display:none}
 <div class="tab active" onclick="switchTab(0)">📅 All Classes</div>
 <div class="tab" onclick="switchTab(1)">✅ My Schedule</div>
 <div class="tab" onclick="switchTab(2)">📋 Offering Descriptions</div>
+<div class="tab" onclick="switchTab(3)">➕ Add Offering</div>
 </div>
 
 <div id="allClasses" class="tab-content active">
@@ -200,10 +234,111 @@ Browse all available offerings with full descriptions
 <div id="catalogContainer" style="max-width:900px;margin:0 auto"></div>
 </div>
 
+<!-- ===== NEW: Add Offering Tab ===== -->
+<div id="addOffering" class="tab-content">
+<h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">➕ Submit a New Offering</h2>
+<div class="form-section">
+
+<div class="form-help">
+📋 <strong>How this works:</strong> Fill out the form below to propose a new class, workshop, or activity. Submissions require admin approval before they appear in the schedule. You'll get a confirmation once submitted — your facilitator will review it and add it to the live schedule.
+</div>
+
+<div id="formSuccess" class="form-success"></div>
+
+<div class="form-group">
+<label for="submitterName">Your Name<span class="req">*</span><span class="hint">(so we know who to follow up with)</span></label>
+<input type="text" id="submitterName" placeholder="e.g., Jane Smith" required>
+</div>
+
+<div class="form-group">
+<label for="offeringName">Course / Offering Name<span class="req">*</span></label>
+<input type="text" id="offeringName" placeholder="e.g., Beginner Pottery (Saplings+)" required>
+</div>
+
+<div class="form-row">
+<div class="form-group">
+<label for="offeringInstructor">Instructor<span class="req">*</span></label>
+<input type="text" id="offeringInstructor" list="instructorList" placeholder="Start typing — suggestions appear" required>
+<datalist id="instructorList"></datalist>
+</div>
+<div class="form-group">
+<label for="offeringLocation">Location<span class="hint">(optional)</span></label>
+<input type="text" id="offeringLocation" list="locationList" placeholder="e.g., Art Room">
+<datalist id="locationList"></datalist>
+</div>
+</div>
+
+<div class="form-row">
+<div class="form-group">
+<label for="offeringLevel">Level<span class="req">*</span></label>
+<select id="offeringLevel" required>
+<option value="">Choose level...</option>
+<option value="EC">EC</option>
+<option value="Saplings">Saplings</option>
+<option value="Canopy">Canopy</option>
+<option value="Acorns">Acorns</option>
+</select>
+</div>
+<div class="form-group">
+<label for="offeringType">Type<span class="req">*</span></label>
+<select id="offeringType" required>
+<option value="">Choose type...</option>
+<option value="Commit">Commitment</option>
+<option value="Drop-in">Drop-in</option>
+</select>
+</div>
+</div>
+
+<div class="form-group">
+<label>Days<span class="req">*</span><span class="hint">(check all that apply)</span></label>
+<div class="checkbox-grid" id="dayGrid">
+<label><input type="checkbox" name="day" value="monday"><span class="cb-text">Monday</span></label>
+<label><input type="checkbox" name="day" value="tuesday"><span class="cb-text">Tuesday</span></label>
+<label><input type="checkbox" name="day" value="wednesday"><span class="cb-text">Wednesday</span></label>
+<label><input type="checkbox" name="day" value="thursday"><span class="cb-text">Thursday</span></label>
+<label><input type="checkbox" name="day" value="friday"><span class="cb-text">Friday</span></label>
+</div>
+</div>
+
+<div class="form-group">
+<label>Blocks / Times<span class="req">*</span><span class="hint">(check all that apply — multiple blocks for longer classes)</span></label>
+<div class="checkbox-grid" id="timeGrid">
+<label><input type="checkbox" name="time" value="10:00-10:45"><span class="cb-text">Block 1<span class="cb-sub">10:00-10:45 am</span></span></label>
+<label><input type="checkbox" name="time" value="10:50-11:35"><span class="cb-text">Block 2<span class="cb-sub">10:50-11:35 am</span></span></label>
+<label><input type="checkbox" name="time" value="12:10-12:55"><span class="cb-text">Block 3<span class="cb-sub">12:10-12:55 pm</span></span></label>
+<label><input type="checkbox" name="time" value="1:00-1:50"><span class="cb-text">Block 4<span class="cb-sub">1:00-1:50 pm</span></span></label>
+<label><input type="checkbox" name="time" value="1:55-2:45"><span class="cb-text">Block 5<span class="cb-sub">1:55-2:45 pm</span></span></label>
+</div>
+</div>
+
+<div class="form-row">
+<div class="form-group">
+<label for="offeringCapacity">Capacity<span class="hint">(leave blank for unlimited)</span></label>
+<input type="number" id="offeringCapacity" placeholder="e.g., 12" min="1">
+</div>
+<div class="form-group">
+<label for="offeringSession">Session<span class="hint">(auto-filled — change if needed)</span></label>
+<input type="text" id="offeringSession" placeholder="e.g., Session 3 (2026)">
+</div>
+</div>
+
+<div class="form-group">
+<label for="offeringDescription">Description<span class="hint">(what will students learn or do?)</span></label>
+<textarea id="offeringDescription" placeholder="A brief description of the class for the catalog. What's covered? What's the vibe? Any prerequisites?"></textarea>
+</div>
+
+<div class="form-actions">
+<button type="button" class="reset-btn" onclick="resetOfferingForm()">Reset Form</button>
+<button type="button" class="submit-btn" id="submitOfferingBtn" onclick="submitNewOffering()">📨 Submit for Approval</button>
+</div>
+
+</div>
+</div>
+
 </div>
 
 <script>
-console.log('===== SCHEDULE.HTML VERSION: 2026-01-04 DEBUG =====');
+console.log('===== SCHEDULE.HTML VERSION: 2026-05-12 + ADD OFFERING FORM =====');
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 const TIMES=[
 {name:'Block 1',time:'10:00-10:45',display:'10:00-10:45 am'},
@@ -215,7 +350,6 @@ const TIMES=[
 ];
 const DAYS=['monday','tuesday','wednesday','thursday','friday'];
 
-// Map block names to times for flexibility
 const BLOCK_TIME_MAP={
 'Block 1':'10:00-10:45',
 'Block 2':'10:50-11:35',
@@ -226,25 +360,22 @@ const BLOCK_TIME_MAP={
 'LUNCH':'11:35-12:05'
 };
 
-// Helper function to normalize time format
 function normalizeTime(time){
 if(!time) return '';
 const trimmed = time.trim();
-// If it's already in HH:MM-HH:MM format, return it
 if(trimmed.match(/^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/)) return trimmed;
-// Otherwise check if it's a block name
 return BLOCK_TIME_MAP[trimmed] || trimmed;
 }
 
 let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[];
 let approvedOfferings=[],pendingOfferings=[];
 let catalogFilters={level:'all',type:'all',day:'all',search:''};
+let currentSession='';
 
 async function init(){
 try{
 showStatus('Loading...','success');
 
-// Fetch data with timeout and retry
 const fetchWithTimeout = (url, timeout = 10000) => {
   return Promise.race([
     fetch(url),
@@ -269,44 +400,24 @@ const [off, enroll, students] = await Promise.all([
   })
 ]);
 
-console.log('Offerings loaded:', off.offerings?.length || 0);
-console.log('Enrollment data loaded:', Object.keys(enroll.counts || {}).length);
-console.log('Students response:', students);
-
-// Handle getAllStudents response (with student objects)
 if (students && students.success && Array.isArray(students.students)) {
-  // Students sheet exists - use it (includes ID, name, grade, level)
   studentNames = students.students;
-  console.log('Student names from Students sheet:', studentNames);
 } else {
-  // Fallback to approved students if Students sheet doesn't exist
   const fallback = await fetchWithTimeout(`${API}?action=loadStudents`).then(r=>r.json()).catch(e=>({students: []}));
   if (fallback.students && Array.isArray(fallback.students)) {
     studentNames = fallback.students.map(name => typeof name === 'string' ? {id: '', name: name} : name);
   } else {
     studentNames = [];
   }
-  console.log('Student names from fallback:', studentNames);
 }
 
 offerings=off.offerings||[];
 enrollmentCounts=enroll.counts||{};
 
-console.log('Final studentNames array:', studentNames);
-console.log('Number of students:', studentNames.length);
-console.log('===== OFFERINGS DEBUG =====');
-console.log('Total offerings loaded:', offerings.length);
-console.log('Sample offering:', offerings.length > 0 ? offerings[0] : 'No offerings');
-if(offerings.length > 0){
-console.log('First offering details:', JSON.stringify(offerings[0], null, 2));
-console.log('First offering time normalized:', normalizeTime(offerings[0].time));
-}
-
-// Detect session from offerings
 detectAndSetSession();
-
 loadDescriptions();
 populateStudentDropdown();
+populateOfferingFormSuggestions();
 drawSchedule();
 checkURLParams();
 
@@ -318,66 +429,39 @@ showStatus('Error loading: '+e.message,'error');
 }
 
 function detectAndSetSession(){
-// ALC Mosaic session schedule:
-// Session 1: August - October
-// Session 2: November - December
-// Session 3: January - February
-// Session 4: March - April
-// Session 5: May - June
-
 const now = new Date();
-const currentMonth = now.getMonth(); // 0-11 (0=Jan, 1=Feb, etc.)
+const currentMonth = now.getMonth();
 const currentYear = now.getFullYear();
 
-let sessionNum = 3;
 let sessionName = 'Session 3';
 
-// Determine session based on current month
-if(currentMonth >= 7 && currentMonth <= 9){ // Aug(7) - Oct(9)
-sessionNum = 1;
-sessionName = 'Session 1';
-}else if(currentMonth >= 10 && currentMonth <= 11){ // Nov(10) - Dec(11)
-sessionNum = 2;
-sessionName = 'Session 2';
-}else if(currentMonth >= 0 && currentMonth <= 1){ // Jan(0) - Feb(1)
-sessionNum = 3;
-sessionName = 'Session 3';
-}else if(currentMonth >= 2 && currentMonth <= 3){ // Mar(2) - Apr(3)
-sessionNum = 4;
-sessionName = 'Session 4';
-}else if(currentMonth >= 4 && currentMonth <= 5){ // May(4) - Jun(5)
-sessionNum = 5;
-sessionName = 'Session 5';
-}else if(currentMonth === 6){ // Jul(6) - Summer break
-sessionName = 'Summer Break';
-}
+if(currentMonth >= 7 && currentMonth <= 9){ sessionName = 'Session 1'; }
+else if(currentMonth >= 10 && currentMonth <= 11){ sessionName = 'Session 2'; }
+else if(currentMonth >= 0 && currentMonth <= 1){ sessionName = 'Session 3'; }
+else if(currentMonth >= 2 && currentMonth <= 3){ sessionName = 'Session 4'; }
+else if(currentMonth >= 4 && currentMonth <= 5){ sessionName = 'Session 5'; }
+else if(currentMonth === 6){ sessionName = 'Summer Break'; }
 
-// Check if offerings have session info in metadata
 if(offerings.length > 0 && offerings[0].session){
 sessionName = offerings[0].session;
-}else{
-// Add year context
+} else {
 sessionName = `${sessionName} (${currentYear})`;
 }
 
-console.log('Detected session:', sessionName);
-
-// Update page title
+currentSession = sessionName;
 document.getElementById('pageTitle').textContent = `ALC Mosaic - ${sessionName}`;
-
-// Update document title
 document.title = `ALC Mosaic - ${sessionName}`;
+
+// Pre-fill session in form
+const sessionInput = document.getElementById('offeringSession');
+if(sessionInput && !sessionInput.value) sessionInput.value = sessionName;
 }
 
 function populateStudentDropdown(){
 const select=document.getElementById('studentName');
-// Keep the first "Select Student Name" option
 select.innerHTML='<option value="">-- Select Student Name --</option>';
 
-console.log('Populating dropdown with', studentNames.length, 'students');
-
 if(studentNames.length === 0){
-console.warn('No students found!');
 const option=document.createElement('option');
 option.value='';
 option.textContent='(No students yet)';
@@ -386,7 +470,6 @@ select.appendChild(option);
 return;
 }
 
-// Sort students by name
 const sortedStudents = [...studentNames].sort((a,b)=>{
 const nameA = typeof a === 'string' ? a : (a.name || '');
 const nameB = typeof b === 'string' ? b : (b.name || '');
@@ -395,26 +478,19 @@ return nameA.localeCompare(nameB);
 
 sortedStudents.forEach(student=>{
 const option=document.createElement('option');
-// Handle both string names and student objects
 if (typeof student === 'string') {
 option.value = student;
 option.textContent = student;
 } else {
 const name = student.name || '';
-const id = student.id || '';
-const group = student.grade || ''; // "grade" field contains Group (EC, Saplings, Canopy, Acorns)
+const group = student.grade || '';
 option.value = name;
 let displayText = name;
-// Don't show ID in dropdown for privacy (it's the password)
-// if (id) displayText += ` (ID: ${id})`;
 if (group) displayText += ` - ${group}`;
 option.textContent = displayText;
 }
 select.appendChild(option);
-console.log('Added student:', option.textContent);
 });
-
-console.log('Dropdown populated with', select.options.length - 1, 'students');
 }
 
 function loadDescriptions(){
@@ -439,9 +515,6 @@ function drawSchedule(){
 const tbody=document.getElementById('scheduleBody');
 tbody.innerHTML='';
 
-console.log('===== DRAWING SCHEDULE =====');
-console.log('Total offerings available:', offerings.length);
-
 TIMES.forEach(block=>{
 const row=document.createElement('tr');
 const timeCell=document.createElement('td');
@@ -453,20 +526,11 @@ DAYS.forEach(day=>{
 const cell=document.createElement('td');
 cell.id=`${day}-${block.time}`;
 
-// Filter offerings - handle both single and comma-separated days/times
 const dayOfferings=offerings.filter(o=>{
-// Split days and times if comma-separated
 const offeringDays = o.day ? o.day.split(',').map(d=>d.trim().toLowerCase()) : [];
 const offeringTimes = o.time ? o.time.split(',').map(t=>normalizeTime(t.trim())) : [];
-
-// Check if this offering matches current day and time
-// Compare day case-insensitively
 return offeringDays.includes(day.toLowerCase()) && offeringTimes.includes(block.time);
 });
-
-if(dayOfferings.length > 0){
-console.log(`Found ${dayOfferings.length} offering(s) for ${day} ${block.time}:`, dayOfferings.map(o => o.name));
-}
 
 dayOfferings.forEach(o=>{
 const enrolled=enrollmentCounts[o.id]||0;
@@ -482,11 +546,6 @@ card.dataset.time=block.time;
 card.dataset.group=isMultiBlock?getGroupKey(o):'';
 
 const desc=descriptions[o.name]||o.description||'';
-if(!desc){
-console.log(`No description for: "${o.name}"`);
-}else{
-console.log(`Has description for: "${o.name}"`);
-}
 card.innerHTML=`
 <label style="display:flex;align-items:start;cursor:pointer">
 <input type="checkbox" ${full?'disabled':''} onclick="event.stopPropagation();toggleClass(this)">
@@ -596,20 +655,11 @@ updateUI();
 }
 
 function toggleDesc(element){
-console.log('toggleDesc called on:', element);
 const card=element.closest('.class-card');
-console.log('Found card:', card);
-if(!card){
-console.error('Could not find .class-card parent!');
-return;
-}
+if(!card) return;
 card.classList.toggle('expanded');
-console.log('Card expanded?', card.classList.contains('expanded'));
 const icon=card.querySelector('.expand-icon');
 if(icon)icon.textContent=card.classList.contains('expanded')?'▲':'▼';
-const descDiv=card.querySelector('.class-desc');
-console.log('Description div:', descDiv);
-console.log('Description display:', descDiv ? window.getComputedStyle(descDiv).display : 'N/A');
 }
 
 function updateUI(){
@@ -632,14 +682,9 @@ function renderMySchedule(){
 const tbody=document.getElementById('myScheduleBody');
 tbody.innerHTML='';
 
-console.log('===== RENDER MY SCHEDULE =====');
-console.log('Selected object:', selected);
-console.log('Selected keys:', Object.keys(selected));
-
 const name=document.getElementById('studentName').value;
 document.getElementById('scheduleTitle').textContent=name?`${name}'s Schedule`:'My Schedule';
 
-// Set print date
 const today=new Date();
 const dateStr=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 document.getElementById('printDate').textContent=`Printed: ${dateStr}`;
@@ -656,8 +701,6 @@ const cell=document.createElement('td');
 const key=`${day}-${block.time}`;
 const ids=selected[key]||[];
 
-console.log(`Checking ${key}: found ${ids.length} offering(s)`);
-
 if(ids.length===0){
 cell.innerHTML='<div style="color:#ccc;text-align:center;padding:20px">-</div>';
 }else{
@@ -667,7 +710,6 @@ if(o){
 const desc=descriptions[o.name]||o.description||'';
 const isPending=pendingOfferings.includes(id);
 
-// Build info line with separator
 const infoParts=[];
 if(o.instructor)infoParts.push(`👤 ${o.instructor}`);
 if(o.location)infoParts.push(`📍 ${o.location}`);
@@ -723,38 +765,20 @@ async function loadSchedule(){
 const name=document.getElementById('studentName').value;
 const passcode=document.getElementById('studentPasscode').value.trim();
 
-if(!name){
-showStatus('⚠️ Please select a student','error');
-return;
-}
+if(!name){ showStatus('⚠️ Please select a student','error'); return; }
+if(!passcode){ showStatus('⚠️ Please enter passcode','error'); return; }
 
-if(!passcode){
-showStatus('⚠️ Please enter passcode','error');
-return;
-}
-
-// Verify passcode
 const student = studentNames.find(s => {
 const studentName = typeof s === 'string' ? s : s.name;
 return studentName === name;
 });
 
-// Check passcode (uses student ID as passcode, or fallback to simple code)
 let isValid = false;
 if(student && typeof student === 'object'){
-// If student object has ID, use that as passcode
-if(student.id && student.id === passcode){
-isValid = true;
-}
-// Allow generic passcode "alc2026" as backup
-else if(passcode.toLowerCase() === 'alc2026'){
-isValid = true;
-}
+if(student.id && student.id === passcode){ isValid = true; }
+else if(passcode.toLowerCase() === 'alc2026'){ isValid = true; }
 }else{
-// For students without ID, only allow generic passcode
-if(passcode.toLowerCase() === 'alc2026'){
-isValid = true;
-}
+if(passcode.toLowerCase() === 'alc2026'){ isValid = true; }
 }
 
 if(!isValid){
@@ -764,48 +788,28 @@ return;
 }
 
 try{
-// Load approved schedule
 const data=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json());
-
-console.log('===== LOAD SCHEDULE DEBUG =====');
-console.log('API response:', data);
-console.log('Offerings in response:', data.offerings);
-
-// Load pending requests
 const pending=await fetch(`${API}?action=getPendingRequests`).then(r=>r.json()).catch(e=>({requests:[]}));
-
-console.log('Pending requests:', pending);
 
 selected={};
 approvedOfferings=[];
 pendingOfferings=[];
 
-// Process approved schedule
 if(data.success&&data.offerings){
-console.log('Processing approved offerings...');
 data.offerings.forEach(o=>{
-console.log('Offering:', o.name, 'Day:', o.day, 'Time:', o.time);
-// Normalize day to lowercase and time to actual time format
 const normalizedDay = o.day.toLowerCase();
 const normalizedTime = normalizeTime(o.time);
 const key=`${normalizedDay}-${normalizedTime}`;
-console.log('Original key would be:', `${o.day}-${o.time}`);
-console.log('Normalized key:', key);
 if(!selected[key])selected[key]=[];
 selected[key].push(o.id);
 approvedOfferings.push(o.id);
 });
 }
 
-console.log('Selected object:', selected);
-console.log('Total selected keys:', Object.keys(selected).length);
-
-// Process pending requests for this student
 if(pending.requests){
 pending.requests.filter(r=>r.studentName.toLowerCase()===name.toLowerCase()&&r.status==='pending').forEach(r=>{
 const offering=offerings.find(o=>o.id===r.offeringId);
 if(offering){
-// Normalize day and time to match the format used everywhere else
 const normalizedDay = offering.day.toLowerCase();
 const normalizedTime = normalizeTime(offering.time);
 const key=`${normalizedDay}-${normalizedTime}`;
@@ -858,6 +862,7 @@ showStatus('❌ Error: '+result.message,'error');
 }catch(e){showStatus('❌ Error saving: '+e.message,'error')}
 }
 
+// ===== Catalog Filters =====
 function setLevelFilter(level){
 catalogFilters.level = level;
 document.querySelectorAll('[data-filter]').forEach(btn => {
@@ -888,39 +893,17 @@ renderCourseCatalog();
 }
 
 function matchesFilters(offering){
-// Check level filter
-if(catalogFilters.level !== 'all' && offering.level !== catalogFilters.level){
-return false;
-}
-
-// Check type filter
-if(catalogFilters.type !== 'all' && offering.type !== catalogFilters.type){
-return false;
-}
-
-// Check day filter
+if(catalogFilters.level !== 'all' && offering.level !== catalogFilters.level) return false;
+if(catalogFilters.type !== 'all' && offering.type !== catalogFilters.type) return false;
 if(catalogFilters.day !== 'all'){
 const days = offering.day ? offering.day.toLowerCase().split(',').map(d => d.trim()) : [];
-if(!days.includes(catalogFilters.day.toLowerCase())){
-return false;
+if(!days.includes(catalogFilters.day.toLowerCase())) return false;
 }
-}
-
-// Check search filter
 if(catalogFilters.search){
 const desc = descriptions[offering.name] || offering.description || '';
-const searchText = (
-offering.name + ' ' + 
-offering.instructor + ' ' + 
-offering.location + ' ' + 
-desc
-).toLowerCase();
-
-if(!searchText.includes(catalogFilters.search)){
-return false;
+const searchText = (offering.name + ' ' + offering.instructor + ' ' + offering.location + ' ' + desc).toLowerCase();
+if(!searchText.includes(catalogFilters.search)) return false;
 }
-}
-
 return true;
 }
 
@@ -931,15 +914,12 @@ container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No o
 return;
 }
 
-// Filter offerings based on current filters
 const filteredOfferings = offerings.filter(matchesFilters);
-
 if(filteredOfferings.length === 0){
 container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No offerings match your filters</p>';
 return;
 }
 
-// Group offerings by level
 const groupedByLevel = {};
 filteredOfferings.forEach(o => {
 const level = o.level || 'Other';
@@ -949,8 +929,6 @@ groupedByLevel[level].push(o);
 
 let html = '';
 let totalCount = 0;
-
-// Render each level group
 const levelOrder = ['EC', 'Saplings', 'Canopy', 'Acorns', 'Other'];
 levelOrder.forEach(level => {
 if(!groupedByLevel[level] || groupedByLevel[level].length === 0) return;
@@ -958,14 +936,12 @@ if(!groupedByLevel[level] || groupedByLevel[level].length === 0) return;
 html += `<div style="margin-bottom:40px">`;
 html += `<h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">${level} <span style="color:#666;font-size:16px;font-weight:normal">(${groupedByLevel[level].length} offering${groupedByLevel[level].length !== 1 ? 's' : ''})</span></h3>`;
 
-// Sort offerings within level by name
 groupedByLevel[level].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
 totalCount++;
 const desc = descriptions[o.name] || o.description || '';
 const enrolled = enrollmentCounts[o.id] || 0;
 const capacity = Number(o.capacity) || 999;
 
-// Format schedule info
 const days = o.day ? o.day.split(',').map(d => {
 const day = d.trim();
 return day.charAt(0).toUpperCase() + day.slice(1);
@@ -1003,7 +979,6 @@ ${desc ? `<div class="catalog-description">${desc}</div>` : '<div class="catalog
 html += `</div>`;
 });
 
-// Add total count at top
 const filterSummary = `<div style="text-align:center;margin-bottom:20px;padding:10px;background:#f0f7ff;border-radius:6px;color:#666">
 Showing <strong>${totalCount}</strong> of <strong>${offerings.length}</strong> total offerings
 </div>`;
@@ -1011,26 +986,130 @@ Showing <strong>${totalCount}</strong> of <strong>${offerings.length}</strong> t
 container.innerHTML = filterSummary + html;
 }
 
+// ===== NEW: Add Offering Form =====
+function populateOfferingFormSuggestions(){
+const instructors = new Set();
+const locations = new Set();
+offerings.forEach(o => {
+if(o.instructor) instructors.add(o.instructor.trim());
+if(o.location) locations.add(o.location.trim());
+});
+
+const instructorList = document.getElementById('instructorList');
+if(instructorList){
+instructorList.innerHTML = Array.from(instructors).sort().map(i => `<option value="${i.replace(/"/g,'&quot;')}">`).join('');
+}
+
+const locationList = document.getElementById('locationList');
+if(locationList){
+locationList.innerHTML = Array.from(locations).sort().map(l => `<option value="${l.replace(/"/g,'&quot;')}">`).join('');
+}
+}
+
+function attachCheckboxHighlight(){
+document.querySelectorAll('#dayGrid input[type="checkbox"], #timeGrid input[type="checkbox"]').forEach(cb => {
+cb.addEventListener('change', () => {
+cb.parentElement.classList.toggle('checked', cb.checked);
+});
+});
+}
+
+async function submitNewOffering(){
+const submitter = document.getElementById('submitterName').value.trim();
+const name = document.getElementById('offeringName').value.trim();
+const instructor = document.getElementById('offeringInstructor').value.trim();
+const location = document.getElementById('offeringLocation').value.trim();
+const level = document.getElementById('offeringLevel').value;
+const type = document.getElementById('offeringType').value;
+const capacity = document.getElementById('offeringCapacity').value.trim();
+const session = document.getElementById('offeringSession').value.trim();
+const description = document.getElementById('offeringDescription').value.trim();
+
+const days = Array.from(document.querySelectorAll('#dayGrid input[type="checkbox"]:checked')).map(c => c.value);
+const times = Array.from(document.querySelectorAll('#timeGrid input[type="checkbox"]:checked')).map(c => c.value);
+
+// Validation
+if(!submitter){ showStatus('⚠️ Please enter your name','error'); document.getElementById('submitterName').focus(); return; }
+if(!name){ showStatus('⚠️ Please enter an offering name','error'); document.getElementById('offeringName').focus(); return; }
+if(!instructor){ showStatus('⚠️ Please enter an instructor','error'); document.getElementById('offeringInstructor').focus(); return; }
+if(!level){ showStatus('⚠️ Please choose a level','error'); document.getElementById('offeringLevel').focus(); return; }
+if(!type){ showStatus('⚠️ Please choose a type','error'); document.getElementById('offeringType').focus(); return; }
+if(days.length === 0){ showStatus('⚠️ Please select at least one day','error'); return; }
+if(times.length === 0){ showStatus('⚠️ Please select at least one block','error'); return; }
+
+const offering = {
+submitter,
+name,
+instructor,
+location,
+day: days.join(','),
+time: times.join(','),
+capacity: capacity || '',
+level,
+type,
+description,
+session: session || currentSession
+};
+
+const btn = document.getElementById('submitOfferingBtn');
+btn.disabled = true;
+btn.textContent = '⏳ Submitting...';
+
+try {
+showStatus('Submitting offering...','success');
+const response = await fetch(API,{
+method:'POST',
+body:JSON.stringify({
+action:'submitOffering',
+offering
+})
+});
+const result = await response.json();
+
+if(result.success){
+showStatus(`✅ Submitted! "${name}" is awaiting admin review.`,'success');
+const successBox = document.getElementById('formSuccess');
+successBox.innerHTML = `<strong>✅ Submitted successfully!</strong><br>"${name}" has been sent to admins for review. You'll see it in the schedule once approved.`;
+successBox.classList.add('show');
+resetOfferingForm();
+setTimeout(() => successBox.classList.remove('show'), 8000);
+} else {
+showStatus('❌ Error: '+(result.message || 'Unknown error'),'error');
+}
+} catch(e){
+showStatus('❌ Error submitting: '+e.message,'error');
+} finally {
+btn.disabled = false;
+btn.textContent = '📨 Submit for Approval';
+}
+}
+
+function resetOfferingForm(){
+['submitterName','offeringName','offeringInstructor','offeringLocation','offeringCapacity','offeringDescription'].forEach(id => {
+const el = document.getElementById(id);
+if(el) el.value = '';
+});
+document.getElementById('offeringLevel').value = '';
+document.getElementById('offeringType').value = '';
+document.getElementById('offeringSession').value = currentSession;
+document.querySelectorAll('#addOffering input[type="checkbox"]').forEach(c => {
+c.checked = false;
+c.parentElement.classList.remove('checked');
+});
+}
+
 function switchTab(i){
-// If switching to "My Schedule" tab (index 1), check if student has been loaded
 if(i === 1){
 const studentName = document.getElementById('studentName').value;
 const hasSchedule = Object.keys(selected).length > 0;
-
-if(!studentName){
-showStatus('⚠️ Please select a student and enter passcode first','error');
-return;
+if(!studentName){ showStatus('⚠️ Please select a student and enter passcode first','error'); return; }
+if(!hasSchedule){ showStatus('⚠️ Please load schedule with correct passcode first','error'); return; }
 }
 
-if(!hasSchedule){
-showStatus('⚠️ Please load schedule with correct passcode first','error');
-return;
-}
-}
-
-// If switching to Offering Descriptions tab (index 2), render catalog
-if(i === 2){
-renderCourseCatalog();
+if(i === 2){ renderCourseCatalog(); }
+if(i === 3){
+populateOfferingFormSuggestions();
+attachCheckboxHighlight();
 }
 
 document.querySelectorAll('.tab').forEach((t,idx)=>{
@@ -1046,7 +1125,7 @@ const el=document.getElementById('status');
 el.textContent=msg;
 el.className='status-'+type;
 el.style.display='block';
-setTimeout(()=>el.style.display='none',3000);
+setTimeout(()=>el.style.display='none',4000);
 }
 
 function checkURLParams(){
