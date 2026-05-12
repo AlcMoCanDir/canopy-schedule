@@ -79,7 +79,7 @@ body{background:white;padding:0;margin:0}
 .modal-header h2{color:#333}
 .modal-body{padding:10px 0}
 .modal-footer,.close,.tabs,.tab-content:not(.active),.btn,h1,h2:not(#studentScheduleModalTitle){display:none!important}
-.tab-content,#students,#attendance,#offerings,#requests,.stats,.actions,#studentsContainer,#offeringsContainer,#attendanceContainer,#requestsContainer,#offeringProposals,#offeringProposalsContainer{display:none!important}
+.tab-content,#students,#attendance,#offerings,#requests,#offeringProposals,.stats,.actions,#studentsContainer,#offeringsContainer,#attendanceContainer,#requestsContainer,#offeringProposalsContainer{display:none!important}
 button[title="Add note"]{display:none!important}
 #studentScheduleModal{display:block!important}
 .print-header{display:block!important;text-align:center;margin-bottom:15px}
@@ -263,7 +263,7 @@ function deleteOfferingNote(){}
 <div class="actions">
 <div>
 <strong>Offering Proposals</strong><br>
-<span style="font-size:12px;color:#666">Review offerings submitted from schedule.html before they go live.</span>
+<span style="font-size:13px;color:#666">Review offerings submitted from schedule.html before adding them to the live schedule.</span>
 </div>
 <button class="btn btn-secondary" onclick="loadOfferingProposals()">🔄 Refresh</button>
 </div>
@@ -273,6 +273,7 @@ function deleteOfferingNote(){}
 </div>
 </div>
 </div>
+
 
 </div>
 
@@ -651,6 +652,96 @@ else{msg(d.message||'Error','error');if(onError)onError(d)}
 }catch(e){msg('❌ '+e.message,'error')}
 }
 
+loadOfferingProposals = async function(){
+try{
+const container=document.getElementById('offeringProposalsContainer');
+if(!container){msg('❌ Offering Proposals container not found','error');return;}
+container.innerHTML='<div class="loading"><div class="spinner"></div>Loading proposals...</div>';
+
+const r=await fetch(`${API}?action=getOfferingProposals`);
+const d=await r.json();
+
+if(!d.success){
+container.innerHTML=`<div class="empty">⚠️<br>${d.message||'Could not load offering proposals'}</div>`;
+msg(d.message||'Could not load offering proposals','error');
+return;
+}
+
+offeringProposals=d.proposals||[];
+renderOfferingProposals();
+msg('✅ Offering proposals loaded','success');
+}catch(e){
+msg('❌ '+e.message,'error');
+}
+}
+
+function renderOfferingProposals(){
+const c=document.getElementById('offeringProposalsContainer');
+const pendingOnly=offeringProposals.filter(p=>String(p.status||'pending').toLowerCase()==='pending');
+
+if(!pendingOnly.length){
+c.innerHTML='<div class="empty">✅<br>No pending offering proposals</div>';
+return;
+}
+
+let html='';
+
+pendingOnly.forEach(p=>{
+const safeName=String(p.name||'Untitled Offering').replace(/'/g,"\\'");
+html+=`
+<div class="request-card">
+<div class="request-header">
+<div>
+<div class="request-student">${p.name||'Untitled Offering'}</div>
+<div style="font-size:12px;color:#999">
+Submitted by: ${p.submitter||'Unknown'}<br>
+${p.submitted ? new Date(p.submitted).toLocaleString() : ''}
+</div>
+</div>
+<div><span class="badge badge-pending">PENDING</span></div>
+</div>
+
+<div class="class-row">
+<div class="class-info">
+<div class="class-name">${p.name||'Untitled Offering'}</div>
+<div class="class-details">
+👤 ${p.instructor||'TBA'}<br>
+📍 ${p.location||'TBA'}<br>
+📅 ${p.day||'TBA'}<br>
+🕐 ${p.time||'TBA'}<br>
+📊 ${p.level||'TBA'} | ${p.type||'TBA'} | Capacity: ${p.capacity||'Unlimited'}
+</div>
+${p.description ? `<div style="margin-top:10px;font-size:12px;color:#444;line-height:1.5">${p.description}</div>` : ''}
+</div>
+</div>
+
+<div class="group-actions">
+<button class="btn btn-success btn-small" onclick="approveOfferingProposal('${p.proposalId}','${safeName}')">✓ Approve</button>
+<button class="btn btn-danger btn-small" onclick="denyOfferingProposal('${p.proposalId}','${safeName}')">✗ Deny</button>
+</div>
+</div>`;
+});
+
+c.innerHTML=html;
+}
+
+async function approveOfferingProposal(proposalId,name){
+if(!confirm(`Approve "${name}" and add it to the live schedule?`))return;
+apiCall('approveOfferingProposal',{proposalId},async()=>{
+msg('✅ Offering approved and added to schedule','success');
+await loadOfferingProposals();
+if(typeof loadOfferings==='function')await loadOfferings();
+});
+}
+
+async function denyOfferingProposal(proposalId,name){
+if(!confirm(`Deny "${name}"?`))return;
+apiCall('denyOfferingProposal',{proposalId},async()=>{
+msg('✅ Offering proposal denied','success');
+await loadOfferingProposals();
+});
+}
+
 loadPendingRequests = async function(){
 try{
 pendingLoaded=true;
@@ -701,94 +792,6 @@ html+=`<div class="group-actions">
 </div></div>`;
 });
 c.innerHTML=html;
-}
-
-
-// === OFFERING PROPOSALS FROM SCHEDULE.HTML ADD OFFERING FORM ===
-loadOfferingProposals = async function(){
-try{
-document.getElementById('offeringProposalsContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading offering proposals...</div>';
-const r=await fetch(`${API}?action=getOfferingProposals`);
-const d=await r.json();
-if(d.success===false){
-msg(d.message||'Error loading offering proposals','error');
-offeringProposals=[];
-}else{
-offeringProposals=d.proposals||[];
-}
-renderOfferingProposals();
-msg('✅ Offering proposals loaded','success');
-}catch(e){msg('❌ '+e.message,'error')}
-}
-
-function escapeForHtml(value){
-return String(value||'')
-.replace(/&/g,'&amp;')
-.replace(/</g,'&lt;')
-.replace(/>/g,'&gt;')
-.replace(/"/g,'&quot;')
-.replace(/'/g,'&#39;');
-}
-
-function escapeForJs(value){
-return String(value||'').replace(/\/g,'\\').replace(/'/g,"\'").replace(/
-/g,' ');
-}
-
-function renderOfferingProposals(){
-const c=document.getElementById('offeringProposalsContainer');
-const proposals=(offeringProposals||[]).filter(p=>(p.status||'pending').toLowerCase()==='pending');
-if(!proposals.length){c.innerHTML='<div class="empty">✅<br>No pending offering proposals</div>';return}
-let html='';
-proposals.forEach(p=>{
-const proposalId=escapeForJs(p.proposalId);
-const submitted=p.submitted?new Date(p.submitted).toLocaleString():'Unknown';
-html+=`<div class="request-card">
-<div class="request-header">
-<div>
-<div class="request-student">${escapeForHtml(p.name)}</div>
-<div style="font-size:12px;color:#999">Submitted by: ${escapeForHtml(p.submitter||'Unknown')}<br>Submitted: ${escapeForHtml(submitted)}</div>
-</div>
-<div><span class="badge badge-pending">PENDING</span></div>
-</div>
-<div class="class-row">
-<div class="class-info">
-<div class="class-name">${escapeForHtml(p.name)}</div>
-<div class="class-details">
-👤 ${escapeForHtml(p.instructor||'TBA')}<br>
-📍 ${escapeForHtml(p.location||'TBA')}<br>
-📅 ${escapeForHtml(p.day||'TBA')}<br>
-🕐 ${escapeForHtml(p.time||'TBA')}<br>
-📊 ${escapeForHtml(p.level||'TBA')} | ${escapeForHtml(p.type||'TBA')} | Capacity: ${escapeForHtml(p.capacity||'Unlimited')}<br>
-🗓️ Session: ${escapeForHtml(p.session||'')}
-</div>
-${p.description?`<div style="font-size:12px;color:#444;margin-top:8px;line-height:1.4">${escapeForHtml(p.description)}</div>`:''}
-</div>
-</div>
-<div class="group-actions">
-<button class="btn btn-success btn-small" onclick="approveOfferingProposal('${proposalId}')">✓ Approve</button>
-<button class="btn btn-danger btn-small" onclick="denyOfferingProposal('${proposalId}')">✗ Deny</button>
-</div>
-</div>`;
-});
-c.innerHTML=html;
-}
-
-async function approveOfferingProposal(proposalId){
-if(!confirm('Approve this offering and add it to the live schedule?'))return;
-apiCall('approveOfferingProposal',{proposalId},async()=>{
-msg('✅ Offering approved and added to schedule','success');
-await loadOfferingProposals();
-await loadOfferings();
-});
-}
-
-async function denyOfferingProposal(proposalId){
-if(!confirm('Deny this offering proposal?'))return;
-apiCall('denyOfferingProposal',{proposalId},async()=>{
-msg('✅ Offering proposal denied','success');
-await loadOfferingProposals();
-});
 }
 
 async function approveClass(requestId,offeringId,studentName,className){
