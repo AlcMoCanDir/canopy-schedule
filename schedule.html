@@ -57,7 +57,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 .catalog-badge{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
 .catalog-type-commit{background:#ffebee;color:#c62828}
 .catalog-type-drop-in{background:#e8f5e9;color:#2e7d32}
-.catalog-level{background:#e3f2fd;color:#1565c0}
+.catalog-group{background:#e3f2fd;color:#1565c0}
 .catalog-instructor{color:#666;font-size:14px;margin-bottom:8px}
 .catalog-instructor-icon{margin-right:4px}
 .catalog-schedule{background:#f8f9fa;padding:10px;border-radius:4px;margin-bottom:12px;font-size:13px}
@@ -205,12 +205,12 @@ Browse all available offerings with full descriptions
 <input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Search by name, instructor, or description..." onkeyup="filterCatalog()">
 
 <div class="catalog-filters">
-<strong style="margin-right:10px;align-self:center">Filter by Level:</strong>
-<button class="catalog-filter-btn active" data-filter="all" onclick="setLevelFilter('all')">All Levels</button>
-<button class="catalog-filter-btn" data-filter="EC" onclick="setLevelFilter('EC')">EC</button>
-<button class="catalog-filter-btn" data-filter="Saplings" onclick="setLevelFilter('Saplings')">Saplings</button>
-<button class="catalog-filter-btn" data-filter="Canopy" onclick="setLevelFilter('Canopy')">Canopy</button>
-<button class="catalog-filter-btn" data-filter="Acorns" onclick="setLevelFilter('Acorns')">Acorns</button>
+<strong style="margin-right:10px;align-self:center">Filter by Group:</strong>
+<button class="catalog-filter-btn active" data-filter="all" onclick="setGroupFilter('all')">All Groups</button>
+<button class="catalog-filter-btn" data-filter="EC" onclick="setGroupFilter('EC')">EC</button>
+<button class="catalog-filter-btn" data-filter="Saplings" onclick="setGroupFilter('Saplings')">Saplings</button>
+<button class="catalog-filter-btn" data-filter="Canopy" onclick="setGroupFilter('Canopy')">Canopy</button>
+<button class="catalog-filter-btn" data-filter="Acorns" onclick="setGroupFilter('Acorns')">Acorns</button>
 </div>
 
 <div class="catalog-filters">
@@ -234,7 +234,7 @@ Browse all available offerings with full descriptions
 <div id="catalogContainer" style="max-width:900px;margin:0 auto"></div>
 </div>
 
-<!-- ===== NEW: Add Offering Tab ===== -->
+<!-- Add Offering Tab -->
 <div id="addOffering" class="tab-content">
 <h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">➕ Submit a New Offering</h2>
 <div class="form-section">
@@ -270,9 +270,9 @@ Browse all available offerings with full descriptions
 
 <div class="form-row">
 <div class="form-group">
-<label for="offeringLevel">Level<span class="req">*</span></label>
-<select id="offeringLevel" required>
-<option value="">Choose level...</option>
+<label for="offeringGroup">Group<span class="req">*</span></label>
+<select id="offeringGroup" required>
+<option value="">Choose group...</option>
 <option value="EC">EC</option>
 <option value="Saplings">Saplings</option>
 <option value="Canopy">Canopy</option>
@@ -318,7 +318,7 @@ Browse all available offerings with full descriptions
 </div>
 <div class="form-group">
 <label for="offeringSession">Session<span class="hint">(auto-filled — change if needed)</span></label>
-<input type="text" id="offeringSession" placeholder="e.g., Session 3 (2026)">
+<input type="text" id="offeringSession" placeholder="">
 </div>
 </div>
 
@@ -338,7 +338,7 @@ Browse all available offerings with full descriptions
 </div>
 
 <script>
-console.log('===== SCHEDULE.HTML VERSION: 2026-05-12 + ADD OFFERING FORM =====');
+console.log('===== SCHEDULE.HTML VERSION: 2026-05-12 + Session Config + Groups =====');
 const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 const TIMES=[
 {name:'Block 1',time:'10:00-10:45',display:'10:00-10:45 am'},
@@ -369,8 +369,8 @@ return BLOCK_TIME_MAP[trimmed] || trimmed;
 
 let offerings=[],selected={},enrollmentCounts={},descriptions={},studentNames=[];
 let approvedOfferings=[],pendingOfferings=[];
-let catalogFilters={level:'all',type:'all',day:'all',search:''};
-let currentSession='';
+let catalogFilters={group:'all',type:'all',day:'all',search:''};
+let sessionConfig={sessionName:'',sessionDates:'',fullSessionName:''};
 
 async function init(){
 try{
@@ -379,13 +379,16 @@ showStatus('Loading...','success');
 const fetchWithTimeout = (url, timeout = 10000) => {
   return Promise.race([
     fetch(url),
-    new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Request timeout')), timeout)
-    )
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), timeout))
   ]);
 };
 
-const [off, enroll, students] = await Promise.all([
+// Fetch session config + all data in parallel
+const [sessionRes, off, enroll, students] = await Promise.all([
+  fetchWithTimeout(`${API}?action=getSessionConfig`).then(r=>r.json()).catch(e=>{
+    console.error('Error loading session config:', e);
+    return {success:false};
+  }),
   fetchWithTimeout(`${API}?action=loadOfferings`).then(r=>r.json()).catch(e=>{
     console.error('Error loading offerings:', e);
     return {offerings: []};
@@ -400,21 +403,23 @@ const [off, enroll, students] = await Promise.all([
   })
 ]);
 
+// Apply session config
+if(sessionRes && sessionRes.success){
+sessionConfig = sessionRes;
+} else {
+sessionConfig = {sessionName:'Session', sessionDates:'', fullSessionName:'Session'};
+}
+
 if (students && students.success && Array.isArray(students.students)) {
   studentNames = students.students;
 } else {
-  const fallback = await fetchWithTimeout(`${API}?action=loadStudents`).then(r=>r.json()).catch(e=>({students: []}));
-  if (fallback.students && Array.isArray(fallback.students)) {
-    studentNames = fallback.students.map(name => typeof name === 'string' ? {id: '', name: name} : name);
-  } else {
-    studentNames = [];
-  }
+  studentNames = [];
 }
 
 offerings=off.offerings||[];
 enrollmentCounts=enroll.counts||{};
 
-detectAndSetSession();
+applySessionToPage();
 loadDescriptions();
 populateStudentDropdown();
 populateOfferingFormSuggestions();
@@ -428,33 +433,16 @@ showStatus('Error loading: '+e.message,'error');
 }
 }
 
-function detectAndSetSession(){
-const now = new Date();
-const currentMonth = now.getMonth();
-const currentYear = now.getFullYear();
-
-let sessionName = 'Session 3';
-
-if(currentMonth >= 7 && currentMonth <= 9){ sessionName = 'Session 1'; }
-else if(currentMonth >= 10 && currentMonth <= 11){ sessionName = 'Session 2'; }
-else if(currentMonth >= 0 && currentMonth <= 1){ sessionName = 'Session 3'; }
-else if(currentMonth >= 2 && currentMonth <= 3){ sessionName = 'Session 4'; }
-else if(currentMonth >= 4 && currentMonth <= 5){ sessionName = 'Session 5'; }
-else if(currentMonth === 6){ sessionName = 'Summer Break'; }
-
-if(offerings.length > 0 && offerings[0].session){
-sessionName = offerings[0].session;
-} else {
-sessionName = `${sessionName} (${currentYear})`;
-}
-
-currentSession = sessionName;
-document.getElementById('pageTitle').textContent = `ALC Mosaic - ${sessionName}`;
-document.title = `ALC Mosaic - ${sessionName}`;
+function applySessionToPage(){
+const title = `ALC Mosaic - ${sessionConfig.fullSessionName}`;
+document.getElementById('pageTitle').textContent = title;
+document.title = title;
 
 // Pre-fill session in form
 const sessionInput = document.getElementById('offeringSession');
-if(sessionInput && !sessionInput.value) sessionInput.value = sessionName;
+if(sessionInput && !sessionInput.value){
+sessionInput.value = sessionConfig.fullSessionName;
+}
 }
 
 function populateStudentDropdown(){
@@ -863,10 +851,10 @@ showStatus('❌ Error: '+result.message,'error');
 }
 
 // ===== Catalog Filters =====
-function setLevelFilter(level){
-catalogFilters.level = level;
+function setGroupFilter(group){
+catalogFilters.group = group;
 document.querySelectorAll('[data-filter]').forEach(btn => {
-btn.classList.toggle('active', btn.dataset.filter === level);
+btn.classList.toggle('active', btn.dataset.filter === group);
 });
 renderCourseCatalog();
 }
@@ -893,7 +881,7 @@ renderCourseCatalog();
 }
 
 function matchesFilters(offering){
-if(catalogFilters.level !== 'all' && offering.level !== catalogFilters.level) return false;
+if(catalogFilters.group !== 'all' && offering.level !== catalogFilters.group) return false;
 if(catalogFilters.type !== 'all' && offering.type !== catalogFilters.type) return false;
 if(catalogFilters.day !== 'all'){
 const days = offering.day ? offering.day.toLowerCase().split(',').map(d => d.trim()) : [];
@@ -920,23 +908,23 @@ container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No o
 return;
 }
 
-const groupedByLevel = {};
+const groupedByGroup = {};
 filteredOfferings.forEach(o => {
-const level = o.level || 'Other';
-if(!groupedByLevel[level]) groupedByLevel[level] = [];
-groupedByLevel[level].push(o);
+const groupName = o.level || 'Other';
+if(!groupedByGroup[groupName]) groupedByGroup[groupName] = [];
+groupedByGroup[groupName].push(o);
 });
 
 let html = '';
 let totalCount = 0;
-const levelOrder = ['EC', 'Saplings', 'Canopy', 'Acorns', 'Other'];
-levelOrder.forEach(level => {
-if(!groupedByLevel[level] || groupedByLevel[level].length === 0) return;
+const groupOrder = ['EC', 'Saplings', 'Canopy', 'Acorns', 'Other'];
+groupOrder.forEach(groupName => {
+if(!groupedByGroup[groupName] || groupedByGroup[groupName].length === 0) return;
 
 html += `<div style="margin-bottom:40px">`;
-html += `<h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">${level} <span style="color:#666;font-size:16px;font-weight:normal">(${groupedByLevel[level].length} offering${groupedByLevel[level].length !== 1 ? 's' : ''})</span></h3>`;
+html += `<h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">${groupName} <span style="color:#666;font-size:16px;font-weight:normal">(${groupedByGroup[groupName].length} offering${groupedByGroup[groupName].length !== 1 ? 's' : ''})</span></h3>`;
 
-groupedByLevel[level].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
+groupedByGroup[groupName].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
 totalCount++;
 const desc = descriptions[o.name] || o.description || '';
 const enrolled = enrollmentCounts[o.id] || 0;
@@ -959,8 +947,8 @@ html += `
 <h4 class="catalog-title">${o.name}</h4>
 </div>
 <div class="catalog-meta">
-<span class="catalog-badge catalog-type-${o.type.toLowerCase()}">${o.type}</span>
-<span class="catalog-badge catalog-level">${o.level}</span>
+<span class="catalog-badge catalog-type-${(o.type||'').toLowerCase()}">${o.type}</span>
+<span class="catalog-badge catalog-group">${o.level}</span>
 </div>
 <div class="catalog-instructor">
 <span class="catalog-instructor-icon">👤</span> ${o.instructor}
@@ -986,7 +974,7 @@ Showing <strong>${totalCount}</strong> of <strong>${offerings.length}</strong> t
 container.innerHTML = filterSummary + html;
 }
 
-// ===== NEW: Add Offering Form =====
+// ===== Add Offering Form =====
 function populateOfferingFormSuggestions(){
 const instructors = new Set();
 const locations = new Set();
@@ -1019,7 +1007,7 @@ const submitter = document.getElementById('submitterName').value.trim();
 const name = document.getElementById('offeringName').value.trim();
 const instructor = document.getElementById('offeringInstructor').value.trim();
 const location = document.getElementById('offeringLocation').value.trim();
-const level = document.getElementById('offeringLevel').value;
+const group = document.getElementById('offeringGroup').value;
 const type = document.getElementById('offeringType').value;
 const capacity = document.getElementById('offeringCapacity').value.trim();
 const session = document.getElementById('offeringSession').value.trim();
@@ -1028,15 +1016,15 @@ const description = document.getElementById('offeringDescription').value.trim();
 const days = Array.from(document.querySelectorAll('#dayGrid input[type="checkbox"]:checked')).map(c => c.value);
 const times = Array.from(document.querySelectorAll('#timeGrid input[type="checkbox"]:checked')).map(c => c.value);
 
-// Validation
 if(!submitter){ showStatus('⚠️ Please enter your name','error'); document.getElementById('submitterName').focus(); return; }
 if(!name){ showStatus('⚠️ Please enter an offering name','error'); document.getElementById('offeringName').focus(); return; }
 if(!instructor){ showStatus('⚠️ Please enter an instructor','error'); document.getElementById('offeringInstructor').focus(); return; }
-if(!level){ showStatus('⚠️ Please choose a level','error'); document.getElementById('offeringLevel').focus(); return; }
+if(!group){ showStatus('⚠️ Please choose a group','error'); document.getElementById('offeringGroup').focus(); return; }
 if(!type){ showStatus('⚠️ Please choose a type','error'); document.getElementById('offeringType').focus(); return; }
 if(days.length === 0){ showStatus('⚠️ Please select at least one day','error'); return; }
 if(times.length === 0){ showStatus('⚠️ Please select at least one block','error'); return; }
 
+// Backend still expects "level" field — we send the group as level for compat
 const offering = {
 submitter,
 name,
@@ -1045,10 +1033,10 @@ location,
 day: days.join(','),
 time: times.join(','),
 capacity: capacity || '',
-level,
+level: group,
 type,
 description,
-session: session || currentSession
+session: session || sessionConfig.fullSessionName
 };
 
 const btn = document.getElementById('submitOfferingBtn');
@@ -1089,9 +1077,9 @@ function resetOfferingForm(){
 const el = document.getElementById(id);
 if(el) el.value = '';
 });
-document.getElementById('offeringLevel').value = '';
+document.getElementById('offeringGroup').value = '';
 document.getElementById('offeringType').value = '';
-document.getElementById('offeringSession').value = currentSession;
+document.getElementById('offeringSession').value = sessionConfig.fullSessionName;
 document.querySelectorAll('#addOffering input[type="checkbox"]').forEach(c => {
 c.checked = false;
 c.parentElement.classList.remove('checked');
