@@ -5,20 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ALC Mosaic — Facilitator Dashboard</title>
 <style>
-/* ── Reset & Base ─────────────────────────────────────────── */
 *{box-sizing:border-box}
 body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5}
 .container{max-width:1600px;margin:0 auto;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
 h1{text-align:center;color:#2196F3;margin:0 0 4px}
 .subtitle{text-align:center;color:#888;font-size:14px;margin:0 0 20px}
 
-/* ── Status banner ───────────────────────────────────────── */
 #status{padding:12px;margin-bottom:16px;border-radius:4px;text-align:center;display:none;font-weight:600}
 .status-success{background:#d4edda;color:#155724}
 .status-error{background:#f8d7da;color:#721c24}
 .status-info{background:#cce5ff;color:#004085}
 
-/* ── Tabs ────────────────────────────────────────────────── */
+/* loading overlay shown on startup */
+#loadOverlay{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#loadOverlay.hidden{display:none}
+#loadOverlay p{font-size:16px;color:#555;margin:0}
+
 .tabs{display:flex;border-bottom:2px solid #ddd;margin-bottom:20px;gap:4px;flex-wrap:wrap}
 .tab{padding:10px 18px;cursor:pointer;background:#f0f0f0;border:none;border-radius:8px 8px 0 0;font-size:14px;font-weight:600;color:#555;transition:all .15s}
 .tab:hover{background:#e0e0e0}
@@ -26,7 +28,6 @@ h1{text-align:center;color:#2196F3;margin:0 0 4px}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
-/* ── Stat cards ──────────────────────────────────────────── */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:24px}
 .stat-card{padding:18px;border-radius:8px;text-align:center;color:white}
 .stat-card h3{margin:0;font-size:30px}
@@ -36,12 +37,10 @@ h1{text-align:center;color:#2196F3;margin:0 0 4px}
 .stat-orange{background:linear-gradient(135deg,#f093fb,#f5576c)}
 .stat-teal{background:linear-gradient(135deg,#11998e,#38ef7d)}
 
-/* ── Toolbar / actions bar ───────────────────────────────── */
 .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 15px;background:#f8f9fa;border-radius:6px;margin-bottom:16px}
 .toolbar label{font-weight:600;font-size:13px;color:#444;white-space:nowrap}
-.toolbar select,.toolbar input{padding:7px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px}
+.toolbar select,.toolbar input[type=text],.toolbar input[type=date]{padding:7px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px}
 
-/* ── Buttons ─────────────────────────────────────────────── */
 .btn{padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;border:none;border-radius:4px;color:white;transition:opacity .15s}
 .btn:hover{opacity:.85}
 .btn-primary{background:#4CAF50}
@@ -51,13 +50,11 @@ h1{text-align:center;color:#2196F3;margin:0 0 4px}
 .btn-grey{background:#757575}
 .btn-sm{padding:5px 11px;font-size:12px}
 
-/* ── Tables ──────────────────────────────────────────────── */
 table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
 th{background:#4CAF50;color:white;padding:10px 8px;text-align:left;position:sticky;top:0;z-index:5}
 td{padding:9px 8px;border-bottom:1px solid #eee;vertical-align:top}
 tr:hover td{background:#f0f7ff}
 
-/* ── Badges ──────────────────────────────────────────────── */
 .badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;text-transform:uppercase}
 .badge-pending{background:#fff3cd;color:#856404;border:1px solid #ffc107}
 .badge-approved{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
@@ -65,7 +62,6 @@ tr:hover td{background:#f0f7ff}
 .badge-commit{background:#ffcdd2;color:#c62828}
 .badge-dropin{background:#c8e6c9;color:#2e7d32}
 
-/* ── Request cards ───────────────────────────────────────── */
 .req-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .req-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:10px;border-bottom:2px solid #eee;margin-bottom:10px;gap:10px}
 .req-student{font-size:17px;font-weight:700;color:#2196F3}
@@ -76,14 +72,13 @@ tr:hover td{background:#f0f7ff}
 .class-row-detail{font-size:11px;color:#666;margin-top:2px}
 .req-footer{margin-top:10px;padding-top:10px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 
-/* ── Loading / empty ─────────────────────────────────────── */
 .loading{text-align:center;padding:50px 20px;color:#999}
 .spinner{border:4px solid #f3f3f3;border-top:4px solid #4CAF50;border-radius:50%;width:36px;height:36px;animation:spin 1s linear infinite;margin:0 auto 12px}
+.spinner-lg{width:52px;height:52px;border-width:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:60px 20px;color:#bbb;font-size:42px;line-height:1.4}
 .empty p{font-size:16px;margin:10px 0 0;color:#999}
 
-/* ── Modals ──────────────────────────────────────────────── */
 .modal{display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.5);overflow:auto}
 .modal-box{background:white;margin:3% auto;border-radius:8px;width:90%;max-width:580px;max-height:92vh;overflow-y:auto;box-shadow:0 4px 24px rgba(0,0,0,.25)}
 .modal-box.wide{max-width:1100px}
@@ -93,7 +88,6 @@ tr:hover td{background:#f0f7ff}
 .modal-body{padding:20px}
 .modal-foot{padding:14px 20px;background:#f8f9fa;border-radius:0 0 8px 8px;display:flex;justify-content:flex-end;gap:8px}
 
-/* ── Form elements ───────────────────────────────────────── */
 .fg{margin-bottom:15px}
 .fg label{display:block;font-weight:600;font-size:13px;color:#333;margin-bottom:5px}
 .fg input,.fg select,.fg textarea{width:100%;padding:9px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px;font-family:inherit}
@@ -101,136 +95,141 @@ tr:hover td{background:#f0f7ff}
 .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#4CAF50}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
-/* ── Schedule grid (student view) ────────────────────────── */
 .sched-grid{display:grid;grid-template-columns:90px repeat(5,1fr);border:1px solid #ccc;font-size:11px;width:100%}
 .sched-grid>div{border:1px solid #ddd;padding:6px}
 .sched-hdr{background:#4CAF50;color:white;font-weight:700;text-align:center}
 .sched-time{background:#f8f9fa;font-weight:700;text-align:center;font-size:10px;color:#555}
-.sched-lunch{background:#fff9e6;text-align:center;color:#999;grid-column:2/7}
+.sched-lunch{background:#fff9e6;text-align:center;color:#999;grid-column:2/7;display:flex;align-items:center;justify-content:center}
 .sched-cell{min-height:75px;background:#e6f0ff}
 .sched-cell.empty{background:white;text-align:center;color:#ddd;display:flex;align-items:center;justify-content:center}
 .sched-offering{font-weight:700;color:#2196F3;margin-bottom:2px}
 .sched-detail{font-size:10px;color:#666}
 
-/* ── Responsive ──────────────────────────────────────────── */
+/* learner search highlight */
+.search-highlight{background:#fff3cd;border-radius:2px;padding:0 1px}
+
 @media(max-width:768px){
   .toolbar{flex-direction:column;align-items:stretch}
   .form-row{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr}
 }
-
-/* ── Print ───────────────────────────────────────────────── */
 @media print{
   body{background:white;padding:0}
   .container{box-shadow:none;padding:8px}
-  .tabs,.toolbar,.btn,#status,.modal-foot,.modal-close{display:none!important}
+  .tabs,.toolbar,.btn,#status,.modal-foot,.modal-close,#loadOverlay{display:none!important}
   #schedModal{display:block!important;position:static;background:none}
   .modal-box{box-shadow:none;max-width:100%;margin:0;max-height:none}
   .modal-head{background:white!important;color:#000!important;border-bottom:2px solid #000}
   .modal-head h2{color:#000!important}
-  .sched-grid{font-size:9px}
   .sched-hdr{background:#4CAF50!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{size:landscape;margin:.4in}
 }
 </style>
 </head>
 <body>
+
+<!-- ── Full-page loading overlay ─────────────────────────── -->
+<div id="loadOverlay">
+  <div class="spinner spinner-lg"></div>
+  <p id="loadMsg">Loading dashboard…</p>
+</div>
+
 <div class="container">
+  <h1>🏫 ALC Mosaic — Facilitator Dashboard</h1>
+  <p class="subtitle" id="sessionLabel">Loading…</p>
+  <div id="status"></div>
 
-<h1>🏫 ALC Mosaic — Facilitator Dashboard</h1>
-<p class="subtitle" id="sessionLabel">Loading session info...</p>
-<div id="status"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">👥 Learners</button>
+    <button class="tab" onclick="switchTab(1)">📚 Offerings</button>
+    <button class="tab" onclick="switchTab(2)">⏳ Pending Requests</button>
+    <button class="tab" onclick="switchTab(3)">📝 Offering Proposals</button>
+  </div>
 
-<!-- ── TABS ───────────────────────────────────────────────── -->
-<div class="tabs">
-  <button class="tab active" onclick="switchTab(0)">👥 Learners</button>
-  <button class="tab" onclick="switchTab(1)">📚 Offerings</button>
-  <button class="tab" onclick="switchTab(2)">⏳ Pending Requests</button>
-  <button class="tab" onclick="switchTab(3)">📝 Offering Proposals</button>
+  <!-- ══ TAB 0 — LEARNERS ══════════════════════════════════ -->
+  <div class="tab-content active" id="tab-learners">
+    <div class="stats">
+      <div class="stat-card stat-blue"><h3 id="st-total">—</h3><p>Total Learners</p></div>
+      <div class="stat-card stat-green"><h3 id="st-scheduled">—</h3><p>Have a Schedule</p></div>
+      <div class="stat-card stat-orange"><h3 id="st-pending">—</h3><p>Pending Approval</p></div>
+      <div class="stat-card stat-teal"><h3 id="st-offerings">—</h3><p>Active Offerings</p></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-blue" onclick="refreshAll()">🔄 Refresh All</button>
+      <input type="text" id="learnerSearch" placeholder="🔍 Search learners…"
+             oninput="renderLearners()" style="flex:1;min-width:180px">
+    </div>
+    <div id="learnersContainer">
+      <div class="loading"><div class="spinner"></div><p>Loading learners…</p></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 1 — OFFERINGS ═════════════════════════════════ -->
+  <div class="tab-content" id="tab-offerings">
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="openCreateModal()">➕ New Offering</button>
+      <button class="btn btn-blue" onclick="loadOfferings()">🔄 Refresh</button>
+      <label>Sort:</label>
+      <select id="sortBy" onchange="renderOfferings()">
+        <option value="day">Day / Time</option>
+        <option value="name">Name A–Z</option>
+        <option value="instructor">Instructor A–Z</option>
+        <option value="enrollment">Enrollment ↓</option>
+      </select>
+      <label>Day:</label>
+      <select id="filterDay" onchange="renderOfferings()">
+        <option value="">All Days</option>
+        <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+        <option>Thursday</option><option>Friday</option>
+      </select>
+      <label>Type:</label>
+      <select id="filterType" onchange="renderOfferings()">
+        <option value="">All Types</option>
+        <option value="Commit">Commitment</option>
+        <option value="Drop-in">Drop-in</option>
+      </select>
+      <label>Group:</label>
+      <select id="filterGroup" onchange="renderOfferings()">
+        <option value="">All Groups</option>
+        <option>EC</option><option>Saplings</option><option>Canopy</option><option>Acorns</option>
+      </select>
+      <span style="margin-left:auto;font-size:13px;color:#666">
+        Showing <strong id="offeringCount">—</strong>
+      </span>
+    </div>
+    <div id="offeringsContainer">
+      <div class="loading"><div class="spinner"></div><p>Loading offerings…</p></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 2 — PENDING REQUESTS ══════════════════════════ -->
+  <div class="tab-content" id="tab-pending">
+    <div class="toolbar">
+      <button class="btn btn-blue" onclick="loadPending()">🔄 Refresh</button>
+      <button class="btn btn-primary" id="approveAllBtn" onclick="approveAllPending()" style="display:none">
+        ✅ Approve All
+      </button>
+      <span id="pendingCount" style="font-size:13px;color:#666"></span>
+    </div>
+    <div id="pendingContainer">
+      <div class="loading"><div class="spinner"></div><p>Loading pending requests…</p></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 3 — OFFERING PROPOSALS ════════════════════════ -->
+  <div class="tab-content" id="tab-proposals">
+    <div class="toolbar">
+      <button class="btn btn-blue" onclick="loadProposals()">🔄 Refresh</button>
+      <span id="proposalCount" style="font-size:13px;color:#666"></span>
+    </div>
+    <div id="proposalsContainer">
+      <div class="loading"><div class="spinner"></div><p>Loading proposals…</p></div>
+    </div>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     TAB 0 — LEARNERS
-     ══════════════════════════════════════════════════════════ -->
-<div class="tab-content active" id="tab-learners">
-  <div class="stats" id="learnerStats">
-    <div class="stat-card stat-blue"><h3 id="st-total">—</h3><p>Total Learners</p></div>
-    <div class="stat-card stat-green"><h3 id="st-scheduled">—</h3><p>Have a Schedule</p></div>
-    <div class="stat-card stat-orange"><h3 id="st-pending">—</h3><p>Pending Approval</p></div>
-    <div class="stat-card stat-teal"><h3 id="st-offerings">—</h3><p>Active Offerings</p></div>
-  </div>
-  <div class="toolbar">
-    <button class="btn btn-blue" onclick="loadLearners()">🔄 Refresh</button>
-    <input type="text" id="learnerSearch" placeholder="🔍 Search learners…" oninput="filterLearners()" style="flex:1;min-width:180px">
-  </div>
-  <div id="learnersContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load learners</p></div></div>
-</div>
 
-<!-- ══════════════════════════════════════════════════════════
-     TAB 1 — OFFERINGS
-     ══════════════════════════════════════════════════════════ -->
-<div class="tab-content" id="tab-offerings">
-  <div class="toolbar">
-    <button class="btn btn-primary" onclick="openCreateModal()">➕ New Offering</button>
-    <button class="btn btn-blue" onclick="loadOfferings()">🔄 Refresh</button>
-    <label>Sort:</label>
-    <select id="sortBy" onchange="renderOfferings()">
-      <option value="day">Day / Time</option>
-      <option value="name">Name A–Z</option>
-      <option value="instructor">Instructor A–Z</option>
-      <option value="enrollment">Enrollment ↓</option>
-    </select>
-    <label>Day:</label>
-    <select id="filterDay" onchange="renderOfferings()">
-      <option value="">All Days</option>
-      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
-      <option>Thursday</option><option>Friday</option>
-    </select>
-    <label>Type:</label>
-    <select id="filterType" onchange="renderOfferings()">
-      <option value="">All Types</option>
-      <option value="Commit">Commitment</option>
-      <option value="Drop-in">Drop-in</option>
-    </select>
-    <label>Group:</label>
-    <select id="filterGroup" onchange="renderOfferings()">
-      <option value="">All Groups</option>
-      <option>EC</option><option>Saplings</option><option>Canopy</option><option>Acorns</option>
-    </select>
-    <span style="margin-left:auto;font-size:13px;color:#666">Showing <strong id="offeringCount">—</strong></span>
-  </div>
-  <div id="offeringsContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load offerings</p></div></div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     TAB 2 — PENDING SCHEDULE REQUESTS
-     ══════════════════════════════════════════════════════════ -->
-<div class="tab-content" id="tab-pending">
-  <div class="toolbar">
-    <button class="btn btn-blue" onclick="loadPending()">🔄 Refresh</button>
-    <button class="btn btn-primary" onclick="approveAllPending()" id="approveAllBtn" style="display:none">✅ Approve All</button>
-    <span id="pendingCount" style="font-size:13px;color:#666"></span>
-  </div>
-  <div id="pendingContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load pending requests</p></div></div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     TAB 3 — OFFERING PROPOSALS
-     ══════════════════════════════════════════════════════════ -->
-<div class="tab-content" id="tab-proposals">
-  <div class="toolbar">
-    <button class="btn btn-blue" onclick="loadProposals()">🔄 Refresh</button>
-    <span id="proposalCount" style="font-size:13px;color:#666"></span>
-  </div>
-  <div id="proposalsContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load proposals</p></div></div>
-</div>
-
-</div><!-- /container -->
-
-
-<!-- ══════════════════════════════════════════════════════════
-     MODAL — STUDENT SCHEDULE
-     ══════════════════════════════════════════════════════════ -->
+<!-- ══ MODAL — STUDENT SCHEDULE ══════════════════════════════ -->
 <div class="modal" id="schedModal">
   <div class="modal-box wide">
     <div class="modal-head">
@@ -245,9 +244,7 @@ tr:hover td{background:#f0f7ff}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     MODAL — CREATE / EDIT OFFERING
-     ══════════════════════════════════════════════════════════ -->
+<!-- ══ MODAL — CREATE / EDIT OFFERING ════════════════════════ -->
 <div class="modal" id="offeringModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -257,58 +254,42 @@ tr:hover td{background:#f0f7ff}
     <div class="modal-body">
       <input type="hidden" id="editId">
       <div class="form-row">
-        <div class="fg">
-          <label>Offering Name *</label>
-          <input type="text" id="fName" placeholder="e.g. Math(A)">
-        </div>
-        <div class="fg">
-          <label>Instructor *</label>
-          <input type="text" id="fInstructor" placeholder="e.g. Anna">
-        </div>
+        <div class="fg"><label>Offering Name *</label>
+          <input type="text" id="fName" placeholder="e.g. Math(A)"></div>
+        <div class="fg"><label>Instructor *</label>
+          <input type="text" id="fInstructor" placeholder="e.g. Anna"></div>
       </div>
       <div class="form-row">
-        <div class="fg">
-          <label>Location</label>
-          <input type="text" id="fLocation" placeholder="e.g. Room 101">
-        </div>
-        <div class="fg">
-          <label>Capacity</label>
-          <input type="number" id="fCapacity" placeholder="12" min="1">
-        </div>
+        <div class="fg"><label>Location</label>
+          <input type="text" id="fLocation" placeholder="e.g. Room 101"></div>
+        <div class="fg"><label>Capacity</label>
+          <input type="number" id="fCapacity" placeholder="12" min="1"></div>
       </div>
       <div class="form-row">
-        <div class="fg">
-          <label>Group (Level)</label>
+        <div class="fg"><label>Group (Level)</label>
           <select id="fLevel">
             <option value="">— Any —</option>
-            <option value="EC">EC</option>
-            <option value="Saplings">Saplings</option>
-            <option value="Canopy">Canopy</option>
-            <option value="Acorns">Acorns</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Type *</label>
+            <option value="EC">EC</option><option value="Saplings">Saplings</option>
+            <option value="Canopy">Canopy</option><option value="Acorns">Acorns</option>
+          </select></div>
+        <div class="fg"><label>Type *</label>
           <select id="fType">
             <option value="">— Select —</option>
             <option value="Commit">Commitment</option>
             <option value="Drop-in">Drop-in</option>
-          </select>
-        </div>
+          </select></div>
       </div>
       <div class="form-row">
         <div class="fg">
-          <label>Days * <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small></label>
+          <label>Days * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
           <select id="fDays" multiple size="5">
-            <option value="monday">Monday</option>
-            <option value="tuesday">Tuesday</option>
-            <option value="wednesday">Wednesday</option>
-            <option value="thursday">Thursday</option>
+            <option value="monday">Monday</option><option value="tuesday">Tuesday</option>
+            <option value="wednesday">Wednesday</option><option value="thursday">Thursday</option>
             <option value="friday">Friday</option>
           </select>
         </div>
         <div class="fg">
-          <label>Blocks * <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small></label>
+          <label>Blocks * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
           <select id="fBlocks" multiple size="5">
             <option value="10:00-10:45">Block 1 — 10:00–10:45</option>
             <option value="10:50-11:35">Block 2 — 10:50–11:35</option>
@@ -318,14 +299,10 @@ tr:hover td{background:#f0f7ff}
           </select>
         </div>
       </div>
-      <div class="fg">
-        <label>Description</label>
-        <textarea id="fDesc" rows="3" placeholder="What will learners do in this offering?"></textarea>
-      </div>
-      <div class="fg">
-        <label>Session</label>
-        <input type="text" id="fSession">
-      </div>
+      <div class="fg"><label>Description</label>
+        <textarea id="fDesc" rows="3" placeholder="What will learners do?"></textarea></div>
+      <div class="fg"><label>Session</label>
+        <input type="text" id="fSession"></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-grey" onclick="closeModal('offeringModal')">Cancel</button>
@@ -334,9 +311,7 @@ tr:hover td{background:#f0f7ff}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     MODAL — ENROLLED LEARNERS
-     ══════════════════════════════════════════════════════════ -->
+<!-- ══ MODAL — ENROLLED LEARNERS ═════════════════════════════ -->
 <div class="modal" id="enrolledModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -350,25 +325,30 @@ tr:hover td{background:#f0f7ff}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     MODAL — ADD LEARNER TO OFFERING
-     ══════════════════════════════════════════════════════════ -->
+<!-- ══ MODAL — ADD LEARNER TO OFFERING ═══════════════════════ -->
 <div class="modal" id="addLearnerModal">
   <div class="modal-box">
     <div class="modal-head">
-      <h2 id="addLearnerTitle">Add Learner</h2>
+      <h2 id="addLearnerTitle">Add Learner to Offering</h2>
       <button class="modal-close" onclick="closeModal('addLearnerModal')">×</button>
     </div>
     <div class="modal-body">
       <p id="addLearnerOffering" style="font-weight:700;color:#2196F3;margin-bottom:12px"></p>
       <div class="fg">
-        <label>Select Learners <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small></label>
-        <select id="addLearnerSelect" multiple size="10"></select>
+        <label>Search & Select Learners
+          <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small>
+        </label>
+        <input type="text" id="addLearnerSearch" placeholder="🔍 Filter learner list…"
+               oninput="filterAddLearnerList()" style="margin-bottom:8px">
+        <select id="addLearnerSelect" multiple size="12" style="width:100%"></select>
+        <p style="font-size:11px;color:#888;margin:4px 0 0">
+          <span id="addLearnerCount">0</span> learner(s) available
+        </p>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-grey" onclick="closeModal('addLearnerModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="doAddLearner()">➕ Add</button>
+      <button class="btn btn-primary" onclick="doAddLearner()">➕ Add Selected</button>
     </div>
   </div>
 </div>
@@ -376,6 +356,7 @@ tr:hover td{background:#f0f7ff}
 
 <script>
 'use strict';
+
 // ─────────────────────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────────────────────
@@ -390,171 +371,203 @@ const TIMES = [
   { label:'Block 5', time:'1:55-2:45' }
 ];
 const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
-
-// ─────────────────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────────────────
-let state = {
-  session:    {},
-  learners:   [],   // from loadAll — includes classes JSON
-  students:   [],   // from getAllStudents — { id, name, grade }
-  offerings:  [],
-  pending:    [],
-  proposals:  [],
-  enrollCounts: {},
-  addLearnerOfferingId: null
-};
-
-// ─────────────────────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────────────────────
-async function init() {
-  try {
-    const [sessionRes, offeringsRes, countsRes] = await Promise.all([
-      get('getSessionConfig'),
-      get('loadOfferings'),
-      get('getEnrollmentCounts')
-    ]);
-    if (sessionRes.success) {
-      state.session = sessionRes;
-      document.getElementById('sessionLabel').textContent = sessionRes.fullSessionName || sessionRes.sessionName;
-      document.getElementById('fSession').value = sessionRes.fullSessionName || '';
-    }
-    state.offerings   = offeringsRes.offerings  || [];
-    state.enrollCounts = countsRes.counts       || {};
-    updateStatCard('st-offerings', state.offerings.length);
-    showStatus('Dashboard ready', 'success');
-  } catch(e) {
-    showStatus('Init error: ' + e.message, 'error');
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// HTTP HELPERS
-// ─────────────────────────────────────────────────────────────
-async function get(action, params = {}) {
-  const qs = new URLSearchParams({ action, ...params }).toString();
-  const r  = await fetch(`${API}?${qs}`);
-  return r.json();
-}
-
-async function post(body) {
-  const r = await fetch(API, { method:'POST', body: JSON.stringify(body) });
-  return r.json();
-}
-
-// ─────────────────────────────────────────────────────────────
-// STATUS / UI HELPERS
-// ─────────────────────────────────────────────────────────────
-function showStatus(text, type = 'info') {
-  const el = document.getElementById('status');
-  el.textContent = text;
-  el.className = 'status-' + type;
-  el.style.display = 'block';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.display = 'none', 4000);
-}
-
-function setLoading(containerId, msg = 'Loading…') {
-  document.getElementById(containerId).innerHTML =
-    `<div class="loading"><div class="spinner"></div><p>${msg}</p></div>`;
-}
-
-function updateStatCard(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-function switchTab(i) {
-  document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
-  document.querySelectorAll('.tab-content').forEach((t, idx) => t.classList.toggle('active', idx === i));
-}
-
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-window.addEventListener('click', e => {
-  if (e.target.classList.contains('modal')) e.target.style.display = 'none';
-});
-
-// ─────────────────────────────────────────────────────────────
-// NORMALISE TIME — handles "Block 1" or "10:00-10:45"
-// ─────────────────────────────────────────────────────────────
 const BLOCK_MAP = {
   'block 1':'10:00-10:45','block 2':'10:50-11:35','block 3':'12:10-12:55',
   'block 4':'1:00-1:50','block 5':'1:55-2:45','lunch':'11:35-12:05'
 };
+
+// ─────────────────────────────────────────────────────────────
+// STATE  — single source of truth
+// ─────────────────────────────────────────────────────────────
+const state = {
+  session:      {},
+  students:     [],   // { id, name, grade } — from getAllStudents
+  learners:     [],   // { name, grade, totalClasses, classes, ... } — from loadAll
+  offerings:    [],
+  enrollCounts: {},
+  pending:      [],
+  proposals:    [],
+  addLearnerOfferingId: null,
+  _addLearnerAllOptions: []  // cached for filter
+};
+
+// ─────────────────────────────────────────────────────────────
+// HTTP
+// ─────────────────────────────────────────────────────────────
+async function get(action, params = {}) {
+  const qs = new URLSearchParams({ action, ...params }).toString();
+  const r  = await fetch(`${API}?${qs}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status} on ${action}`);
+  return r.json();
+}
+async function post(body) {
+  const r = await fetch(API, { method:'POST', body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ─────────────────────────────────────────────────────────────
+// STATUS / UI
+// ─────────────────────────────────────────────────────────────
+function showStatus(text, type = 'info') {
+  const el = document.getElementById('status');
+  el.textContent = text;
+  el.className   = 'status-' + type;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 4000);
+}
+function setLoad(id, msg = 'Loading…') {
+  document.getElementById(id).innerHTML =
+    `<div class="loading"><div class="spinner"></div><p>${msg}</p></div>`;
+}
+function setStat(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,idx) => t.classList.toggle('active', idx===i));
+  document.querySelectorAll('.tab-content').forEach((t,idx) => t.classList.toggle('active', idx===i));
+}
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+window.addEventListener('click', e => {
+  if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+});
 function normTime(t) {
   if (!t) return '';
   const s = String(t).trim();
   return BLOCK_MAP[s.toLowerCase()] || s;
 }
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 // ─────────────────────────────────────────────────────────────
-// ══ TAB 0 — LEARNERS ════════════════════════════════════════
+// INIT — load EVERYTHING on startup in parallel
 // ─────────────────────────────────────────────────────────────
-async function loadLearners() {
-  setLoading('learnersContainer');
+async function init() {
+  const overlay = document.getElementById('loadOverlay');
+  const loadMsg = document.getElementById('loadMsg');
+
   try {
-    const [allRes, stuRes, pendingRes] = await Promise.all([
-      get('loadAll'),
-      get('getAllStudents'),
-      get('getPendingRequests')
-    ]);
-    state.learners  = allRes.students    || [];
-    state.students  = stuRes.students    || [];
-    state.pending   = pendingRes.requests || [];
+    loadMsg.textContent = 'Loading session, offerings & learners…';
 
-    // Count learners with pending items
-    const pendingNames = new Set(state.pending.map(p => p.studentName.toLowerCase()));
+    // Fire all requests simultaneously
+    const [sessionRes, offeringsRes, countsRes, studentsRes, learnersRes, pendingRes, proposalsRes] =
+      await Promise.all([
+        get('getSessionConfig').catch(() => ({ success:false })),
+        get('loadOfferings').catch(() => ({ offerings:[] })),
+        get('getEnrollmentCounts').catch(() => ({ counts:{} })),
+        get('getAllStudents').catch(() => ({ success:false, students:[] })),
+        get('loadAll').catch(() => ({ success:false, students:[] })),
+        get('getPendingRequests').catch(() => ({ requests:[] })),
+        get('getOfferingProposals').catch(() => ({ proposals:[] }))
+      ]);
 
-    updateStatCard('st-total',     state.students.length);
-    updateStatCard('st-scheduled', state.learners.filter(l => l.totalClasses > 0).length);
-    updateStatCard('st-pending',   pendingNames.size);
-    updateStatCard('st-offerings', state.offerings.length);
+    // ── Session ───────────────────────────────────────────
+    if (sessionRes.success) {
+      state.session = sessionRes;
+      document.getElementById('sessionLabel').textContent =
+        sessionRes.fullSessionName || sessionRes.sessionName || '';
+      document.getElementById('fSession').value =
+        sessionRes.fullSessionName || '';
+    }
 
+    // ── Offerings ─────────────────────────────────────────
+    state.offerings    = offeringsRes.offerings || [];
+    state.enrollCounts = countsRes.counts       || {};
+
+    // ── Students / Learners ───────────────────────────────
+    // state.students = master list for dropdowns (id, name, grade)
+    // state.learners = schedule data (totalClasses, classes JSON)
+    state.students = (studentsRes.success && studentsRes.students) ? studentsRes.students : [];
+    state.learners = (learnersRes.success && learnersRes.students) ? learnersRes.students : [];
+
+    // If getAllStudents returned nothing but loadAll did, fall back
+    if (!state.students.length && state.learners.length) {
+      state.students = state.learners.map(l => ({
+        id:    l.id    || '',
+        name:  l.name  || '',
+        grade: l.grade || ''
+      }));
+    }
+
+    // ── Pending / Proposals ───────────────────────────────
+    state.pending   = pendingRes.requests  || [];
+    state.proposals = proposalsRes.proposals || [];
+
+    // ── Render all tabs ───────────────────────────────────
+    updateStats();
     renderLearners();
-    showStatus(`Loaded ${state.students.length} learners`, 'success');
+    renderOfferings();
+    renderPending();
+    renderProposals();
+
+    overlay.classList.add('hidden');
+    showStatus(`Loaded: ${state.students.length} learners · ${state.offerings.length} offerings · ${state.pending.length} pending`, 'success');
+
   } catch(e) {
-    showStatus('Error: ' + e.message, 'error');
-    document.getElementById('learnersContainer').innerHTML =
-      `<div class="empty">⚠️<p>${e.message}</p></div>`;
+    loadMsg.textContent = '❌ Error loading: ' + e.message;
+    console.error('Init error:', e);
   }
 }
 
-function filterLearners() { renderLearners(); }
+// ─────────────────────────────────────────────────────────────
+// REFRESH ALL  — re-fetch everything and re-render
+// ─────────────────────────────────────────────────────────────
+async function refreshAll() {
+  showStatus('Refreshing…', 'info');
+  await init();
+}
 
+function updateStats() {
+  const pendingNames = new Set(state.pending.map(p => (p.studentName||'').toLowerCase()));
+  setStat('st-total',     state.students.length);
+  setStat('st-scheduled', state.learners.filter(l => l.totalClasses > 0).length);
+  setStat('st-pending',   pendingNames.size);
+  setStat('st-offerings', state.offerings.length);
+}
+
+// ─────────────────────────────────────────────────────────────
+// ══ TAB 0 — LEARNERS
+// ─────────────────────────────────────────────────────────────
 function renderLearners() {
-  const q   = (document.getElementById('learnerSearch').value || '').toLowerCase();
-  const pendingNames = new Set(state.pending.map(p => p.studentName.toLowerCase()));
+  const q = (document.getElementById('learnerSearch').value || '').toLowerCase().trim();
+  const pendingNames = new Set(state.pending.map(p => (p.studentName||'').toLowerCase()));
 
-  // Merge students list with loadAll data for class counts
+  // Build a lookup from loadAll data for class counts
   const learnerMap = {};
-  state.learners.forEach(l => { learnerMap[l.name.toLowerCase()] = l; });
+  state.learners.forEach(l => { learnerMap[(l.name||'').toLowerCase()] = l; });
 
-  let rows = state.students
-    .filter(s => !q || s.name.toLowerCase().includes(q) || (s.grade||'').toLowerCase().includes(q))
-    .sort((a,b) => a.name.localeCompare(b.name));
+  const rows = state.students
+    .filter(s => !q ||
+      (s.name||'').toLowerCase().includes(q) ||
+      (s.grade||'').toLowerCase().includes(q))
+    .sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
   if (!rows.length) {
     document.getElementById('learnersContainer').innerHTML =
-      '<div class="empty">👥<p>No learners found</p></div>';
+      state.students.length
+        ? '<div class="empty">🔍<p>No learners match your search</p></div>'
+        : '<div class="empty">👥<p>No learners found — check your Students sheet</p></div>';
     return;
   }
 
-  let html = `<table>
-    <thead><tr>
-      <th>Name</th><th>Group</th><th>Offerings</th><th>Status</th><th>Actions</th>
-    </tr></thead><tbody>`;
+  let html = `<table><thead><tr>
+    <th>Name</th><th>Group</th><th>Approved Offerings</th><th>Status</th><th>Actions</th>
+  </tr></thead><tbody>`;
 
   rows.forEach(s => {
-    const ldata      = learnerMap[s.name.toLowerCase()] || {};
+    const ldata      = learnerMap[(s.name||'').toLowerCase()] || {};
     const classCount = ldata.totalClasses || 0;
-    const hasPending = pendingNames.has(s.name.toLowerCase());
-    const badge      = hasPending
-      ? '<span class="badge badge-pending">Pending</span>'
+    const hasPending = pendingNames.has((s.name||'').toLowerCase());
+
+    const badge = hasPending
+      ? '<span class="badge badge-pending">⏳ Pending</span>'
       : classCount > 0
-        ? '<span class="badge badge-approved">Scheduled</span>'
-        : '<span style="color:#bbb;font-size:12px">No schedule</span>';
+        ? `<span class="badge badge-approved">✅ ${classCount} scheduled</span>`
+        : '<span style="color:#bbb;font-size:12px">No schedule yet</span>';
 
     html += `<tr>
       <td><strong>${esc(s.name)}</strong></td>
@@ -562,7 +575,8 @@ function renderLearners() {
       <td>${classCount}</td>
       <td>${badge}</td>
       <td>
-        <button class="btn btn-blue btn-sm" onclick="viewStudentSchedule(${JSON.stringify(s.name)})">📅 Schedule</button>
+        <button class="btn btn-blue btn-sm"
+          onclick="viewStudentSchedule(${JSON.stringify(s.name)})">📅 View Schedule</button>
       </td>
     </tr>`;
   });
@@ -571,6 +585,31 @@ function renderLearners() {
   document.getElementById('learnersContainer').innerHTML = html;
 }
 
+// Individual load functions (for Refresh buttons on each tab)
+async function loadLearners() {
+  setLoad('learnersContainer', 'Loading learners…');
+  try {
+    const [stuRes, allRes, pendingRes] = await Promise.all([
+      get('getAllStudents'),
+      get('loadAll'),
+      get('getPendingRequests')
+    ]);
+    state.students = stuRes.students  || [];
+    state.learners = allRes.students  || [];
+    state.pending  = pendingRes.requests || [];
+
+    // Fallback merge
+    if (!state.students.length && state.learners.length) {
+      state.students = state.learners.map(l => ({ id:l.id||'', name:l.name||'', grade:l.grade||'' }));
+    }
+
+    updateStats();
+    renderLearners();
+    showStatus(`Loaded ${state.students.length} learners`, 'success');
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
+}
+
+// ── View schedule modal ──────────────────────────────────────
 async function viewStudentSchedule(name) {
   document.getElementById('schedModalTitle').textContent = name + "'s Schedule";
   document.getElementById('schedModalBody').innerHTML =
@@ -579,8 +618,7 @@ async function viewStudentSchedule(name) {
 
   try {
     const d = await get('loadStudent', { studentName: name });
-    if (!d.success) throw new Error(d.message || 'Failed to load schedule');
-
+    if (!d.success) throw new Error(d.message || 'Failed to load');
     const offerings = d.offerings || [];
 
     if (!offerings.length) {
@@ -589,18 +627,18 @@ async function viewStudentSchedule(name) {
       return;
     }
 
-    // Build grid
     let html = `<p style="font-size:13px;color:#666;margin-bottom:12px">
-      ${offerings.length} offering(s) approved
+      <strong>${offerings.length}</strong> approved offering(s)
     </p>
     <div class="sched-grid">
       <div class="sched-hdr">Time</div>
       ${DAYS.map(d => `<div class="sched-hdr">${d.charAt(0).toUpperCase()+d.slice(1)}</div>`).join('')}`;
 
     TIMES.forEach(block => {
-      html += `<div class="sched-time">${block.label}<br><small style="font-weight:normal">${block.time}</small></div>`;
+      html += `<div class="sched-time">${block.label}<br>
+        <small style="font-weight:normal">${block.time}</small></div>`;
       if (block.lunch) {
-        html += `<div class="sched-lunch" style="display:flex;align-items:center;justify-content:center;color:#bbb">Lunch Break</div>`;
+        html += `<div class="sched-lunch">Lunch Break</div>`;
         return;
       }
       DAYS.forEach(day => {
@@ -627,50 +665,49 @@ async function viewStudentSchedule(name) {
     document.getElementById('schedModalBody').innerHTML = html;
   } catch(e) {
     document.getElementById('schedModalBody').innerHTML =
-      `<div class="empty">⚠️<p>${e.message}</p></div>`;
+      `<div class="empty">⚠️<p>${esc(e.message)}</p></div>`;
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// ══ TAB 1 — OFFERINGS ═══════════════════════════════════════
+// ══ TAB 1 — OFFERINGS
 // ─────────────────────────────────────────────────────────────
 async function loadOfferings() {
-  setLoading('offeringsContainer');
+  setLoad('offeringsContainer', 'Loading offerings…');
   try {
     const [offRes, countsRes] = await Promise.all([
       get('loadOfferings'),
       get('getEnrollmentCounts')
     ]);
-    state.offerings   = offRes.offerings  || [];
+    state.offerings    = offRes.offerings || [];
     state.enrollCounts = countsRes.counts || {};
+    updateStats();
     renderOfferings();
     showStatus(`Loaded ${state.offerings.length} offerings`, 'success');
-  } catch(e) {
-    showStatus('Error: ' + e.message, 'error');
-  }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
 function getFiltered() {
-  const sortBy    = document.getElementById('sortBy').value;
-  const filterDay = document.getElementById('filterDay').value.toLowerCase();
-  const filterType= document.getElementById('filterType').value;
-  const filterGrp = document.getElementById('filterGroup').value;
+  const sortBy     = document.getElementById('sortBy').value;
+  const filterDay  = document.getElementById('filterDay').value.toLowerCase();
+  const filterType = document.getElementById('filterType').value;
+  const filterGrp  = document.getElementById('filterGroup').value;
+  const dayOrder   = ['monday','tuesday','wednesday','thursday','friday'];
 
   let list = state.offerings.filter(o => {
-    if (filterDay && !(o.day || '').toLowerCase().split(',').map(d=>d.trim()).includes(filterDay)) return false;
-    if (filterType && o.type !== filterType) return false;
+    if (filterDay  && !(o.day||'').toLowerCase().split(',').map(d=>d.trim()).includes(filterDay)) return false;
+    if (filterType && o.type  !== filterType) return false;
     if (filterGrp  && o.level !== filterGrp)  return false;
     return true;
   });
 
-  const dayOrder = ['monday','tuesday','wednesday','thursday','friday'];
-  if (sortBy === 'name')       list.sort((a,b) => a.name.localeCompare(b.name));
-  else if (sortBy === 'instructor') list.sort((a,b) => a.instructor.localeCompare(b.instructor));
-  else if (sortBy === 'enrollment') list.sort((a,b) => (state.enrollCounts[b.id]||0) - (state.enrollCounts[a.id]||0));
-  else list.sort((a,b) => { // day/time default
+  if      (sortBy==='name')       list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+  else if (sortBy==='instructor') list.sort((a,b) => (a.instructor||'').localeCompare(b.instructor||''));
+  else if (sortBy==='enrollment') list.sort((a,b) => (state.enrollCounts[b.id]||0)-(state.enrollCounts[a.id]||0));
+  else list.sort((a,b) => {
     const da = dayOrder.indexOf((a.day||'').split(',')[0].trim().toLowerCase());
     const db = dayOrder.indexOf((b.day||'').split(',')[0].trim().toLowerCase());
-    return da !== db ? da - db : (a.time||'').localeCompare(b.time||'');
+    return da !== db ? da-db : (a.time||'').localeCompare(b.time||'');
   });
   return list;
 }
@@ -685,16 +722,16 @@ function renderOfferings() {
     return;
   }
 
-  let html = `<table>
-    <thead><tr>
-      <th>Name</th><th>Instructor</th><th>Day(s)</th><th>Block(s)</th>
-      <th>Group</th><th>Type</th><th>Enrolled</th><th>Actions</th>
-    </tr></thead><tbody>`;
+  let html = `<table><thead><tr>
+    <th>Name</th><th>Instructor</th><th>Day(s)</th><th>Block(s)</th>
+    <th>Group</th><th>Type</th><th>Enrolled</th><th>Actions</th>
+  </tr></thead><tbody>`;
 
   list.forEach(o => {
     const enrolled = state.enrollCounts[o.id] || 0;
     const capacity = Number(o.capacity) || 999;
     const full     = enrolled >= capacity;
+
     const typeBadge = o.type === 'Commit'
       ? '<span class="badge badge-commit">Commit</span>'
       : o.type === 'Drop-in'
@@ -712,22 +749,28 @@ function renderOfferings() {
     }).join(', ');
 
     html += `<tr style="${full ? 'background:#fff0f0' : ''}">
-      <td><strong>${esc(o.name)}</strong>${o.description ? `<div style="font-size:11px;color:#888;margin-top:2px">${esc(o.description).slice(0,60)}…</div>` : ''}</td>
+      <td>
+        <strong>${esc(o.name)}</strong>
+        ${o.description ? `<div style="font-size:11px;color:#888;margin-top:2px">${esc(o.description).substring(0,70)}…</div>` : ''}
+      </td>
       <td>${esc(o.instructor)}</td>
       <td>${days}</td>
       <td style="font-size:12px">${times}</td>
       <td>${esc(o.level||'—')}</td>
       <td>${typeBadge}</td>
       <td>
-        <button class="btn btn-blue btn-sm" onclick="showEnrolled(${o.id},'${esc(o.name)}')"
-          style="${full?'background:#f44336':''}">
+        <button class="btn btn-blue btn-sm"
+          onclick="showEnrolled(${o.id}, ${JSON.stringify(o.name)})"
+          style="${full ? 'background:#f44336' : ''}">
           ${enrolled}/${capacity===999?'∞':capacity} 👥
         </button>
       </td>
       <td style="white-space:nowrap">
         <button class="btn btn-warning btn-sm" onclick="openEditModal(${o.id})">✏️ Edit</button>
-        <button class="btn btn-primary btn-sm" onclick="openAddLearnerModal(${o.id},'${esc(o.name)}')">➕ Add</button>
-        <button class="btn btn-danger btn-sm" onclick="archiveOffering(${o.id},'${esc(o.name)}')">🗄 Archive</button>
+        <button class="btn btn-primary btn-sm"
+          onclick="openAddLearnerModal(${o.id}, ${JSON.stringify(o.name)})">➕ Add Learner</button>
+        <button class="btn btn-danger btn-sm"
+          onclick="archiveOffering(${o.id}, ${JSON.stringify(o.name)})">🗄 Archive</button>
       </td>
     </tr>`;
   });
@@ -746,16 +789,20 @@ function showEnrolled(offeringId, name) {
 
   let html = `<div style="background:#f8f9fa;padding:12px;border-radius:6px;margin-bottom:14px">
     <strong>${enrolled.length}</strong> / ${capacity===999?'∞':capacity} enrolled
-    ${enrolled.length >= capacity ? '<span style="color:#f44336;font-weight:700;margin-left:10px">CLASS FULL</span>' : ''}
+    ${enrolled.length>=capacity ? '<span style="color:#f44336;font-weight:700;margin-left:10px">FULL</span>' : ''}
   </div>`;
 
   if (!enrolled.length) {
     html += '<p style="text-align:center;color:#bbb;padding:30px">No learners enrolled yet</p>';
   } else {
     enrolled.sort().forEach((nm, i) => {
-      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #eee">
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;
+        padding:9px 12px;border-bottom:1px solid #eee">
         <strong>${i+1}. ${esc(nm)}</strong>
-        <button class="btn btn-danger btn-sm" onclick="removeEnrollment('${nm}',${offeringId},'${esc(name)}')">✗ Remove</button>
+        <button class="btn btn-danger btn-sm"
+          onclick="removeEnrollment(${JSON.stringify(nm)},${offeringId},${JSON.stringify(name)})">
+          ✗ Remove
+        </button>
       </div>`;
     });
   }
@@ -767,14 +814,14 @@ function showEnrolled(offeringId, name) {
 function getEnrolledNames(offeringId) {
   const idStr = String(offeringId);
   const idNum = Number(offeringId);
-  return state.learners
-    .filter(l => {
-      try {
-        const classes = typeof l.classes === 'string' ? JSON.parse(l.classes||'[]') : (l.classes||[]);
-        return classes.some(c => String(c) === idStr || Number(c) === idNum);
-      } catch { return false; }
-    })
-    .map(l => l.name);
+  return state.learners.filter(l => {
+    try {
+      const classes = typeof l.classes === 'string'
+        ? JSON.parse(l.classes || '[]')
+        : (Array.isArray(l.classes) ? l.classes : []);
+      return classes.some(c => String(c) === idStr || Number(c) === idNum);
+    } catch { return false; }
+  }).map(l => l.name);
 }
 
 async function removeEnrollment(studentName, offeringId, offeringName) {
@@ -783,67 +830,103 @@ async function removeEnrollment(studentName, offeringId, offeringName) {
     const d = await post({ action:'removeEnrollment', studentName, offeringId });
     if (d.success) {
       showStatus(`Removed ${studentName}`, 'success');
-      await loadOfferings();
-      await loadLearners();
       closeModal('enrolledModal');
-    } else {
-      showStatus('Error: ' + d.message, 'error');
-    }
+      await Promise.all([loadOfferings(), loadLearners()]);
+    } else { showStatus('Error: ' + d.message, 'error'); }
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
 // ── Add learner modal ─────────────────────────────────────────
 function openAddLearnerModal(offeringId, offeringName) {
   state.addLearnerOfferingId = offeringId;
-  document.getElementById('addLearnerTitle').textContent = 'Add Learner to Offering';
+  document.getElementById('addLearnerTitle').textContent    = 'Add Learner to Offering';
   document.getElementById('addLearnerOffering').textContent = offeringName;
+  document.getElementById('addLearnerSearch').value         = '';
+
+  if (!state.students.length) {
+    document.getElementById('addLearnerSelect').innerHTML =
+      '<option disabled>No learners found — check your Students sheet</option>';
+    document.getElementById('addLearnerCount').textContent = '0';
+    document.getElementById('addLearnerModal').style.display = 'block';
+    return;
+  }
 
   const enrolled = getEnrolledNames(offeringId);
-  const select   = document.getElementById('addLearnerSelect');
-  select.innerHTML = '';
-
-  [...state.students]
-    .sort((a,b) => a.name.localeCompare(b.name))
+  const available = [...state.students]
     .filter(s => !enrolled.includes(s.name))
-    .forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.name;
-      opt.textContent = s.grade ? `${s.name} — ${s.grade}` : s.name;
-      select.appendChild(opt);
-    });
+    .sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
+  // Cache for search filter
+  state._addLearnerAllOptions = available;
+  populateAddLearnerSelect(available);
   document.getElementById('addLearnerModal').style.display = 'block';
 }
 
+function populateAddLearnerSelect(list) {
+  const select = document.getElementById('addLearnerSelect');
+  select.innerHTML = '';
+  list.forEach(s => {
+    const opt       = document.createElement('option');
+    opt.value       = s.name;
+    opt.textContent = s.grade ? `${s.name} — ${s.grade}` : s.name;
+    select.appendChild(opt);
+  });
+  document.getElementById('addLearnerCount').textContent = list.length;
+}
+
+function filterAddLearnerList() {
+  const q = document.getElementById('addLearnerSearch').value.toLowerCase();
+  const filtered = q
+    ? state._addLearnerAllOptions.filter(s =>
+        (s.name||'').toLowerCase().includes(q) ||
+        (s.grade||'').toLowerCase().includes(q))
+    : state._addLearnerAllOptions;
+  populateAddLearnerSelect(filtered);
+}
+
 async function doAddLearner() {
-  const selected = Array.from(document.getElementById('addLearnerSelect').selectedOptions).map(o => o.value);
+  const selected = Array.from(
+    document.getElementById('addLearnerSelect').selectedOptions
+  ).map(o => o.value);
+
   if (!selected.length) { alert('Select at least one learner'); return; }
   if (!state.addLearnerOfferingId) return;
 
   let ok = 0, fail = 0;
   for (const name of selected) {
     try {
-      const d = await post({ action:'manualEnroll', studentName:name, offeringId:state.addLearnerOfferingId });
+      const d = await post({
+        action: 'manualEnroll',
+        studentName: name,
+        offeringId: state.addLearnerOfferingId
+      });
       d.success ? ok++ : fail++;
     } catch { fail++; }
   }
-  showStatus(`Added ${ok}${fail ? `, ${fail} failed` : ''} learner(s)`, ok ? 'success' : 'error');
+
+  showStatus(
+    ok ? `✅ Added ${ok} learner(s)${fail ? ` (${fail} failed)` : ''}` : `❌ All ${fail} failed`,
+    ok ? 'success' : 'error'
+  );
+
   if (ok) {
     closeModal('addLearnerModal');
-    await loadOfferings();
-    await loadLearners();
+    await Promise.all([loadOfferings(), loadLearners()]);
   }
 }
 
 // ── Create / Edit offering modal ──────────────────────────────
 function openCreateModal() {
   document.getElementById('offeringModalTitle').textContent = 'New Offering';
-  document.getElementById('editId').value = '';
-  ['fName','fInstructor','fLocation','fDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('editId').value    = '';
+  document.getElementById('fName').value     = '';
+  document.getElementById('fInstructor').value = '';
+  document.getElementById('fLocation').value = '';
   document.getElementById('fCapacity').value = '12';
-  document.getElementById('fLevel').value = '';
-  document.getElementById('fType').value = '';
-  document.getElementById('fSession').value = state.session.fullSessionName || '';
+  document.getElementById('fLevel').value    = '';
+  document.getElementById('fType').value     = '';
+  document.getElementById('fDesc').value     = '';
+  document.getElementById('fSession').value  = state.session.fullSessionName || '';
   Array.from(document.getElementById('fDays').options).forEach(o => o.selected = false);
   Array.from(document.getElementById('fBlocks').options).forEach(o => o.selected = false);
   document.getElementById('offeringModal').style.display = 'block';
@@ -866,11 +949,9 @@ function openEditModal(id) {
   const selDays   = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
   const selBlocks = (o.time || '').split(',').map(t => normTime(t.trim()));
   Array.from(document.getElementById('fDays').options).forEach(opt =>
-    opt.selected = selDays.includes(opt.value)
-  );
+    opt.selected = selDays.includes(opt.value));
   Array.from(document.getElementById('fBlocks').options).forEach(opt =>
-    opt.selected = selBlocks.includes(opt.value)
-  );
+    opt.selected = selBlocks.includes(opt.value));
   document.getElementById('offeringModal').style.display = 'block';
 }
 
@@ -907,9 +988,7 @@ async function saveOffering() {
       showStatus(id ? '✅ Offering updated' : '✅ Offering created', 'success');
       closeModal('offeringModal');
       await loadOfferings();
-    } else {
-      showStatus('Error: ' + d.message, 'error');
-    }
+    } else { showStatus('Error: ' + d.message, 'error'); }
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
@@ -920,25 +999,25 @@ async function archiveOffering(id, name) {
     if (d.success) {
       showStatus(`Archived: ${name}`, 'success');
       await loadOfferings();
-    } else {
-      showStatus('Error: ' + d.message, 'error');
-    }
+    } else { showStatus('Error: ' + d.message, 'error'); }
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
 // ─────────────────────────────────────────────────────────────
-// ══ TAB 2 — PENDING SCHEDULE REQUESTS ═══════════════════════
+// ══ TAB 2 — PENDING REQUESTS
 // ─────────────────────────────────────────────────────────────
 async function loadPending() {
-  setLoading('pendingContainer');
+  setLoad('pendingContainer', 'Loading pending requests…');
   try {
     const d = await get('getPendingRequests');
     state.pending = d.requests || [];
+    updateStats();
     renderPending();
     showStatus(`Loaded ${state.pending.length} pending item(s)`, 'success');
   } catch(e) {
     showStatus('Error: ' + e.message, 'error');
-    document.getElementById('pendingContainer').innerHTML = `<div class="empty">⚠️<p>${e.message}</p></div>`;
+    document.getElementById('pendingContainer').innerHTML =
+      `<div class="empty">⚠️<p>${esc(e.message)}</p></div>`;
   }
 }
 
@@ -949,32 +1028,31 @@ function renderPending() {
 
   if (!state.pending.length) {
     container.innerHTML = '<div class="empty">✅<p>No pending requests</p></div>';
-    btn.style.display = 'none';
+    btn.style.display   = 'none';
     countEl.textContent = '';
-    updateStatCard('st-pending', 0);
     return;
   }
 
   // Group by student
   const grouped = {};
   state.pending.forEach(p => {
-    if (!grouped[p.studentName]) grouped[p.studentName] = [];
-    grouped[p.studentName].push(p);
+    const key = p.studentName || 'Unknown';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(p);
   });
 
   const studentCount = Object.keys(grouped).length;
   countEl.textContent = `${state.pending.length} request(s) from ${studentCount} learner(s)`;
-  btn.style.display = 'block';
-  updateStatCard('st-pending', studentCount);
+  btn.style.display   = 'inline-block';
 
   let html = '';
   Object.entries(grouped)
     .sort(([a],[b]) => a.localeCompare(b))
     .forEach(([studentName, requests]) => {
-      const first     = requests[0];
-      const dateStr   = first.submitted ? new Date(first.submitted).toLocaleString() : '—';
-      // Base request ID = "request_ROW" portion
-      const baseId    = first.requestId.split('_').slice(0,2).join('_');
+      const first   = requests[0];
+      const dateStr = first.submitted ? new Date(first.submitted).toLocaleString() : '—';
+      // base = "request_ROW" (first two segments)
+      const baseId  = first.requestId.split('_').slice(0,2).join('_');
 
       html += `<div class="req-card">
         <div class="req-header">
@@ -993,11 +1071,11 @@ function renderPending() {
           </div>
           <div style="white-space:nowrap">
             <button class="btn btn-primary btn-sm"
-              onclick="approveOne('${req.requestId}','${esc(req.className)}','${esc(studentName)}')">
+              onclick="approveOne(${JSON.stringify(req.requestId)},${JSON.stringify(req.className)},${JSON.stringify(studentName)})">
               ✓ Approve
             </button>
             <button class="btn btn-danger btn-sm"
-              onclick="denyOne('${req.requestId}','${esc(req.className)}','${esc(studentName)}')">
+              onclick="denyOne(${JSON.stringify(req.requestId)},${JSON.stringify(req.className)},${JSON.stringify(studentName)})">
               ✗ Deny
             </button>
           </div>
@@ -1006,11 +1084,11 @@ function renderPending() {
 
       html += `<div class="req-footer">
         <button class="btn btn-primary btn-sm"
-          onclick="approveAllFor('${baseId}','${esc(studentName)}',${requests.length})">
+          onclick="approveAllFor(${JSON.stringify(baseId)},${JSON.stringify(studentName)},${requests.length})">
           ✅ Approve All (${requests.length})
         </button>
         <button class="btn btn-danger btn-sm"
-          onclick="denyAllFor('${baseId}','${esc(studentName)}',${requests.length})">
+          onclick="denyAllFor(${JSON.stringify(baseId)},${JSON.stringify(studentName)},${requests.length})">
           ✗ Deny All
         </button>
       </div></div>`;
@@ -1026,7 +1104,6 @@ async function approveOne(requestId, className, studentName) {
     if (d.success) {
       showStatus(`✅ Approved: ${className}`, 'success');
       await loadPending();
-      // Refresh learner counts if tab visible
       if (state.learners.length) await loadLearners();
     } else { showStatus('Error: ' + d.message, 'error'); }
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
@@ -1066,31 +1143,30 @@ async function approveAllPending() {
   const names = [...new Set(state.pending.map(p => p.studentName))];
   if (!confirm(`Approve ALL pending requests from ${names.length} learner(s)?`)) return;
 
-  // Group and approve each student's base request
   const grouped = {};
   state.pending.forEach(p => {
     const base = p.requestId.split('_').slice(0,2).join('_');
-    grouped[base] = (grouped[base] || 0) + 1;
+    grouped[base] = true;
   });
 
   let ok = 0;
-  for (const [baseId, cnt] of Object.entries(grouped)) {
+  for (const baseId of Object.keys(grouped)) {
     try {
       const d = await post({ action:'approveAllClasses', requestId: baseId });
-      if (d.success) ok += cnt;
+      if (d.success) ok++;
     } catch {}
   }
 
-  showStatus(`✅ Approved ${ok} request(s)`, 'success');
+  showStatus(`✅ Approved requests for ${ok} learner(s)`, 'success');
   await loadPending();
   if (state.learners.length) await loadLearners();
 }
 
 // ─────────────────────────────────────────────────────────────
-// ══ TAB 3 — OFFERING PROPOSALS ══════════════════════════════
+// ══ TAB 3 — OFFERING PROPOSALS
 // ─────────────────────────────────────────────────────────────
 async function loadProposals() {
-  setLoading('proposalsContainer');
+  setLoad('proposalsContainer', 'Loading proposals…');
   try {
     const d = await get('getOfferingProposals');
     state.proposals = d.proposals || [];
@@ -1098,61 +1174,78 @@ async function loadProposals() {
     showStatus(`Loaded ${state.proposals.length} proposal(s)`, 'success');
   } catch(e) {
     showStatus('Error: ' + e.message, 'error');
-    document.getElementById('proposalsContainer').innerHTML = `<div class="empty">⚠️<p>${e.message}</p></div>`;
+    document.getElementById('proposalsContainer').innerHTML =
+      `<div class="empty">⚠️<p>${esc(e.message)}</p></div>`;
   }
 }
 
 function renderProposals() {
-  const pending = state.proposals.filter(p => p.status === 'pending');
+  const pending  = state.proposals.filter(p => p.status === 'pending');
+  const reviewed = state.proposals.filter(p => p.status !== 'pending');
   document.getElementById('proposalCount').textContent =
-    `${pending.length} pending, ${state.proposals.length} total`;
+    `${pending.length} pending · ${state.proposals.length} total`;
 
-  if (!pending.length) {
+  if (!pending.length && !reviewed.length) {
     document.getElementById('proposalsContainer').innerHTML =
-      '<div class="empty">✅<p>No pending proposals</p></div>';
+      '<div class="empty">✅<p>No proposals yet</p></div>';
     return;
   }
 
   let html = '';
-  pending.forEach(p => {
-    html += `<div class="req-card">
-      <div class="req-header">
-        <div>
-          <div class="req-student">${esc(p.name || 'Untitled')}</div>
-          <div class="req-meta">Submitted by ${esc(p.submitter||'?')}
-            ${p.submitted ? ' · ' + new Date(p.submitted).toLocaleString() : ''}
+
+  if (!pending.length) {
+    html += '<div class="empty" style="font-size:24px">✅<p>No pending proposals</p></div>';
+  } else {
+    pending.forEach(p => {
+      html += `<div class="req-card">
+        <div class="req-header">
+          <div>
+            <div class="req-student">${esc(p.name || 'Untitled')}</div>
+            <div class="req-meta">
+              Submitted by <strong>${esc(p.submitter||'?')}</strong>
+              ${p.submitted ? ' · ' + new Date(p.submitted).toLocaleString() : ''}
+            </div>
+          </div>
+          <span class="badge badge-pending">PENDING</span>
+        </div>
+        <div class="class-row">
+          <div class="class-row-info">
+            <div class="class-row-detail">👤 ${esc(p.instructor||'TBA')}</div>
+            <div class="class-row-detail">📍 ${esc(p.location||'TBA')}</div>
+            <div class="class-row-detail">📅 ${esc(p.day||'TBA')} &nbsp;🕐 ${esc(p.time||'TBA')}</div>
+            <div class="class-row-detail">
+              👥 ${esc(p.level||'—')} &nbsp;|&nbsp; ${esc(p.type||'—')}
+              &nbsp;|&nbsp; Cap: ${esc(String(p.capacity||'∞'))}
+            </div>
+            ${p.description
+              ? `<div style="margin-top:8px;font-size:12px;color:#444;line-height:1.5">${esc(p.description)}</div>`
+              : ''}
           </div>
         </div>
-        <span class="badge badge-pending">PENDING</span>
-      </div>
-      <div class="class-row">
-        <div class="class-row-info">
-          <div class="class-row-detail">👤 ${esc(p.instructor||'TBA')}</div>
-          <div class="class-row-detail">📍 ${esc(p.location||'TBA')}</div>
-          <div class="class-row-detail">📅 ${esc(p.day||'TBA')} &nbsp;🕐 ${esc(p.time||'TBA')}</div>
-          <div class="class-row-detail">👥 ${esc(p.level||'—')} &nbsp;|&nbsp; ${esc(p.type||'—')} &nbsp;|&nbsp; Cap: ${esc(String(p.capacity||'∞'))}</div>
-          ${p.description ? `<div style="margin-top:6px;font-size:12px;color:#444;line-height:1.5">${esc(p.description)}</div>` : ''}
+        <div class="req-footer">
+          <button class="btn btn-primary btn-sm"
+            onclick="approveProposal(${JSON.stringify(p.proposalId)},${JSON.stringify(p.name||'')})">
+            ✓ Approve &amp; Add to Schedule
+          </button>
+          <button class="btn btn-danger btn-sm"
+            onclick="denyProposal(${JSON.stringify(p.proposalId)},${JSON.stringify(p.name||'')})">
+            ✗ Deny
+          </button>
         </div>
-      </div>
-      <div class="req-footer">
-        <button class="btn btn-primary btn-sm" onclick="approveProposal('${p.proposalId}','${esc(p.name||'')}')">✓ Approve & Add to Schedule</button>
-        <button class="btn btn-danger btn-sm" onclick="denyProposal('${p.proposalId}','${esc(p.name||'')}')">✗ Deny</button>
-      </div>
-    </div>`;
-  });
+      </div>`;
+    });
+  }
 
-  // Show previously reviewed at the bottom
-  const reviewed = state.proposals.filter(p => p.status !== 'pending');
   if (reviewed.length) {
     html += `<details style="margin-top:20px">
       <summary style="cursor:pointer;font-weight:600;color:#888;padding:8px">
-        ${reviewed.length} previously reviewed proposal(s)
+        ${reviewed.length} previously reviewed proposal(s) ▾
       </summary>`;
     reviewed.forEach(p => {
       html += `<div style="padding:10px 14px;border-bottom:1px solid #eee;font-size:13px;color:#666">
-        <strong>${esc(p.name||'Untitled')}</strong> — 
+        <strong>${esc(p.name||'Untitled')}</strong> —
         <span class="badge badge-${p.status}">${p.status.toUpperCase()}</span>
-        &nbsp;by ${esc(p.submitter||'?')}
+        &nbsp;submitted by ${esc(p.submitter||'?')}
       </div>`;
     });
     html += '</details>';
@@ -1167,8 +1260,7 @@ async function approveProposal(proposalId, name) {
     const d = await post({ action:'approveOfferingProposal', proposalId });
     if (d.success) {
       showStatus(`✅ "${name}" approved and added`, 'success');
-      await loadProposals();
-      await loadOfferings();
+      await Promise.all([loadProposals(), loadOfferings()]);
     } else { showStatus('Error: ' + d.message, 'error'); }
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
@@ -1180,13 +1272,6 @@ async function denyProposal(proposalId, name) {
     if (d.success) { showStatus(`Denied: ${name}`, 'info'); await loadProposals(); }
     else showStatus('Error: ' + d.message, 'error');
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
-}
-
-// ─────────────────────────────────────────────────────────────
-// UTILITIES
-// ─────────────────────────────────────────────────────────────
-function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 // ─────────────────────────────────────────────────────────────
