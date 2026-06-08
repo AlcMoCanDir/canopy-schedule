@@ -127,12 +127,10 @@ tr:hover td{background:#f0f7ff}
 .cal-instructor{font-size:10px;color:#666}
 .cal-enroll{font-size:10px;font-weight:600;position:absolute;top:5px;right:5px}
 .cal-offering:hover .cal-actions{opacity:1;pointer-events:auto}
-.cal-actions{display:flex;gap:3px;margin-top:5px;opacity:0;pointer-events:none;transition:opacity .15s}
-.cal-btn{border:none;border-radius:3px;padding:3px 7px;font-size:11px;cursor:pointer;font-weight:600;transition:opacity .15s}
+.cal-actions{display:flex;gap:3px;margin-top:6px}
+.cal-btn{border:none;border-radius:3px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:600;transition:opacity .15s;width:100%}
 .cal-btn:hover{opacity:.8}
-.cal-btn-enroll{background:#e3f2fd;color:#1565c0}
-.cal-btn-add{background:#e8f5e9;color:#2e7d32}
-.cal-btn-edit{background:#fff3e0;color:#e65100}
+.cal-btn-edit{background:#e3f2fd;color:#1565c0}
 .cal-enroll.full{color:#f44336}
 .cal-enroll.ok{color:#4CAF50}
 .view-toggle{display:flex;gap:0;border:1px solid #ccc;border-radius:4px;overflow:hidden}
@@ -282,109 +280,109 @@ tr:hover td{background:#f0f7ff}
 
 <!-- ══ MODAL — CREATE / EDIT OFFERING ════════════════════════ -->
 <div class="modal" id="offeringModal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:960px">
     <div class="modal-head">
       <h2 id="offeringModalTitle">New Offering</h2>
       <button class="modal-close" onclick="closeModal('offeringModal')">×</button>
     </div>
-    <div class="modal-body">
-      <input type="hidden" id="editId">
-      <div class="form-row">
-        <div class="fg"><label>Offering Name *</label>
-          <input type="text" id="fName" placeholder="e.g. Math(A)"></div>
-        <div class="fg"><label>Instructor *</label>
-          <input type="text" id="fInstructor" placeholder="e.g. Anna"></div>
-      </div>
-      <div class="form-row">
-        <div class="fg"><label>Location</label>
-          <input type="text" id="fLocation" placeholder="e.g. Room 101"></div>
-        <div class="fg"><label>Capacity</label>
-          <input type="number" id="fCapacity" placeholder="12" min="1"></div>
-      </div>
-      <div class="form-row">
-        <div class="fg"><label>Group (Level)</label>
-          <select id="fLevel">
-            <option value="">— Any —</option>
-            <option value="EC">EC</option><option value="Saplings">Saplings</option>
-            <option value="Canopy">Canopy</option><option value="Acorns">Acorns</option>
-          </select></div>
-        <div class="fg"><label>Type *</label>
-          <select id="fType">
-            <option value="">— Select —</option>
-            <option value="Commit">Commitment</option>
-            <option value="Drop-in">Drop-in</option>
-          </select></div>
-      </div>
-      <div class="form-row">
-        <div class="fg">
-          <label>Days * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
-          <select id="fDays" multiple size="5">
-            <option value="monday">Monday</option><option value="tuesday">Tuesday</option>
-            <option value="wednesday">Wednesday</option><option value="thursday">Thursday</option>
-            <option value="friday">Friday</option>
-          </select>
+    <div class="modal-body" style="padding:0">
+      <div style="display:grid;grid-template-columns:1fr 340px;min-height:520px">
+
+        <!-- LEFT — offering form -->
+        <div style="padding:20px;border-right:1px solid #eee">
+          <input type="hidden" id="editId">
+          <div class="form-row">
+            <div class="fg"><label>Offering Name *</label>
+              <input type="text" id="fName" placeholder="e.g. Math(A)"></div>
+            <div class="fg"><label>Instructor *</label>
+              <input type="text" id="fInstructor" placeholder="e.g. Anna"></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Location</label>
+              <input type="text" id="fLocation" placeholder="e.g. Room 101"></div>
+            <div class="fg"><label>Capacity</label>
+              <input type="number" id="fCapacity" placeholder="12" min="1"></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Group (Level)</label>
+              <select id="fLevel">
+                <option value="">— Any —</option>
+                <option value="EC">EC</option><option value="Saplings">Saplings</option>
+                <option value="Canopy">Canopy</option><option value="Acorns">Acorns</option>
+              </select></div>
+            <div class="fg"><label>Type *</label>
+              <select id="fType">
+                <option value="">— Select —</option>
+                <option value="Commit">Commitment</option>
+                <option value="Drop-in">Drop-in</option>
+              </select></div>
+          </div>
+          <div class="form-row">
+            <div class="fg">
+              <label>Days * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
+              <select id="fDays" multiple size="5">
+                <option value="monday">Monday</option><option value="tuesday">Tuesday</option>
+                <option value="wednesday">Wednesday</option><option value="thursday">Thursday</option>
+                <option value="friday">Friday</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Blocks * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
+              <select id="fBlocks" multiple size="5">
+                <option value="10:00-10:45">Block 1 — 10:00–10:45</option>
+                <option value="10:50-11:35">Block 2 — 10:50–11:35</option>
+                <option value="12:10-12:55">Block 3 — 12:10–12:55</option>
+                <option value="1:00-1:50">Block 4 — 1:00–1:50</option>
+                <option value="1:55-2:45">Block 5 — 1:55–2:45</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label>Description</label>
+            <textarea id="fDesc" rows="3" placeholder="What will learners do?"></textarea></div>
+          <div class="fg"><label>Session</label>
+            <input type="text" id="fSession"></div>
         </div>
-        <div class="fg">
-          <label>Blocks * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
-          <select id="fBlocks" multiple size="5">
-            <option value="10:00-10:45">Block 1 — 10:00–10:45</option>
-            <option value="10:50-11:35">Block 2 — 10:50–11:35</option>
-            <option value="12:10-12:55">Block 3 — 12:10–12:55</option>
-            <option value="1:00-1:50">Block 4 — 1:00–1:50</option>
-            <option value="1:55-2:45">Block 5 — 1:55–2:45</option>
-          </select>
+
+        <!-- RIGHT — enrolled learners + add learner -->
+        <div id="enrolledPanel" style="padding:20px;background:#f8f9fa;display:flex;flex-direction:column;gap:0">
+
+          <!-- Enrolled list -->
+          <div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <strong style="font-size:14px;color:#333">Enrolled Learners</strong>
+              <span id="enrolledPanelCount" style="font-size:12px;color:#888"></span>
+            </div>
+            <div id="enrolledPanelList"
+              style="max-height:220px;overflow-y:auto;border:1px solid #ddd;border-radius:6px;background:white">
+              <div style="text-align:center;padding:20px;color:#bbb;font-size:13px">
+                Save an offering to see enrolled learners
+              </div>
+            </div>
+          </div>
+
+          <!-- Add learner section -->
+          <div id="addLearnerPanel">
+            <strong style="font-size:14px;color:#333;display:block;margin-bottom:8px">Add Learner</strong>
+            <input type="text" id="inlineAddSearch" placeholder="🔍 Search learners…"
+              oninput="filterInlineAddList()"
+              style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px;margin-bottom:6px">
+            <select id="inlineAddSelect" multiple size="6"
+              style="width:100%;border:1px solid #ddd;border-radius:6px;font-size:13px;padding:4px"></select>
+            <p style="font-size:11px;color:#888;margin:4px 0 8px">
+              <span id="inlineAddCount">0</span> available · Ctrl/Cmd for multiple
+            </p>
+            <button class="btn btn-primary" onclick="doInlineAddLearner()"
+              style="width:100%;padding:8px">➕ Add Selected Learners</button>
+          </div>
+
         </div>
       </div>
-      <div class="fg"><label>Description</label>
-        <textarea id="fDesc" rows="3" placeholder="What will learners do?"></textarea></div>
-      <div class="fg"><label>Session</label>
-        <input type="text" id="fSession"></div>
     </div>
     <div class="modal-foot">
+      <button class="btn btn-danger btn-sm" id="archiveFromEditBtn"
+        style="margin-right:auto;display:none" onclick="archiveFromEdit()">🗄 Archive</button>
       <button class="btn btn-grey" onclick="closeModal('offeringModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveOffering()">💾 Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL — ENROLLED LEARNERS ═════════════════════════════ -->
-<div class="modal" id="enrolledModal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h2 id="enrolledTitle">Enrolled Learners</h2>
-      <button class="modal-close" onclick="closeModal('enrolledModal')">×</button>
-    </div>
-    <div class="modal-body" id="enrolledBody"></div>
-    <div class="modal-foot">
-      <button class="btn btn-grey" onclick="closeModal('enrolledModal')">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL — ADD LEARNER TO OFFERING ═══════════════════════ -->
-<div class="modal" id="addLearnerModal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h2 id="addLearnerTitle">Add Learner to Offering</h2>
-      <button class="modal-close" onclick="closeModal('addLearnerModal')">×</button>
-    </div>
-    <div class="modal-body">
-      <p id="addLearnerOffering" style="font-weight:700;color:#2196F3;margin-bottom:12px"></p>
-      <div class="fg">
-        <label>Search & Select Learners
-          <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small>
-        </label>
-        <input type="text" id="addLearnerSearch" placeholder="🔍 Filter learner list…"
-               oninput="filterAddLearnerList()" style="margin-bottom:8px">
-        <select id="addLearnerSelect" multiple size="12" style="width:100%"></select>
-        <p style="font-size:11px;color:#888;margin:4px 0 0">
-          <span id="addLearnerCount">0</span> learner(s) available
-        </p>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-grey" onclick="closeModal('addLearnerModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="doAddLearner()">➕ Add Selected</button>
+      <button class="btn btn-primary" onclick="saveOffering()">💾 Save Changes</button>
     </div>
   </div>
 </div>
@@ -822,10 +820,8 @@ function renderTable() {
         </button>
       </td>
       <td style="white-space:nowrap">
-        <button class="btn btn-warning btn-sm action-btn"
-          data-action="editOffering" data-id="${o.id}">✏️ Edit</button>
-        <button class="btn btn-primary btn-sm action-btn"
-          data-action="addLearner" data-id="${o.id}" data-name="${esc(o.name)}">➕ Add Learner</button>
+        <button class="btn btn-blue btn-sm action-btn"
+          data-action="editOffering" data-id="${o.id}">✏️ Edit / Enroll</button>
         <button class="btn btn-danger btn-sm action-btn"
           data-action="archiveOffering" data-id="${o.id}" data-name="${esc(o.name)}">🗄 Archive</button>
       </td>
@@ -909,20 +905,10 @@ function renderCalendar() {
             ${o.location ? `<div class="cal-instructor">📍 ${esc(o.location)}</div>` : ''}
             ${o.level    ? `<div class="cal-instructor" style="color:#888">👥 ${esc(o.level)}</div>` : ''}
             <div class="cal-actions">
-              <button class="cal-btn cal-btn-enroll action-btn"
-                data-action="showEnrolled"
-                data-id="${o.id}"
-                data-name="${esc(o.name)}"
-                title="View enrolled learners">👥</button>
-              <button class="cal-btn cal-btn-add action-btn"
-                data-action="addLearner"
-                data-id="${o.id}"
-                data-name="${esc(o.name)}"
-                title="Add learner">➕</button>
-              <button class="cal-btn cal-btn-edit action-btn"
+              <button class="btn cal-btn cal-btn-edit action-btn"
                 data-action="editOffering"
                 data-id="${o.id}"
-                title="Edit offering">✏️</button>
+                title="Edit / view enrollment">✏️ Edit &amp; Enroll</button>
             </div>
             ${fillBar}
           </div>`;
@@ -1077,23 +1063,28 @@ async function doAddLearner() {
 // ── Create / Edit offering modal ──────────────────────────────
 function openCreateModal() {
   document.getElementById('offeringModalTitle').textContent = 'New Offering';
-  document.getElementById('editId').value    = '';
-  document.getElementById('fName').value     = '';
+  document.getElementById('editId').value      = '';
+  document.getElementById('fName').value       = '';
   document.getElementById('fInstructor').value = '';
-  document.getElementById('fLocation').value = '';
-  document.getElementById('fCapacity').value = '12';
-  document.getElementById('fLevel').value    = '';
-  document.getElementById('fType').value     = '';
-  document.getElementById('fDesc').value     = '';
-  document.getElementById('fSession').value  = state.session.fullSessionName || '';
+  document.getElementById('fLocation').value   = '';
+  document.getElementById('fCapacity').value   = '12';
+  document.getElementById('fLevel').value      = '';
+  document.getElementById('fType').value       = '';
+  document.getElementById('fDesc').value       = '';
+  document.getElementById('fSession').value    = state.session.fullSessionName || '';
   Array.from(document.getElementById('fDays').options).forEach(o => o.selected = false);
   Array.from(document.getElementById('fBlocks').options).forEach(o => o.selected = false);
+
+  // Hide right panel for new offerings (no ID yet)
+  document.getElementById('enrolledPanel').style.display = 'none';
+  document.getElementById('archiveFromEditBtn').style.display = 'none';
   document.getElementById('offeringModal').style.display = 'block';
 }
 
 function openEditModal(id) {
   const o = state.offerings.find(x => x.id === id);
   if (!o) return;
+
   document.getElementById('offeringModalTitle').textContent = 'Edit: ' + o.name;
   document.getElementById('editId').value       = id;
   document.getElementById('fName').value        = o.name        || '';
@@ -1111,7 +1102,155 @@ function openEditModal(id) {
     opt.selected = selDays.includes(opt.value));
   Array.from(document.getElementById('fBlocks').options).forEach(opt =>
     opt.selected = selBlocks.includes(opt.value));
+
+  // Show right panel and populate it
+  document.getElementById('enrolledPanel').style.display = 'flex';
+  document.getElementById('archiveFromEditBtn').style.display = 'inline-block';
+  populateEnrolledPanel(id);
+  populateInlineAddList(id);
+
   document.getElementById('offeringModal').style.display = 'block';
+}
+
+// ── Right panel — enrolled list ───────────────────────────────
+function populateEnrolledPanel(offeringId) {
+  const enrolled = getEnrolledNames(offeringId);
+  const o        = state.offerings.find(x => x.id === offeringId);
+  const capacity = o ? (Number(o.capacity) || 999) : 999;
+  const full     = enrolled.length >= capacity;
+
+  document.getElementById('enrolledPanelCount').textContent =
+    `${enrolled.length}${capacity === 999 ? '' : ' / ' + capacity}${full ? ' · FULL' : ''}`;
+  document.getElementById('enrolledPanelCount').style.color = full ? '#f44336' : '#888';
+
+  const list = document.getElementById('enrolledPanelList');
+
+  if (!enrolled.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px">No learners enrolled yet</div>';
+    return;
+  }
+
+  list.innerHTML = enrolled.sort().map((name, i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:13px">
+      <span>${i + 1}. ${esc(name)}</span>
+      <button class="btn btn-danger btn-sm action-btn"
+        style="padding:3px 8px;font-size:11px"
+        data-action="removeFromPanel"
+        data-name="${esc(name)}"
+        data-id="${offeringId}"
+        data-offeringname="${esc(o ? o.name : '')}">✗</button>
+    </div>`).join('');
+}
+
+// ── Right panel — add learner list ────────────────────────────
+function populateInlineAddList(offeringId) {
+  const enrolled  = getEnrolledNames(offeringId);
+  const available = [...state.students]
+    .filter(s => !enrolled.includes(s.name))
+    .sort((a, b) => (a.name||'').localeCompare(b.name||''));
+
+  state._inlineAddOptions  = available;
+  state._inlineOfferingId  = offeringId;
+  document.getElementById('inlineAddSearch').value = '';
+  _renderInlineAddSelect(available);
+}
+
+function _renderInlineAddSelect(list) {
+  const sel = document.getElementById('inlineAddSelect');
+  sel.innerHTML = list.map(s =>
+    `<option value="${esc(s.name)}">${esc(s.name)}${s.grade ? ' — ' + esc(s.grade) : ''}</option>`
+  ).join('');
+  document.getElementById('inlineAddCount').textContent = list.length;
+}
+
+function filterInlineAddList() {
+  const q = document.getElementById('inlineAddSearch').value.toLowerCase();
+  const filtered = q
+    ? state._inlineAddOptions.filter(s =>
+        (s.name||'').toLowerCase().includes(q) ||
+        (s.grade||'').toLowerCase().includes(q))
+    : state._inlineAddOptions;
+  _renderInlineAddSelect(filtered);
+}
+
+async function doInlineAddLearner() {
+  const selected = Array.from(
+    document.getElementById('inlineAddSelect').selectedOptions
+  ).map(o => o.value);
+
+  if (!selected.length) { alert('Select at least one learner'); return; }
+
+  const offeringId = state._inlineOfferingId;
+  if (!offeringId) return;
+
+  let ok = 0, fail = 0;
+  for (const name of selected) {
+    try {
+      const d = await post({ action:'manualEnroll', studentName:name, offeringId });
+      if (d.success) {
+        ok++;
+        // Update local state immediately so the panel refreshes without a full reload
+        const learner = state.learners.find(l => (l.name||'').toLowerCase() === name.toLowerCase());
+        if (learner) {
+          try {
+            const classes = typeof learner.classes === 'string'
+              ? JSON.parse(learner.classes || '[]') : (learner.classes || []);
+            if (!classes.includes(String(offeringId))) classes.push(String(offeringId));
+            learner.classes = JSON.stringify(classes);
+            learner.totalClasses = classes.length;
+          } catch {}
+        }
+        // Update enroll counts
+        state.enrollCounts[offeringId] = (state.enrollCounts[offeringId] || 0) + 1;
+      } else { fail++; }
+    } catch { fail++; }
+  }
+
+  showStatus(
+    ok ? `✅ Added ${ok} learner(s)${fail ? ` · ${fail} failed` : ''}` : `❌ All ${fail} failed`,
+    ok ? 'success' : 'error'
+  );
+
+  if (ok) {
+    // Refresh the panel in place — no need to close the modal
+    populateEnrolledPanel(offeringId);
+    populateInlineAddList(offeringId);
+    renderOfferings(); // refresh calendar/table enrollment counts
+  }
+}
+
+async function removeFromPanel(studentName, offeringId, offeringName) {
+  if (!confirm(`Remove ${studentName} from "${offeringName}"?`)) return;
+  try {
+    const d = await post({ action:'removeEnrollment', studentName, offeringId });
+    if (d.success) {
+      showStatus(`Removed ${studentName}`, 'success');
+      // Update local state
+      const learner = state.learners.find(l => (l.name||'').toLowerCase() === studentName.toLowerCase());
+      if (learner) {
+        try {
+          let classes = typeof learner.classes === 'string'
+            ? JSON.parse(learner.classes || '[]') : (learner.classes || []);
+          classes = classes.filter(c => String(c) !== String(offeringId) && Number(c) !== Number(offeringId));
+          learner.classes = JSON.stringify(classes);
+          learner.totalClasses = classes.length;
+        } catch {}
+      }
+      state.enrollCounts[offeringId] = Math.max(0, (state.enrollCounts[offeringId] || 1) - 1);
+      populateEnrolledPanel(Number(offeringId));
+      populateInlineAddList(Number(offeringId));
+      renderOfferings();
+    } else { showStatus('Error: ' + d.message, 'error'); }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
+}
+
+function archiveFromEdit() {
+  const id   = Number(document.getElementById('editId').value);
+  const name = document.getElementById('fName').value.trim();
+  if (!id) return;
+  closeModal('offeringModal');
+  archiveOffering(id, name);
 }
 
 async function saveOffering() {
@@ -1460,15 +1599,20 @@ document.addEventListener('click', e => {
       viewStudentSchedule(a.name);
       break;
 
+    // Enrolled panel (inside edit modal)
+    case 'removeFromPanel':
+      removeFromPanel(a.name, Number(a.id), a.offeringname);
+      break;
+
     // Offerings tab — table view
     case 'showEnrolled':
-      showEnrolled(Number(a.id), a.name);
+      openEditModal(Number(a.id));
       break;
     case 'editOffering':
       openEditModal(Number(a.id));
       break;
     case 'addLearner':
-      openAddLearnerModal(Number(a.id), a.name);
+      openEditModal(Number(a.id));
       break;
     case 'archiveOffering':
       archiveOffering(Number(a.id), a.name);
