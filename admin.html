@@ -126,6 +126,13 @@ tr:hover td{background:#f0f7ff}
 .cal-name{font-weight:700;font-size:11px;line-height:1.3;margin-bottom:2px}
 .cal-instructor{font-size:10px;color:#666}
 .cal-enroll{font-size:10px;font-weight:600;position:absolute;top:5px;right:5px}
+.cal-offering:hover .cal-actions{opacity:1;pointer-events:auto}
+.cal-actions{display:flex;gap:3px;margin-top:5px;opacity:0;pointer-events:none;transition:opacity .15s}
+.cal-btn{border:none;border-radius:3px;padding:3px 7px;font-size:11px;cursor:pointer;font-weight:600;transition:opacity .15s}
+.cal-btn:hover{opacity:.8}
+.cal-btn-enroll{background:#e3f2fd;color:#1565c0}
+.cal-btn-add{background:#e8f5e9;color:#2e7d32}
+.cal-btn-edit{background:#fff3e0;color:#e65100}
 .cal-enroll.full{color:#f44336}
 .cal-enroll.ok{color:#4CAF50}
 .view-toggle{display:flex;gap:0;border:1px solid #ccc;border-radius:4px;overflow:hidden}
@@ -840,14 +847,13 @@ function renderCalendar() {
     return;
   }
 
-  // Legend
   const legend = `
     <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;flex-wrap:wrap;font-size:12px">
       <span style="font-weight:700;color:#555">Legend:</span>
       <span><span style="display:inline-block;width:10px;height:10px;background:#e53935;border-radius:2px;margin-right:4px"></span>Commitment</span>
       <span><span style="display:inline-block;width:10px;height:10px;background:#43a047;border-radius:2px;margin-right:4px"></span>Drop-in</span>
       <span><span style="display:inline-block;width:10px;height:10px;background:#1e88e5;border-radius:2px;margin-right:4px"></span>Other</span>
-      <span style="color:#999">Click any offering to edit</span>
+      <span style="color:#aaa;margin-left:8px">Hover an offering to see actions</span>
     </div>`;
 
   let html = `<div class="cal-grid">`;
@@ -862,16 +868,13 @@ function renderCalendar() {
   TIMES.forEach(block => {
     if (block.lunch) {
       html += `<div class="cal-lunch-time">🍽 Lunch</div>`;
-      DAYS.forEach(() => {
-        html += `<div class="cal-lunch-cell">Lunch Break</div>`;
-      });
+      DAYS.forEach(() => { html += `<div class="cal-lunch-cell">Lunch Break</div>`; });
       return;
     }
 
     html += `<div class="cal-time">${block.label}<small>${block.time}</small></div>`;
 
     DAYS.forEach(day => {
-      // Find all offerings for this exact day+block
       const cellOfferings = list.filter(o => {
         const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
         const times = (o.time || '').split(',').map(t => normTime(t.trim()));
@@ -888,25 +891,41 @@ function renderCalendar() {
         const typeClass = o.type === 'Commit' ? 'type-commit'
           : o.type === 'Drop-in' ? 'type-dropin' : 'type-other';
 
-        const enrollBadge = capacity === 999
-          ? `<span class="cal-enroll ok">${enrolled}</span>`
-          : `<span class="cal-enroll ${full ? 'full' : 'ok'}">${enrolled}/${capacity}</span>`;
+        const enrollColor = full ? '#f44336' : '#4CAF50';
+        const enrollText  = capacity === 999
+          ? `${enrolled}`
+          : `${enrolled}/${capacity}`;
 
-        // Thin fill bar at bottom showing capacity %
         const fillBar = capacity !== 999
           ? `<div style="position:absolute;bottom:0;left:0;height:3px;width:${pct}%;
-               background:${full?'#f44336':'#4CAF50'};border-radius:0 0 0 3px;transition:width .3s"></div>`
+               background:${enrollColor};border-radius:0 0 0 3px"></div>`
           : '';
 
-        html += `<div class="cal-offering ${typeClass}${full?' is-full':''}"
-          onclick="openEditModal(${o.id})" title="${esc(o.name)} — click to edit">
-          ${enrollBadge}
-          <div class="cal-name">${esc(o.name)}</div>
-          <div class="cal-instructor">👤 ${esc(o.instructor)}</div>
-          ${o.location ? `<div class="cal-instructor">📍 ${esc(o.location)}</div>` : ''}
-          ${o.level ? `<div class="cal-instructor" style="color:#888">👥 ${esc(o.level)}</div>` : ''}
-          ${fillBar}
-        </div>`;
+        html += `
+          <div class="cal-offering ${typeClass}${full?' is-full':''}">
+            <span class="cal-enroll ${full?'full':'ok'}">${enrollText}</span>
+            <div class="cal-name">${esc(o.name)}</div>
+            <div class="cal-instructor">👤 ${esc(o.instructor)}</div>
+            ${o.location ? `<div class="cal-instructor">📍 ${esc(o.location)}</div>` : ''}
+            ${o.level    ? `<div class="cal-instructor" style="color:#888">👥 ${esc(o.level)}</div>` : ''}
+            <div class="cal-actions">
+              <button class="cal-btn cal-btn-enroll action-btn"
+                data-action="showEnrolled"
+                data-id="${o.id}"
+                data-name="${esc(o.name)}"
+                title="View enrolled learners">👥</button>
+              <button class="cal-btn cal-btn-add action-btn"
+                data-action="addLearner"
+                data-id="${o.id}"
+                data-name="${esc(o.name)}"
+                title="Add learner">➕</button>
+              <button class="cal-btn cal-btn-edit action-btn"
+                data-action="editOffering"
+                data-id="${o.id}"
+                title="Edit offering">✏️</button>
+            </div>
+            ${fillBar}
+          </div>`;
       });
       html += `</div>`;
     });
