@@ -108,6 +108,31 @@ tr:hover td{background:#f0f7ff}
 /* learner search highlight */
 .search-highlight{background:#fff3cd;border-radius:2px;padding:0 1px}
 
+/* ── Calendar view ───────────────────────────────────────── */
+.cal-grid{display:grid;grid-template-columns:80px repeat(5,1fr);gap:0;border:2px solid #ddd;border-radius:8px;overflow:hidden;font-size:12px}
+.cal-hdr{background:#4CAF50;color:white;font-weight:700;text-align:center;padding:10px 6px;font-size:13px}
+.cal-time{background:#f8f9fa;font-weight:700;text-align:center;padding:8px 4px;font-size:11px;color:#555;border-top:1px solid #ddd;border-right:2px solid #ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.cal-time small{font-weight:normal;color:#999;font-size:9px}
+.cal-cell{border-top:1px solid #ddd;border-left:1px solid #ddd;padding:4px;min-height:90px;vertical-align:top;background:white;position:relative}
+.cal-cell:hover{background:#fafafa}
+.cal-lunch-time{background:#fff9e6;border-top:1px solid #ddd;border-right:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:10px;color:#bbb;font-weight:700;padding:6px 4px}
+.cal-lunch-cell{background:#fff9e6;border-top:1px solid #ddd;border-left:1px solid #ddd;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px}
+.cal-offering{border-radius:5px;padding:6px 8px;margin:3px 0;cursor:pointer;transition:all .15s;border-left:4px solid transparent;position:relative}
+.cal-offering:hover{filter:brightness(.93);transform:translateX(1px)}
+.cal-offering.type-commit{background:#fff0f0;border-left-color:#e53935;color:#333}
+.cal-offering.type-dropin{background:#f0fff4;border-left-color:#43a047;color:#333}
+.cal-offering.type-other{background:#e3f2fd;border-left-color:#1e88e5;color:#333}
+.cal-offering.is-full{opacity:.55}
+.cal-name{font-weight:700;font-size:11px;line-height:1.3;margin-bottom:2px}
+.cal-instructor{font-size:10px;color:#666}
+.cal-enroll{font-size:10px;font-weight:600;position:absolute;top:5px;right:5px}
+.cal-enroll.full{color:#f44336}
+.cal-enroll.ok{color:#4CAF50}
+.view-toggle{display:flex;gap:0;border:1px solid #ccc;border-radius:4px;overflow:hidden}
+.view-toggle button{padding:6px 14px;border:none;background:#f8f9fa;font-size:13px;cursor:pointer;font-weight:600;color:#555}
+.view-toggle button.active{background:#2196F3;color:white}
+.view-toggle button:hover:not(.active){background:#e0e0e0}
+
 @media(max-width:768px){
   .toolbar{flex-direction:column;align-items:stretch}
   .form-row{grid-template-columns:1fr}
@@ -169,6 +194,10 @@ tr:hover td{background:#f0f7ff}
     <div class="toolbar">
       <button class="btn btn-primary" onclick="openCreateModal()">➕ New Offering</button>
       <button class="btn btn-blue" onclick="loadOfferings()">🔄 Refresh</button>
+      <div class="view-toggle">
+        <button id="viewTableBtn" class="active" onclick="setOfferingView('table')" title="Table view">☰ Table</button>
+        <button id="viewCalBtn" onclick="setOfferingView('calendar')" title="Calendar view">📅 Calendar</button>
+      </div>
       <label>Sort:</label>
       <select id="sortBy" onchange="renderOfferings()">
         <option value="day">Day / Time</option>
@@ -381,14 +410,15 @@ const BLOCK_MAP = {
 // ─────────────────────────────────────────────────────────────
 const state = {
   session:      {},
-  students:     [],   // { id, name, grade } — from getAllStudents
-  learners:     [],   // { name, grade, totalClasses, classes, ... } — from loadAll
+  students:     [],
+  learners:     [],
   offerings:    [],
   enrollCounts: {},
   pending:      [],
   proposals:    [],
+  offeringView: 'table',
   addLearnerOfferingId: null,
-  _addLearnerAllOptions: []  // cached for filter
+  _addLearnerAllOptions: []
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -575,8 +605,8 @@ function renderLearners() {
       <td>${classCount}</td>
       <td>${badge}</td>
       <td>
-        <button class="btn btn-blue btn-sm"
-          onclick="viewStudentSchedule(${JSON.stringify(s.name)})">📅 View Schedule</button>
+        <button class="btn btn-blue btn-sm action-btn"
+          data-action="viewSchedule" data-name="${esc(s.name)}">📅 View Schedule</button>
       </td>
     </tr>`;
   });
@@ -713,6 +743,25 @@ function getFiltered() {
 }
 
 function renderOfferings() {
+  if (state.offeringView === 'calendar') {
+    renderCalendar();
+  } else {
+    renderTable();
+  }
+}
+
+function setOfferingView(view) {
+  state.offeringView = view;
+  document.getElementById('viewTableBtn').classList.toggle('active', view === 'table');
+  document.getElementById('viewCalBtn').classList.toggle('active', view === 'calendar');
+  // Sort is not applicable in calendar — hide/show it
+  document.getElementById('sortBy').closest('label') &&
+    (document.getElementById('sortBy').parentElement.style.display = view === 'calendar' ? 'none' : '');
+  renderOfferings();
+}
+
+// ── TABLE VIEW ────────────────────────────────────────────────
+function renderTable() {
   const list = getFiltered();
   document.getElementById('offeringCount').textContent = list.length + ' / ' + state.offerings.length;
 
@@ -759,24 +808,112 @@ function renderOfferings() {
       <td>${esc(o.level||'—')}</td>
       <td>${typeBadge}</td>
       <td>
-        <button class="btn btn-blue btn-sm"
-          onclick="showEnrolled(${o.id}, ${JSON.stringify(o.name)})"
+        <button class="btn btn-blue btn-sm action-btn"
+          data-action="showEnrolled" data-id="${o.id}" data-name="${esc(o.name)}"
           style="${full ? 'background:#f44336' : ''}">
           ${enrolled}/${capacity===999?'∞':capacity} 👥
         </button>
       </td>
       <td style="white-space:nowrap">
-        <button class="btn btn-warning btn-sm" onclick="openEditModal(${o.id})">✏️ Edit</button>
-        <button class="btn btn-primary btn-sm"
-          onclick="openAddLearnerModal(${o.id}, ${JSON.stringify(o.name)})">➕ Add Learner</button>
-        <button class="btn btn-danger btn-sm"
-          onclick="archiveOffering(${o.id}, ${JSON.stringify(o.name)})">🗄 Archive</button>
+        <button class="btn btn-warning btn-sm action-btn"
+          data-action="editOffering" data-id="${o.id}">✏️ Edit</button>
+        <button class="btn btn-primary btn-sm action-btn"
+          data-action="addLearner" data-id="${o.id}" data-name="${esc(o.name)}">➕ Add Learner</button>
+        <button class="btn btn-danger btn-sm action-btn"
+          data-action="archiveOffering" data-id="${o.id}" data-name="${esc(o.name)}">🗄 Archive</button>
       </td>
     </tr>`;
   });
 
   html += '</tbody></table>';
   document.getElementById('offeringsContainer').innerHTML = html;
+}
+
+// ── CALENDAR VIEW ─────────────────────────────────────────────
+function renderCalendar() {
+  const list = getFiltered();
+  document.getElementById('offeringCount').textContent = list.length + ' / ' + state.offerings.length;
+
+  if (!list.length) {
+    document.getElementById('offeringsContainer').innerHTML =
+      '<div class="empty">📚<p>No offerings match filters</p></div>';
+    return;
+  }
+
+  // Legend
+  const legend = `
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;flex-wrap:wrap;font-size:12px">
+      <span style="font-weight:700;color:#555">Legend:</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#e53935;border-radius:2px;margin-right:4px"></span>Commitment</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#43a047;border-radius:2px;margin-right:4px"></span>Drop-in</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#1e88e5;border-radius:2px;margin-right:4px"></span>Other</span>
+      <span style="color:#999">Click any offering to edit</span>
+    </div>`;
+
+  let html = `<div class="cal-grid">`;
+
+  // Header row
+  html += `<div class="cal-hdr" style="font-size:11px">Time</div>`;
+  DAYS.forEach(d => {
+    html += `<div class="cal-hdr">${d.charAt(0).toUpperCase()+d.slice(1)}</div>`;
+  });
+
+  // Time rows
+  TIMES.forEach(block => {
+    if (block.lunch) {
+      html += `<div class="cal-lunch-time">🍽 Lunch</div>`;
+      DAYS.forEach(() => {
+        html += `<div class="cal-lunch-cell">Lunch Break</div>`;
+      });
+      return;
+    }
+
+    html += `<div class="cal-time">${block.label}<small>${block.time}</small></div>`;
+
+    DAYS.forEach(day => {
+      // Find all offerings for this exact day+block
+      const cellOfferings = list.filter(o => {
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+        return days.includes(day) && times.includes(block.time);
+      });
+
+      html += `<div class="cal-cell">`;
+      cellOfferings.forEach(o => {
+        const enrolled = state.enrollCounts[o.id] || 0;
+        const capacity = Number(o.capacity) || 999;
+        const full     = enrolled >= capacity;
+        const pct      = capacity === 999 ? 0 : Math.round((enrolled/capacity)*100);
+
+        const typeClass = o.type === 'Commit' ? 'type-commit'
+          : o.type === 'Drop-in' ? 'type-dropin' : 'type-other';
+
+        const enrollBadge = capacity === 999
+          ? `<span class="cal-enroll ok">${enrolled}</span>`
+          : `<span class="cal-enroll ${full ? 'full' : 'ok'}">${enrolled}/${capacity}</span>`;
+
+        // Thin fill bar at bottom showing capacity %
+        const fillBar = capacity !== 999
+          ? `<div style="position:absolute;bottom:0;left:0;height:3px;width:${pct}%;
+               background:${full?'#f44336':'#4CAF50'};border-radius:0 0 0 3px;transition:width .3s"></div>`
+          : '';
+
+        html += `<div class="cal-offering ${typeClass}${full?' is-full':''}"
+          onclick="openEditModal(${o.id})" title="${esc(o.name)} — click to edit">
+          ${enrollBadge}
+          <div class="cal-name">${esc(o.name)}</div>
+          <div class="cal-instructor">👤 ${esc(o.instructor)}</div>
+          ${o.location ? `<div class="cal-instructor">📍 ${esc(o.location)}</div>` : ''}
+          ${o.level ? `<div class="cal-instructor" style="color:#888">👥 ${esc(o.level)}</div>` : ''}
+          ${fillBar}
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  });
+
+  html += `</div>`;
+  document.getElementById('offeringsContainer').innerHTML = legend + html;
 }
 
 // ── Enrolled modal ────────────────────────────────────────────
@@ -799,8 +936,11 @@ function showEnrolled(offeringId, name) {
       html += `<div style="display:flex;justify-content:space-between;align-items:center;
         padding:9px 12px;border-bottom:1px solid #eee">
         <strong>${i+1}. ${esc(nm)}</strong>
-        <button class="btn btn-danger btn-sm"
-          onclick="removeEnrollment(${JSON.stringify(nm)},${offeringId},${JSON.stringify(name)})">
+        <button class="btn btn-danger btn-sm action-btn"
+          data-action="removeEnrollment"
+          data-name="${esc(nm)}"
+          data-id="${offeringId}"
+          data-offeringname="${esc(name)}">
           ✗ Remove
         </button>
       </div>`;
@@ -1070,25 +1210,33 @@ function renderPending() {
             <div class="class-row-detail">${esc(req.dayTime || '—')}</div>
           </div>
           <div style="white-space:nowrap">
-            <button class="btn btn-primary btn-sm"
-              onclick="approveOne(${JSON.stringify(req.requestId)},${JSON.stringify(req.className)},${JSON.stringify(studentName)})">
-              ✓ Approve
-            </button>
-            <button class="btn btn-danger btn-sm"
-              onclick="denyOne(${JSON.stringify(req.requestId)},${JSON.stringify(req.className)},${JSON.stringify(studentName)})">
-              ✗ Deny
-            </button>
+            <button class="btn btn-primary btn-sm action-btn"
+              data-action="approveOne"
+              data-requestid="${esc(req.requestId)}"
+              data-classname="${esc(req.className)}"
+              data-student="${esc(studentName)}">✓ Approve</button>
+            <button class="btn btn-danger btn-sm action-btn"
+              data-action="denyOne"
+              data-requestid="${esc(req.requestId)}"
+              data-classname="${esc(req.className)}"
+              data-student="${esc(studentName)}">✗ Deny</button>
           </div>
         </div>`;
       });
 
       html += `<div class="req-footer">
-        <button class="btn btn-primary btn-sm"
-          onclick="approveAllFor(${JSON.stringify(baseId)},${JSON.stringify(studentName)},${requests.length})">
+        <button class="btn btn-primary btn-sm action-btn"
+          data-action="approveAllFor"
+          data-baseid="${esc(baseId)}"
+          data-student="${esc(studentName)}"
+          data-count="${requests.length}">
           ✅ Approve All (${requests.length})
         </button>
-        <button class="btn btn-danger btn-sm"
-          onclick="denyAllFor(${JSON.stringify(baseId)},${JSON.stringify(studentName)},${requests.length})">
+        <button class="btn btn-danger btn-sm action-btn"
+          data-action="denyAllFor"
+          data-baseid="${esc(baseId)}"
+          data-student="${esc(studentName)}"
+          data-count="${requests.length}">
           ✗ Deny All
         </button>
       </div></div>`;
@@ -1223,12 +1371,16 @@ function renderProposals() {
           </div>
         </div>
         <div class="req-footer">
-          <button class="btn btn-primary btn-sm"
-            onclick="approveProposal(${JSON.stringify(p.proposalId)},${JSON.stringify(p.name||'')})">
+          <button class="btn btn-primary btn-sm action-btn"
+            data-action="approveProposal"
+            data-proposalid="${esc(p.proposalId)}"
+            data-name="${esc(p.name||'')}">
             ✓ Approve &amp; Add to Schedule
           </button>
-          <button class="btn btn-danger btn-sm"
-            onclick="denyProposal(${JSON.stringify(p.proposalId)},${JSON.stringify(p.name||'')})">
+          <button class="btn btn-danger btn-sm action-btn"
+            data-action="denyProposal"
+            data-proposalid="${esc(p.proposalId)}"
+            data-name="${esc(p.name||'')}">
             ✗ Deny
           </button>
         </div>
@@ -1273,6 +1425,64 @@ async function denyProposal(proposalId, name) {
     else showStatus('Error: ' + d.message, 'error');
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
+
+// ─────────────────────────────────────────────────────────────
+// EVENT DELEGATION — handles all dynamically rendered buttons
+// using data-action attributes instead of inline onclick
+// ─────────────────────────────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.action-btn');
+  if (!btn) return;
+  const a = btn.dataset;
+
+  switch (a.action) {
+    // Learners tab
+    case 'viewSchedule':
+      viewStudentSchedule(a.name);
+      break;
+
+    // Offerings tab — table view
+    case 'showEnrolled':
+      showEnrolled(Number(a.id), a.name);
+      break;
+    case 'editOffering':
+      openEditModal(Number(a.id));
+      break;
+    case 'addLearner':
+      openAddLearnerModal(Number(a.id), a.name);
+      break;
+    case 'archiveOffering':
+      archiveOffering(Number(a.id), a.name);
+      break;
+
+    // Enrolled modal
+    case 'removeEnrollment':
+      removeEnrollment(a.name, Number(a.id), a.offeringname);
+      break;
+
+    // Pending requests
+    case 'approveOne':
+      approveOne(a.requestid, a.classname, a.student);
+      break;
+    case 'denyOne':
+      denyOne(a.requestid, a.classname, a.student);
+      break;
+    case 'approveAllFor':
+      approveAllFor(a.baseid, a.student, Number(a.count));
+      break;
+    case 'denyAllFor':
+      denyAllFor(a.baseid, a.student, Number(a.count));
+      break;
+
+    // Proposals
+    case 'approveProposal':
+      approveProposal(a.proposalid, a.name);
+      break;
+    case 'denyProposal':
+      denyProposal(a.proposalid, a.name);
+      break;
+  }
+});
 
 // ─────────────────────────────────────────────────────────────
 // BOOT
