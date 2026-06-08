@@ -3,2329 +3,1196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Facilitator Dashboard</title>
+<title>ALC Mosaic — Facilitator Dashboard</title>
 <style>
-*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5}
-.container{max-width:1600px;margin:0 auto;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-h1{text-align:center;color:#2196F3;margin-bottom:5px}h2{font-size:16px;color:#666;text-align:center;margin:0 0 20px}
-.tabs{display:flex;border-bottom:2px solid #ddd;margin-bottom:20px;gap:5px}
-.tab{padding:12px 20px;cursor:pointer;background:#f0f0f0;border:none;border-bottom:3px solid transparent;font-size:15px;border-radius:8px 8px 0 0}
-.tab:hover{background:#e0e0e0}.tab.active{background:white;border-bottom:3px solid #2196F3;color:#2196F3;font-weight:bold}
-.tab-content{display:none}.tab-content.active{display:block}
-.status{padding:12px;margin-bottom:20px;border-radius:4px;text-align:center;display:none}
-.status.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-.status.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:25px}
-.stat-card{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:8px;text-align:center}
-.stat-card h3{margin:0;font-size:32px}.stat-card p{margin:5px 0 0;font-size:13px;opacity:0.9}
-.stat-card.orange{background:linear-gradient(135deg,#f093fb,#f5576c)}
-.actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:15px;background:#f8f9fa;border-radius:8px;flex-wrap:wrap;gap:10px}
-.btn{padding:10px 20px;font-size:14px;cursor:pointer;border:none;border-radius:4px;font-weight:600;color:white}
-.btn-primary,.btn-success{background:#4CAF50}.btn-primary:hover,.btn-success:hover{background:#45a049}
-.btn-secondary{background:#2196F3}.btn-secondary:hover{background:#0b7dda}
-.btn-danger{background:#f44336}.btn-danger:hover{background:#da190b}
-.btn-warning{background:#ff9800}.btn-warning:hover{background:#e68900}
-.btn-small{padding:6px 12px;font-size:12px;margin:2px}
-.lbl{font-weight:bold;color:#333}
-.inp{padding:8px;border:1px solid #ddd;border-radius:4px}
-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
-th{background:#4CAF50;color:white;padding:12px 8px;text-align:left;font-weight:bold;position:sticky;top:0}
-td{padding:10px 8px;border:1px solid #ddd;vertical-align:top}
-tr:nth-child(even){background:#f9f9f9}tr:hover{background:#e3f2fd}
-.badge{display:inline-block;padding:3px 8px;border-radius:3px;font-size:10px;font-weight:bold;text-transform:uppercase}
+/* ── Reset & Base ─────────────────────────────────────────── */
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5}
+.container{max-width:1600px;margin:0 auto;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+h1{text-align:center;color:#2196F3;margin:0 0 4px}
+.subtitle{text-align:center;color:#888;font-size:14px;margin:0 0 20px}
+
+/* ── Status banner ───────────────────────────────────────── */
+#status{padding:12px;margin-bottom:16px;border-radius:4px;text-align:center;display:none;font-weight:600}
+.status-success{background:#d4edda;color:#155724}
+.status-error{background:#f8d7da;color:#721c24}
+.status-info{background:#cce5ff;color:#004085}
+
+/* ── Tabs ────────────────────────────────────────────────── */
+.tabs{display:flex;border-bottom:2px solid #ddd;margin-bottom:20px;gap:4px;flex-wrap:wrap}
+.tab{padding:10px 18px;cursor:pointer;background:#f0f0f0;border:none;border-radius:8px 8px 0 0;font-size:14px;font-weight:600;color:#555;transition:all .15s}
+.tab:hover{background:#e0e0e0}
+.tab.active{background:white;border-bottom:3px solid #2196F3;color:#2196F3}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── Stat cards ──────────────────────────────────────────── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:24px}
+.stat-card{padding:18px;border-radius:8px;text-align:center;color:white}
+.stat-card h3{margin:0;font-size:30px}
+.stat-card p{margin:4px 0 0;font-size:12px;opacity:.9}
+.stat-blue{background:linear-gradient(135deg,#667eea,#764ba2)}
+.stat-green{background:linear-gradient(135deg,#56ab2f,#a8e063)}
+.stat-orange{background:linear-gradient(135deg,#f093fb,#f5576c)}
+.stat-teal{background:linear-gradient(135deg,#11998e,#38ef7d)}
+
+/* ── Toolbar / actions bar ───────────────────────────────── */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 15px;background:#f8f9fa;border-radius:6px;margin-bottom:16px}
+.toolbar label{font-weight:600;font-size:13px;color:#444;white-space:nowrap}
+.toolbar select,.toolbar input{padding:7px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn{padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;border:none;border-radius:4px;color:white;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:#4CAF50}
+.btn-blue{background:#2196F3}
+.btn-danger{background:#f44336}
+.btn-warning{background:#ff9800}
+.btn-grey{background:#757575}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+/* ── Tables ──────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+th{background:#4CAF50;color:white;padding:10px 8px;text-align:left;position:sticky;top:0;z-index:5}
+td{padding:9px 8px;border-bottom:1px solid #eee;vertical-align:top}
+tr:hover td{background:#f0f7ff}
+
+/* ── Badges ──────────────────────────────────────────────── */
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;text-transform:uppercase}
 .badge-pending{background:#fff3cd;color:#856404;border:1px solid #ffc107}
-.loading{text-align:center;padding:40px;color:#999}.spinner{border:4px solid #f3f3f3;border-top:4px solid #4CAF50;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 15px}
-@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.empty{text-align:center;padding:60px 20px;color:#999;font-size:48px}
-.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;overflow:auto;background:rgba(0,0,0,0.5)}
-.modal-content{background:white;margin:2% auto;padding:0;border-radius:8px;width:90%;max-width:600px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto}
-.modal-header{padding:20px;background:#4CAF50;color:white;border-radius:8px 8px 0 0}.modal-header h2{margin:0;color:white;text-align:left}
-.modal-body{padding:20px}.modal-footer{padding:15px 20px;background:#f8f9fa;border-radius:0 0 8px 8px;display:flex;justify-content:flex-end;gap:10px}
-.close{color:white;float:right;font-size:28px;font-weight:bold;cursor:pointer}.close:hover{opacity:0.8}
-.form-group{margin-bottom:15px}
-.form-group label{display:block;margin-bottom:5px;font-weight:bold;color:#333}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px}
-.form-group textarea{resize:vertical;min-height:80px}
-.request-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:15px;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
-.request-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:2px solid #eee}
-.request-student{font-size:18px;font-weight:bold;color:#2196F3}
-.class-row{background:#f8f9fa;padding:10px;margin:5px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid #2196F3}
-.class-info{flex:1}
-.class-name{font-weight:bold;color:#333;font-size:14px}
-.class-details{font-size:12px;color:#666;margin-top:3px}
-.group-actions{margin-top:10px;padding-top:10px;border-top:1px solid #ddd;display:flex;gap:10px;justify-content:flex-end}
-.attendance-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px;margin-top:20px}
-.attendance-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;box-shadow:0 2px 4px rgba(0,0,0,0.05);display:flex;align-items:center;gap:15px;transition:all 0.2s}
-.attendance-card:hover{box-shadow:0 4px 8px rgba(0,0,0,0.1)}
-.attendance-card.present{border-left:4px solid #4CAF50;background:#f1f8f4}
-.attendance-card.absent{border-left:4px solid #ddd;background:#fafafa;opacity:0.7}
-.attendance-checkbox{width:24px;height:24px;cursor:pointer}
-.attendance-name{font-size:15px;font-weight:600;color:#333;flex:1}
-.attendance-info{font-size:12px;color:#666;margin-top:3px}
-.attendance-summary{background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:20px;display:flex;gap:30px;align-items:center}
-.attendance-stat{text-align:center}
-.attendance-stat-number{font-size:28px;font-weight:bold;color:#4CAF50}
-.attendance-stat-label{font-size:12px;color:#666;margin-top:3px}
-.editable-cell{cursor:pointer;padding:8px;border-radius:4px}
-.editable-cell:hover{background:#e3f2fd}
-.edit-icon{font-size:10px;color:#999;margin-left:5px}
-@media (max-width:768px){.actions{flex-direction:column}.stats{grid-template-columns:1fr}}
+.badge-approved{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.badge-denied{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.badge-commit{background:#ffcdd2;color:#c62828}
+.badge-dropin{background:#c8e6c9;color:#2e7d32}
+
+/* ── Request cards ───────────────────────────────────────── */
+.req-card{background:white;border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.req-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:10px;border-bottom:2px solid #eee;margin-bottom:10px;gap:10px}
+.req-student{font-size:17px;font-weight:700;color:#2196F3}
+.req-meta{font-size:11px;color:#999;margin-top:3px}
+.class-row{background:#f8f9fa;padding:10px 12px;margin:5px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid #2196F3;gap:10px}
+.class-row-info{flex:1}
+.class-row-name{font-weight:700;font-size:13px;color:#333}
+.class-row-detail{font-size:11px;color:#666;margin-top:2px}
+.req-footer{margin-top:10px;padding-top:10px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+/* ── Loading / empty ─────────────────────────────────────── */
+.loading{text-align:center;padding:50px 20px;color:#999}
+.spinner{border:4px solid #f3f3f3;border-top:4px solid #4CAF50;border-radius:50%;width:36px;height:36px;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:60px 20px;color:#bbb;font-size:42px;line-height:1.4}
+.empty p{font-size:16px;margin:10px 0 0;color:#999}
+
+/* ── Modals ──────────────────────────────────────────────── */
+.modal{display:none;position:fixed;z-index:1000;inset:0;background:rgba(0,0,0,.5);overflow:auto}
+.modal-box{background:white;margin:3% auto;border-radius:8px;width:90%;max-width:580px;max-height:92vh;overflow-y:auto;box-shadow:0 4px 24px rgba(0,0,0,.25)}
+.modal-box.wide{max-width:1100px}
+.modal-head{padding:18px 20px;background:#4CAF50;color:white;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center}
+.modal-head h2{margin:0;font-size:17px}
+.modal-close{background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;padding:0}
+.modal-body{padding:20px}
+.modal-foot{padding:14px 20px;background:#f8f9fa;border-radius:0 0 8px 8px;display:flex;justify-content:flex-end;gap:8px}
+
+/* ── Form elements ───────────────────────────────────────── */
+.fg{margin-bottom:15px}
+.fg label{display:block;font-weight:600;font-size:13px;color:#333;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:9px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px;font-family:inherit}
+.fg textarea{resize:vertical;min-height:80px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#4CAF50}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ── Schedule grid (student view) ────────────────────────── */
+.sched-grid{display:grid;grid-template-columns:90px repeat(5,1fr);border:1px solid #ccc;font-size:11px;width:100%}
+.sched-grid>div{border:1px solid #ddd;padding:6px}
+.sched-hdr{background:#4CAF50;color:white;font-weight:700;text-align:center}
+.sched-time{background:#f8f9fa;font-weight:700;text-align:center;font-size:10px;color:#555}
+.sched-lunch{background:#fff9e6;text-align:center;color:#999;grid-column:2/7}
+.sched-cell{min-height:75px;background:#e6f0ff}
+.sched-cell.empty{background:white;text-align:center;color:#ddd;display:flex;align-items:center;justify-content:center}
+.sched-offering{font-weight:700;color:#2196F3;margin-bottom:2px}
+.sched-detail{font-size:10px;color:#666}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:768px){
+  .toolbar{flex-direction:column;align-items:stretch}
+  .form-row{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+}
+
+/* ── Print ───────────────────────────────────────────────── */
 @media print{
-body{background:white;padding:0;margin:0}
-.container{box-shadow:none;padding:10px}
-.modal{position:static;background:none;width:100%;height:auto;overflow:visible}
-.modal-content{box-shadow:none;max-width:100%;width:100%;margin:0;max-height:none;overflow:visible}
-.modal-header{background:white;color:#333;border-bottom:2px solid #333;padding:10px 0}
-.modal-header h2{color:#333}
-.modal-body{padding:10px 0}
-.modal-footer,.close,.tabs,.tab-content:not(.active),.btn,h1,h2:not(#studentScheduleModalTitle){display:none!important}
-.tab-content,#students,#attendance,#offerings,#requests,#offeringProposals,.stats,.actions,#studentsContainer,#offeringsContainer,#attendanceContainer,#requestsContainer,#offeringProposalsContainer{display:none!important}
-button[title="Add note"]{display:none!important}
-#studentScheduleModal{display:block!important}
-.print-header{display:block!important;text-align:center;margin-bottom:15px}
-.print-title{font-size:20px;font-weight:bold;color:#333;margin:5px 0}
-.print-subtitle{font-size:14px;color:#666;margin:3px 0}
-.modal-body>div[style*="background:#fff3cd"]{display:none!important}
-.schedule-grid{display:grid!important;grid-template-columns:100px repeat(5,1fr)!important;gap:0!important;width:100%!important;page-break-inside:avoid}
-.schedule-grid>div{border:1px solid #333!important;padding:6px!important}
-.schedule-grid>div:nth-child(-n+6){background:#4CAF50!important;color:white!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-#offeringNotesLegend{page-break-inside:avoid;margin-top:15px;padding:10px!important;background:#f8f9fa!important;border:1px solid #333!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:block!important}
-.notes-grid{display:grid!important;grid-template-columns:30% 70%!important;gap:0!important;width:100%!important}
-.notes-grid>div{border:1px solid #333!important;padding:8px!important}
-.notes-grid>div:nth-child(3),
-.notes-grid>div:nth-child(3n+3){display:none!important}
-.notes-grid>div:nth-child(1),
-.notes-grid>div:nth-child(2){background:#f0f0f0!important;color:#333!important;font-weight:bold!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.notes-grid>div[style*="background:#e8f5e9"]{background:#e8f5e9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body.print-without-notes #offeringNotesLegend{display:none!important}
-body.print-without-notes .note-asterisk{display:none!important}
-@page{margin:0.5in;size:letter portrait}
+  body{background:white;padding:0}
+  .container{box-shadow:none;padding:8px}
+  .tabs,.toolbar,.btn,#status,.modal-foot,.modal-close{display:none!important}
+  #schedModal{display:block!important;position:static;background:none}
+  .modal-box{box-shadow:none;max-width:100%;margin:0;max-height:none}
+  .modal-head{background:white!important;color:#000!important;border-bottom:2px solid #000}
+  .modal-head h2{color:#000!important}
+  .sched-grid{font-size:9px}
+  .sched-hdr{background:#4CAF50!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:landscape;margin:.4in}
 }
 </style>
-<script>
-// Essential functions needed by onclick handlers - defined early so they're available
-let attendanceLoaded=false;
-function switchTab(i){
-document.querySelectorAll('.tab-content,.tab').forEach(e=>e.classList.remove('active'));
-document.querySelectorAll('.tab')[i].classList.add('active');
-document.querySelectorAll('.tab-content')[i].classList.add('active');
-if(i===1&&!attendanceLoaded){
-const today=new Date().toISOString().split('T')[0];
-document.getElementById('attendanceDate').value=today;
-attendanceLoaded=true;
-}
-if(i===4 && typeof loadOfferingProposals === 'function'){
-loadOfferingProposals();
-}
-}
-// Stub functions that will be replaced by full implementations in main script
-function loadStudents(){}
-function loadAttendanceTab(){}
-function loadAttendanceForDate(){}
-function loadAttendanceRoster(){}
-function loadOfferings(){}
-function loadPendingRequests(){}
-function loadOfferingProposals(){}
-function applyOfferingFilters(){}
-function showCreateOfferingModal(){}
-function editOffering(){}
-function showEnrollModal(){}
-function duplicateOffering(){}
-function archiveOffering(){}
-function showStudentSchedule(){}
-function printStudentSchedule(){}
-function showOverrideModal(){}
-function closeOverrideModal(){}
-function saveOverrideException(){}
-function showOfferingNoteModal(){}
-function closeOfferingNoteModal(){}
-function saveOfferingNote(){}
-function deleteOfferingNote(){}
-</script>
 </head>
 <body>
 <div class="container">
-<h1>Facilitator Dashboard</h1>
-<h2>Session 3: Jan-Feb 2026</h2>
-<div id="status" class="status"></div>
+
+<h1>🏫 ALC Mosaic — Facilitator Dashboard</h1>
+<p class="subtitle" id="sessionLabel">Loading session info...</p>
+<div id="status"></div>
+
+<!-- ── TABS ───────────────────────────────────────────────── -->
 <div class="tabs">
-<button class="tab active" onclick="switchTab(0)">👥 Learners</button>
-<button class="tab" onclick="switchTab(1)">✅ Attendance</button>
-<button class="tab" onclick="switchTab(2)">📚 Offerings</button>
-<button class="tab" onclick="switchTab(3)">⏳ Pending Requests</button>
-<button class="tab" onclick="switchTab(4)">📝 Offering Proposals</button>
+  <button class="tab active" onclick="switchTab(0)">👥 Learners</button>
+  <button class="tab" onclick="switchTab(1)">📚 Offerings</button>
+  <button class="tab" onclick="switchTab(2)">⏳ Pending Requests</button>
+  <button class="tab" onclick="switchTab(3)">📝 Offering Proposals</button>
 </div>
 
-
-<!-- LEARNERS TAB -->
-<div id="students" class="tab-content active">
-<div class="actions">
-<button class="btn btn-secondary" onclick="loadStudents()">🔄 Refresh</button>
-</div>
-<div id="studentsContainer">
-<div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Click Refresh to load learners</p>
-</div>
-</div>
-</div>
-
-
-<!-- ATTENDANCE TAB -->
-<div id="attendance" class="tab-content">
-<div class="actions">
-<label for="attendanceDate" class="lbl">Date:</label>
-<input type="date" id="attendanceDate" onchange="loadAttendanceForDate()" class="inp">
-
-<label for="attendanceOffering" class="lbl">Select Offering:</label>
-<select id="attendanceOffering" onchange="loadAttendanceRoster()" style="padding:8px;border:1px solid #ddd;border-radius:4px;min-width:250px">
-<option value="">-- Select Offering --</option>
-</select>
-
-<button class="btn btn-primary" onclick="loadAttendanceTab()" style="background:#4CAF50">🔄 Load Attendance</button>
-</div>
-<div id="attendanceContainer">
-<div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px;margin-bottom:10px">👆 Click "Load Attendance" to get started</p>
-<p style="font-size:14px;color:#666">This will load students and offerings data</p>
-</div>
-</div>
+<!-- ══════════════════════════════════════════════════════════
+     TAB 0 — LEARNERS
+     ══════════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-learners">
+  <div class="stats" id="learnerStats">
+    <div class="stat-card stat-blue"><h3 id="st-total">—</h3><p>Total Learners</p></div>
+    <div class="stat-card stat-green"><h3 id="st-scheduled">—</h3><p>Have a Schedule</p></div>
+    <div class="stat-card stat-orange"><h3 id="st-pending">—</h3><p>Pending Approval</p></div>
+    <div class="stat-card stat-teal"><h3 id="st-offerings">—</h3><p>Active Offerings</p></div>
+  </div>
+  <div class="toolbar">
+    <button class="btn btn-blue" onclick="loadLearners()">🔄 Refresh</button>
+    <input type="text" id="learnerSearch" placeholder="🔍 Search learners…" oninput="filterLearners()" style="flex:1;min-width:180px">
+  </div>
+  <div id="learnersContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load learners</p></div></div>
 </div>
 
-<!-- OFFERINGS TAB -->
-<div id="offerings" class="tab-content">
-<div class="actions">
-<span style="font-size:14px;color:#666;margin-right:15px">Total: <strong id="totalOfferings" style="color:#2196F3">-</strong></span>
-<button class="btn btn-primary" onclick="showCreateOfferingModal()">➕ Create New Offering</button>
-<button class="btn btn-secondary" onclick="loadOfferings()">🔄 Refresh</button>
-</div>
-<div class="actions" style="margin-top:10px">
-<label for="sortBy" class="lbl">Sort By:</label>
-<select id="sortBy" onchange="applyOfferingFilters()" class="inp">
-<option value="default">Default (Day/Time)</option>
-<option value="name">Class Name (A-Z)</option>
-<option value="instructor">Instructor (A-Z)</option>
-<option value="type">Type</option>
-<option value="level">Level</option>
-<option value="enrollment">Enrollment (High to Low)</option>
-</select>
-
-<label for="filterType" class="lbl">Filter Type:</label>
-<select id="filterType" onchange="applyOfferingFilters()" class="inp">
-<option value="">All Types</option>
-<option value="commitment">Commitment</option>
-<option value="drop-in">Drop-in</option>
-<option value="private">Private</option>
-</select>
-
-<label for="filterLevel" class="lbl">Filter Level:</label>
-<select id="filterLevel" onchange="applyOfferingFilters()" class="inp">
-<option value="">All Levels</option>
-<option value="acorns">Acorns</option>
-<option value="canopy">Canopy</option>
-<option value="canopy+">Canopy+</option>
-<option value="saplings+">Saplings+</option>
-<option value="playyard+">Playyard</option>
-<option value="mixed">Mixed Age</option>
-</select>
-
-<label for="filterDay" class="lbl">Filter Day:</label>
-<select id="filterDay" onchange="applyOfferingFilters()" class="inp">
-<option value="">All Days</option>
-<option value="monday">Monday</option>
-<option value="tuesday">Tuesday</option>
-<option value="wednesday">Wednesday</option>
-<option value="thursday">Thursday</option>
-<option value="friday">Friday</option>
-</select>
-</div>
-<div id="offeringsContainer">
-<div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Click Refresh to load offerings</p>
-</div>
-</div>
+<!-- ══════════════════════════════════════════════════════════
+     TAB 1 — OFFERINGS
+     ══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-offerings">
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="openCreateModal()">➕ New Offering</button>
+    <button class="btn btn-blue" onclick="loadOfferings()">🔄 Refresh</button>
+    <label>Sort:</label>
+    <select id="sortBy" onchange="renderOfferings()">
+      <option value="day">Day / Time</option>
+      <option value="name">Name A–Z</option>
+      <option value="instructor">Instructor A–Z</option>
+      <option value="enrollment">Enrollment ↓</option>
+    </select>
+    <label>Day:</label>
+    <select id="filterDay" onchange="renderOfferings()">
+      <option value="">All Days</option>
+      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+      <option>Thursday</option><option>Friday</option>
+    </select>
+    <label>Type:</label>
+    <select id="filterType" onchange="renderOfferings()">
+      <option value="">All Types</option>
+      <option value="Commit">Commitment</option>
+      <option value="Drop-in">Drop-in</option>
+    </select>
+    <label>Group:</label>
+    <select id="filterGroup" onchange="renderOfferings()">
+      <option value="">All Groups</option>
+      <option>EC</option><option>Saplings</option><option>Canopy</option><option>Acorns</option>
+    </select>
+    <span style="margin-left:auto;font-size:13px;color:#666">Showing <strong id="offeringCount">—</strong></span>
+  </div>
+  <div id="offeringsContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load offerings</p></div></div>
 </div>
 
-
-<!-- PENDING REQUESTS TAB -->
-<div id="pending" class="tab-content">
-<div class="actions">
-<button class="btn btn-secondary" onclick="loadPendingRequests()">🔄 Refresh</button>
-</div>
-<div id="pendingContainer">
-<div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Click Refresh to load pending requests</p>
-</div>
-</div>
-</div>
-
-<!-- OFFERING PROPOSALS TAB -->
-<div id="offeringProposals" class="tab-content">
-<div class="actions">
-<div>
-<strong>Offering Proposals</strong><br>
-<span style="font-size:13px;color:#666">Review offerings submitted from schedule.html before adding them to the live schedule.</span>
-</div>
-<button class="btn btn-secondary" onclick="loadOfferingProposals()">🔄 Refresh</button>
-</div>
-<div id="offeringProposalsContainer">
-<div style="text-align:center;padding:60px 20px;color:#999">
-<p style="font-size:18px">Click Refresh to load offering proposals</p>
-</div>
-</div>
+<!-- ══════════════════════════════════════════════════════════
+     TAB 2 — PENDING SCHEDULE REQUESTS
+     ══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-pending">
+  <div class="toolbar">
+    <button class="btn btn-blue" onclick="loadPending()">🔄 Refresh</button>
+    <button class="btn btn-primary" onclick="approveAllPending()" id="approveAllBtn" style="display:none">✅ Approve All</button>
+    <span id="pendingCount" style="font-size:13px;color:#666"></span>
+  </div>
+  <div id="pendingContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load pending requests</p></div></div>
 </div>
 
-
+<!-- ══════════════════════════════════════════════════════════
+     TAB 3 — OFFERING PROPOSALS
+     ══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-proposals">
+  <div class="toolbar">
+    <button class="btn btn-blue" onclick="loadProposals()">🔄 Refresh</button>
+    <span id="proposalCount" style="font-size:13px;color:#666"></span>
+  </div>
+  <div id="proposalsContainer"><div class="loading"><div class="spinner"></div><p>Click Refresh to load proposals</p></div></div>
 </div>
 
-<!-- EDIT OFFERING MODAL -->
-<div id="editModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeEditModal()">&times;</span>
-<h2 id="editModalTitle">Edit Offering</h2>
-</div>
-<div class="modal-body">
-<div class="form-group">
-<label>Offering Name *</label>
-<input type="text" id="editName" placeholder="Math(A)" required>
-</div>
-<div class="form-group">
-<label>Instructor/Facilitator *</label>
-<input type="text" id="editInstructor" placeholder="Anna" required>
-</div>
-<div class="form-group">
-<label>Location</label>
-<input type="text" id="editLocation" placeholder="Room 101">
-</div>
-<div class="form-group">
-<label>Days * (Hold Ctrl/Cmd to select multiple)</label>
-<select id="editDays" multiple size="5" required style="height:auto">
-<option value="monday">Monday</option>
-<option value="tuesday">Tuesday</option>
-<option value="wednesday">Wednesday</option>
-<option value="thursday">Thursday</option>
-<option value="friday">Friday</option>
-</select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple days</p>
-</div>
-<div class="form-group">
-<label>Time Blocks * (Hold Ctrl/Cmd to select multiple)</label>
-<select id="editBlocks" multiple size="6" required style="height:auto">
-<option value="Block 1">Block 1: 10:00-10:45 am</option>
-<option value="Block 2">Block 2: 10:50-11:35 am</option>
-<option value="Block 3">Block 3: 12:10-12:55 pm</option>
-<option value="Block 4">Block 4: 1:00-1:50 pm</option>
-<option value="Block 5">Block 5: 1:55-2:45 pm</option>
-</select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple blocks</p>
-</div>
-<div class="form-group">
-<label>Type *</label>
-<select id="editType" required>
-<option value="commitment">Commitment</option>
-<option value="drop-in">Drop-in</option>
-<option value="private">Private</option>
-</select>
-</div>
-<div class="form-group">
-<label>Level</label>
-<select id="editLevel">
-<option value="">All Levels</option>
-<option value="acorns">Acorns</option>
-<option value="canopy">Canopy</option>
-<option value="canopy+">Canopy+</option>
-<option value="mixed">Mixed Age</option>
-</select>
-</div>
-<div class="form-group">
-<label>Description</label>
-<textarea id="editDescription" placeholder="Describe what students will learn and do in this class..." rows="4"></textarea>
-</div>
-<div class="form-group">
-<label>Capacity *</label>
-<input type="number" id="editCapacity" placeholder="12" min="1" required>
-</div>
-<p style="font-size:12px;color:#666;margin-top:10px">* Required fields</p>
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-<button class="btn btn-primary" onclick="saveOffering()">💾 Save Changes</button>
-</div>
-</div>
+</div><!-- /container -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — STUDENT SCHEDULE
+     ══════════════════════════════════════════════════════════ -->
+<div class="modal" id="schedModal">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <h2 id="schedModalTitle">Schedule</h2>
+      <button class="modal-close" onclick="closeModal('schedModal')">×</button>
+    </div>
+    <div class="modal-body" id="schedModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-blue" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-grey" onclick="closeModal('schedModal')">Close</button>
+    </div>
+  </div>
 </div>
 
-<!-- CREATE OFFERING MODAL -->
-<div id="createModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeCreateModal()">&times;</span>
-<h2>Create New Offering</h2>
-</div>
-<div class="modal-body">
-<div class="form-group">
-<label>Offering Name *</label>
-<input type="text" id="createName" placeholder="Math(A)" required>
-</div>
-<div class="form-group">
-<label>Instructor/Facilitator *</label>
-<input type="text" id="createInstructor" placeholder="Anna" required>
-</div>
-<div class="form-group">
-<label>Location</label>
-<input type="text" id="createLocation" placeholder="Room 101">
-</div>
-<div class="form-group">
-<label>Days * (Hold Ctrl/Cmd to select multiple)</label>
-<select id="createDays" multiple size="5" required style="height:auto">
-<option value="monday">Monday</option>
-<option value="tuesday">Tuesday</option>
-<option value="wednesday">Wednesday</option>
-<option value="thursday">Thursday</option>
-<option value="friday">Friday</option>
-</select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple days</p>
-</div>
-<div class="form-group">
-<label>Time Blocks * (Hold Ctrl/Cmd to select multiple)</label>
-<select id="createBlocks" multiple size="6" required style="height:auto">
-<option value="Block 1">Block 1: 10:00-10:45 am</option>
-<option value="Block 2">Block 2: 10:50-11:35 am</option>
-<option value="Block 3">Block 3: 12:10-12:55 pm</option>
-<option value="Block 4">Block 4: 1:00-1:50 pm</option>
-<option value="Block 5">Block 5: 1:55-2:45 pm</option>
-</select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple blocks</p>
-</div>
-<div class="form-group">
-<label>
-<input type="checkbox" id="createMultiple" onchange="toggleMultipleCreation()">
-Create separate offering for each day/block combination
-</label>
-<p style="font-size:11px;color:#666;margin-top:5px">
-✓ Checked: Creates individual offerings (e.g., Math(A) Mon 10:00, Math(A) Tue 10:00)<br>
-✗ Unchecked: Single offering with multiple times (e.g., Math(A) shows "Mon, Tue" and "10:00, 1:00")
-</p>
-</div>
-<div class="form-group">
-<label>Type *</label>
-<select id="createType" required>
-<option value="">-- Select Type --</option>
-<option value="commitment">Commitment</option>
-<option value="drop-in">Drop-in</option>
-<option value="private">Private</option>
-</select>
-</div>
-<div class="form-group">
-<label>Level</label>
-<select id="createLevel">
-<option value="">All Levels</option>
-<option value="acorns">Acorns</option>
-<option value="canopy">Canopy</option>
-<option value="canopy+">Canopy+</option>
-<option value="mixed">Mixed Age</option>
-</select>
-</div>
-<div class="form-group">
-<label>Description</label>
-<textarea id="createDescription" placeholder="Describe what students will learn and do in this class..." rows="4"></textarea>
-</div>
-<div class="form-group">
-<label>Capacity *</label>
-<input type="number" id="createCapacity" placeholder="12" min="1" value="12" required>
-</div>
-<p style="font-size:12px;color:#666;margin-top:10px">* Required fields</p>
-<div id="createPreview" style="background:#f8f9fa;padding:15px;border-radius:4px;margin-top:15px;display:none">
-<strong>Preview:</strong>
-<div id="createPreviewText" style="margin-top:10px;font-size:13px"></div>
-</div>
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
-<button class="btn btn-primary" onclick="createOffering()">➕ Create Offering(s)</button>
-</div>
-</div>
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — CREATE / EDIT OFFERING
+     ══════════════════════════════════════════════════════════ -->
+<div class="modal" id="offeringModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="offeringModalTitle">New Offering</h2>
+      <button class="modal-close" onclick="closeModal('offeringModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="fg">
+          <label>Offering Name *</label>
+          <input type="text" id="fName" placeholder="e.g. Math(A)">
+        </div>
+        <div class="fg">
+          <label>Instructor *</label>
+          <input type="text" id="fInstructor" placeholder="e.g. Anna">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Location</label>
+          <input type="text" id="fLocation" placeholder="e.g. Room 101">
+        </div>
+        <div class="fg">
+          <label>Capacity</label>
+          <input type="number" id="fCapacity" placeholder="12" min="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Group (Level)</label>
+          <select id="fLevel">
+            <option value="">— Any —</option>
+            <option value="EC">EC</option>
+            <option value="Saplings">Saplings</option>
+            <option value="Canopy">Canopy</option>
+            <option value="Acorns">Acorns</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Type *</label>
+          <select id="fType">
+            <option value="">— Select —</option>
+            <option value="Commit">Commitment</option>
+            <option value="Drop-in">Drop-in</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Days * <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small></label>
+          <select id="fDays" multiple size="5">
+            <option value="monday">Monday</option>
+            <option value="tuesday">Tuesday</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="thursday">Thursday</option>
+            <option value="friday">Friday</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Blocks * <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small></label>
+          <select id="fBlocks" multiple size="5">
+            <option value="10:00-10:45">Block 1 — 10:00–10:45</option>
+            <option value="10:50-11:35">Block 2 — 10:50–11:35</option>
+            <option value="12:10-12:55">Block 3 — 12:10–12:55</option>
+            <option value="1:00-1:50">Block 4 — 1:00–1:50</option>
+            <option value="1:55-2:45">Block 5 — 1:55–2:45</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Description</label>
+        <textarea id="fDesc" rows="3" placeholder="What will learners do in this offering?"></textarea>
+      </div>
+      <div class="fg">
+        <label>Session</label>
+        <input type="text" id="fSession">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-grey" onclick="closeModal('offeringModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOffering()">💾 Save</button>
+    </div>
+  </div>
 </div>
 
-<!-- ADD STUDENT TO CLASS MODAL -->
-<div id="enrollModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeEnrollModal()">&times;</span>
-<h2 id="enrollModalTitle">Add Learners to Offering</h2>
-</div>
-<div class="modal-body">
-<p id="enrollClassName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
-<div class="form-group">
-<label>Select Learners (Hold Ctrl/Cmd to select multiple)</label>
-<select id="enrollStudent" multiple size="10">
-<option value="">-- Loading students... --</option>
-</select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple learners</p>
-</div>
-<div id="enrollPreview" style="background:#f8f9fa;padding:10px;border-radius:4px;margin-top:10px;display:none">
-<strong>Selected learners:</strong>
-<div id="enrollPreviewList" style="margin-top:5px;font-size:13px"></div>
-</div>
-<p style="font-size:12px;color:#666;margin-top:10px">
-This will add the offering to the selected learners' approved schedules.
-</p>
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" onclick="closeEnrollModal()">Cancel</button>
-<button class="btn btn-primary" onclick="addStudentsToClass()">➕ Add Learner(s)</button>
-</div>
-</div>
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — ENROLLED LEARNERS
+     ══════════════════════════════════════════════════════════ -->
+<div class="modal" id="enrolledModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="enrolledTitle">Enrolled Learners</h2>
+      <button class="modal-close" onclick="closeModal('enrolledModal')">×</button>
+    </div>
+    <div class="modal-body" id="enrolledBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-grey" onclick="closeModal('enrolledModal')">Close</button>
+    </div>
+  </div>
 </div>
 
-<!-- ENROLLED STUDENTS MODAL -->
-<div id="enrolledModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeEnrolledModal()">&times;</span>
-<h2 id="enrolledModalTitle">Enrolled Learners</h2>
-</div>
-<div class="modal-body">
-<p id="enrolledClassName" style="font-size:18px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
-<div id="enrolledList"></div>
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" onclick="closeEnrolledModal()">Close</button>
-</div>
-</div>
-</div>
-
-<!-- STUDENT SCHEDULE MODAL -->
-<div id="studentScheduleModal" class="modal">
-<div class="modal-content" style="max-width:1200px">
-<div class="modal-header">
-<span class="close" onclick="closeStudentScheduleModal()">&times;</span>
-<h2 id="studentScheduleModalTitle">Learner Schedule</h2>
-</div>
-<div class="modal-body">
-<div class="print-header" style="display:none">
-<div class="print-title" id="printStudentName"></div>
-<div class="print-subtitle">Session 3 Schedule</div>
-<div class="print-subtitle" id="printLastUpdated"></div>
-</div>
-<div id="studentScheduleGrid"></div>
-</div>
-<div class="modal-footer">
-<div style="flex:1;text-align:left">
-<label style="font-size:13px;color:#666;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
-<input type="checkbox" id="printWithNotes" checked style="width:16px;height:16px;cursor:pointer">
-<span>Include offering notes when printing</span>
-</label>
-</div>
-<button class="btn btn-primary" onclick="printStudentSchedule()">🖨️ Print Schedule</button>
-<button class="btn btn-secondary" onclick="closeStudentScheduleModal()">Close</button>
-</div>
-</div>
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — ADD LEARNER TO OFFERING
+     ══════════════════════════════════════════════════════════ -->
+<div class="modal" id="addLearnerModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="addLearnerTitle">Add Learner</h2>
+      <button class="modal-close" onclick="closeModal('addLearnerModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="addLearnerOffering" style="font-weight:700;color:#2196F3;margin-bottom:12px"></p>
+      <div class="fg">
+        <label>Select Learners <small style="font-weight:normal;color:#888">(Ctrl/Cmd for multiple)</small></label>
+        <select id="addLearnerSelect" multiple size="10"></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-grey" onclick="closeModal('addLearnerModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="doAddLearner()">➕ Add</button>
+    </div>
+  </div>
 </div>
 
-<!-- OVERRIDE EXCEPTION MODAL -->
-<div id="overrideModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeOverrideModal()">&times;</span>
-<h2>Approve Schedule Override</h2>
-</div>
-<div class="modal-body">
-<p style="color:#856404;margin-bottom:15px">
-<strong>⚠️ This will approve the schedule conflict as an intentional exception.</strong><br>
-Please provide a reason for the override.
-</p>
-<div class="form-group">
-<label>Student Name</label>
-<input type="text" id="overrideStudentName" readonly style="background:#f5f5f5">
-</div>
-<div class="form-group">
-<label>Override Reason/Note *</label>
-<textarea id="overrideNote" placeholder="Example: Student approved for dual enrollment in both Math sections for advanced learning" rows="4" required></textarea>
-<p style="font-size:11px;color:#666;margin-top:5px">This note will be displayed below the student's schedule.</p>
-</div>
-</div>
-<div class="modal-footer">
-<button class="btn btn-primary" onclick="saveOverrideException()">✓ Approve Override</button>
-<button class="btn btn-secondary" onclick="closeOverrideModal()">Cancel</button>
-</div>
-</div>
-</div>
-
-<!-- OFFERING NOTE MODAL -->
-<div id="offeringNoteModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeOfferingNoteModal()">&times;</span>
-<h2>Add Schedule Note</h2>
-</div>
-<div class="modal-body">
-<p style="color:#666;margin-bottom:15px">
-Add a note about this offering on the student's schedule. The note will appear with an asterisk (*) and be listed below the schedule when printed.
-</p>
-<div class="form-group">
-<label>Offering</label>
-<input type="text" id="noteOfferingName" readonly style="background:#f5f5f5">
-<input type="hidden" id="noteOfferingId">
-</div>
-<div class="form-group">
-<label>Student</label>
-<input type="text" id="noteStudentName" readonly style="background:#f5f5f5">
-</div>
-<div class="form-group">
-<label>Note *</label>
-<textarea id="offeringNoteText" placeholder="Example: Student will attend first half only due to medical appointment" rows="3" required></textarea>
-<p style="font-size:11px;color:#666;margin-top:5px">This note will be displayed below the student's schedule with an asterisk.</p>
-</div>
-</div>
-<div class="modal-footer">
-<button class="btn btn-primary" onclick="saveOfferingNote()">💾 Save Note</button>
-<button class="btn btn-danger" onclick="deleteOfferingNote()" id="deleteNoteBtn" style="display:none">🗑️ Delete Note</button>
-<button class="btn btn-secondary" onclick="closeOfferingNoteModal()">Cancel</button>
-</div>
-</div>
-</div>
-
-<!-- ADD OTHER STUDENT TO ATTENDANCE MODAL -->
-<div id="otherStudentModal" class="modal">
-<div class="modal-content">
-<div class="modal-header">
-<span class="close" onclick="closeOtherStudentModal()">&times;</span>
-<h2 id="otherStudentModalTitle">Add Other Learners to Attendance</h2>
-</div>
-<div class="modal-body">
-<p id="otherOfferingName" style="font-size:16px;font-weight:bold;color:#2196F3;margin-bottom:15px"></p>
-<div class="form-group">
-<label>Select Learners (Hold Ctrl/Cmd to select multiple)</label>
-<select id="otherStudentSelect" multiple size="10">
-<option value="">-- Loading learners... --</option>
-</select>
-<p style="font-size:11px;color:#666;margin-top:5px">💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple learners</p>
-</div>
-<div id="otherStudentPreview" style="background:#f8f9fa;padding:10px;border-radius:4px;margin-top:10px;display:none">
-<strong>Selected learners:</strong>
-<div id="otherStudentPreviewList" style="margin-top:5px;font-size:13px"></div>
-</div>
-<p style="font-size:12px;color:#666;margin-top:10px">
-These learners are not enrolled in this offering but will be marked as present.
-</p>
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" onclick="closeOtherStudentModal()">Cancel</button>
-<button class="btn btn-primary" onclick="addOtherStudentsToAttendance()">✅ Mark Present</button>
-</div>
-</div>
-</div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
-let pending=[],students=[],offerings=[],allStudentNames=[];
-let offeringProposals=[];
-let currentEditId=null,currentEnrollOfferingId=null;
-let studentsLoaded=false,offeringsLoaded=false,pendingLoaded=false;
-let currentAttendanceOfferingId=null,currentAttendanceDate=null;
-let attendanceData={};
+'use strict';
+// ─────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────
+const API = 'https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 
-// === HELPER FUNCTIONS ===
-function msg(text,type){
-const s=document.getElementById('status');
-s.textContent=text;
-s.className='status '+type;
-s.style.display='block';
-setTimeout(()=>s.style.display='none',3000);
-}
-
-function closeModal(id,resetVars=[]){
-document.getElementById(id).style.display='none';
-resetVars.forEach(v=>{if(v==='currentEditId')currentEditId=null;else if(v==='currentEnrollOfferingId')currentEnrollOfferingId=null;else if(v==='currentAttendanceOfferingId')currentAttendanceOfferingId=null;else if(v==='currentAttendanceDate')currentAttendanceDate=null});
-}
-
-function emptyState(msg){
-return `<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">${msg}</p></div>`;
-}
-
-async function apiCall(action,data,onSuccess,onError){
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({action,...data})});
-const d=await r.json();
-if(d.success){if(onSuccess)onSuccess(d)}
-else{msg(d.message||'Error','error');if(onError)onError(d)}
-}catch(e){msg('❌ '+e.message,'error')}
-}
-
-loadOfferingProposals = async function(){
-try{
-const container=document.getElementById('offeringProposalsContainer');
-if(!container){msg('❌ Offering Proposals container not found','error');return;}
-container.innerHTML='<div class="loading"><div class="spinner"></div>Loading proposals...</div>';
-
-const r=await fetch(`${API}?action=getOfferingProposals`);
-const d=await r.json();
-
-if(!d.success){
-container.innerHTML=`<div class="empty">⚠️<br>${d.message||'Could not load offering proposals'}</div>`;
-msg(d.message||'Could not load offering proposals','error');
-return;
-}
-
-offeringProposals=d.proposals||[];
-renderOfferingProposals();
-msg('✅ Offering proposals loaded','success');
-}catch(e){
-msg('❌ '+e.message,'error');
-}
-}
-
-function renderOfferingProposals(){
-const c=document.getElementById('offeringProposalsContainer');
-const pendingOnly=offeringProposals.filter(p=>String(p.status||'pending').toLowerCase()==='pending');
-
-if(!pendingOnly.length){
-c.innerHTML='<div class="empty">✅<br>No pending offering proposals</div>';
-return;
-}
-
-let html='';
-
-pendingOnly.forEach(p=>{
-const safeName=String(p.name||'Untitled Offering').replace(/'/g,"\\'");
-html+=`
-<div class="request-card">
-<div class="request-header">
-<div>
-<div class="request-student">${p.name||'Untitled Offering'}</div>
-<div style="font-size:12px;color:#999">
-Submitted by: ${p.submitter||'Unknown'}<br>
-${p.submitted ? new Date(p.submitted).toLocaleString() : ''}
-</div>
-</div>
-<div><span class="badge badge-pending">PENDING</span></div>
-</div>
-
-<div class="class-row">
-<div class="class-info">
-<div class="class-name">${p.name||'Untitled Offering'}</div>
-<div class="class-details">
-👤 ${p.instructor||'TBA'}<br>
-📍 ${p.location||'TBA'}<br>
-📅 ${p.day||'TBA'}<br>
-🕐 ${p.time||'TBA'}<br>
-📊 ${p.level||'TBA'} | ${p.type||'TBA'} | Capacity: ${p.capacity||'Unlimited'}
-</div>
-${p.description ? `<div style="margin-top:10px;font-size:12px;color:#444;line-height:1.5">${p.description}</div>` : ''}
-</div>
-</div>
-
-<div class="group-actions">
-<button class="btn btn-success btn-small" onclick="approveOfferingProposal('${p.proposalId}','${safeName}')">✓ Approve</button>
-<button class="btn btn-danger btn-small" onclick="denyOfferingProposal('${p.proposalId}','${safeName}')">✗ Deny</button>
-</div>
-</div>`;
-});
-
-c.innerHTML=html;
-}
-
-async function approveOfferingProposal(proposalId,name){
-if(!confirm(`Approve "${name}" and add it to the live schedule?`))return;
-apiCall('approveOfferingProposal',{proposalId},async()=>{
-msg('✅ Offering approved and added to schedule','success');
-await loadOfferingProposals();
-if(typeof loadOfferings==='function')await loadOfferings();
-});
-}
-
-async function denyOfferingProposal(proposalId,name){
-if(!confirm(`Deny "${name}"?`))return;
-apiCall('denyOfferingProposal',{proposalId},async()=>{
-msg('✅ Offering proposal denied','success');
-await loadOfferingProposals();
-});
-}
-
-loadPendingRequests = async function(){
-try{
-pendingLoaded=true;
-document.getElementById('pendingContainer').innerHTML='<div class="loading"><div class="spinner"></div>Loading...</div>';
-const r=await fetch(`${API}?action=getPendingRequests`);
-const d=await r.json();
-pending=d.requests||[];
-renderPendingRequests();
-msg('✅ Loaded','success');
-}catch(e){msg('❌ '+e.message,'error')}
-}
-
-function renderPendingRequests(){
-const c=document.getElementById('pendingContainer');
-if(!pending.length){c.innerHTML='<div class="empty">✅<br>No pending requests</div>';return}
-const grouped={};
-pending.forEach(p=>{
-if(!grouped[p.studentName])grouped[p.studentName]=[];
-grouped[p.studentName].push(p);
-});
-let html='';
-Object.keys(grouped).forEach(studentName=>{
-const requests=grouped[studentName];
-const firstReq=requests[0];
-const date=new Date(firstReq.submitted).toLocaleString();
-const baseRequestId=firstReq.requestId.split('_')[0]+'_'+firstReq.requestId.split('_')[1];
-html+=`<div class="request-card">
-<div class="request-header">
-<div><div class="request-student">${studentName}</div>
-<div style="font-size:12px;color:#999">Submitted: ${date}</div></div>
-<div><span class="badge badge-pending">PENDING</span></div>
-</div>`;
-requests.forEach(req=>{
-html+=`<div class="class-row">
-<div class="class-info">
-<div class="class-name">${req.className}</div>
-<div class="class-details">${req.dayTime}</div>
-</div>
-<div class="class-actions">
-<button class="btn btn-success btn-small" onclick="approveClass('${req.requestId}','${req.offeringId}','${studentName}','${req.className}')">✓ Approve</button>
-<button class="btn btn-danger btn-small" onclick="denyClass('${req.requestId}','${req.offeringId}','${studentName}','${req.className}')">✗ Deny</button>
-</div>
-</div>`;
-});
-html+=`<div class="group-actions">
-<button class="btn btn-success btn-small" onclick="approveAllForStudent('${baseRequestId}','${studentName}')">✓ Approve All (${requests.length})</button>
-<button class="btn btn-danger btn-small" onclick="denyAllForStudent('${baseRequestId}','${studentName}')">✗ Deny All</button>
-</div></div>`;
-});
-c.innerHTML=html;
-}
-
-async function approveClass(requestId,offeringId,studentName,className){
-if(!confirm(`Approve "${className}" for ${studentName}?`))return;
-apiCall('approveClass',{requestId,offeringId},async()=>{
-msg(`✅ Approved: ${className}`,'success');
-await loadPendingRequests();
-await loadStudents();
-});
-}
-
-async function denyClass(requestId,offeringId,studentName,className){
-if(!confirm(`Deny "${className}" for ${studentName}?`))return;
-apiCall('denyClass',{requestId,offeringId},async()=>{
-msg(`✅ Denied: ${className}`,'success');
-await loadPendingRequests();
-});
-}
-
-async function approveAllForStudent(baseRequestId,studentName){
-if(!confirm(`Approve ALL classes for ${studentName}?`))return;
-apiCall('approveAllClasses',{requestId:baseRequestId},async(d)=>{
-msg(`✅ Approved ${d.count} class(es)`,'success');
-await loadPendingRequests();
-await loadStudents();
-});
-}
-
-async function denyAllForStudent(baseRequestId,studentName){
-if(!confirm(`Deny ALL classes for ${studentName}?`))return;
-apiCall('denyAllClasses',{requestId:baseRequestId},async(d)=>{
-msg(`✅ Denied ${d.count} class(es)`,'success');
-await loadPendingRequests();
-});
-}
-
-loadStudents = async function(){
-try{
-studentsLoaded=true;
-document.getElementById('studentsContainer').innerHTML='<div class="loading"><div class="spinner"></div></div>';
-const r=await fetch(`${API}?action=loadAll`);
-const d=await r.json();
-students=d.students||[];
-
-console.log('=== STUDENTS LOADED ===');
-console.log('Total students:', students.length);
-if(students.length > 0){
-console.log('First student:', JSON.stringify(students[0], null, 2));
-console.log('First student classes field:', students[0].classes);
-console.log('First student classes type:', typeof students[0].classes);
-}
-
-// Load ALL students from Students sheet (master list) (only if not already loaded)
-if(allStudentNames.length===0){
-const r2=await fetch(`${API}?action=getAllStudents`);
-const d2=await r2.json();
-if(d2.success){
-allStudentNames=d2.students||[];
-}else{
-// Fallback to approved students if Students sheet doesn't exist
-const r3=await fetch(`${API}?action=loadStudents`);
-const d3=await r3.json();
-allStudentNames=d3.students?d3.students.map(name=>({id:'',name:name})):[];
-}
-}
-
-renderStudents();
-msg('✅ Loaded','success');
-}catch(e){msg('❌ '+e.message,'error')}
-}
-
-function renderStudents(){
-const c=document.getElementById('studentsContainer');
-if(!students.length){
-c.innerHTML='<div class="empty">👥<br>No approved students yet</div>';
-return;
-}
-
-// Sort students alphabetically
-const sorted=[...students].sort((a,b)=>a.name.localeCompare(b.name));
-
-let html='<table><thead><tr><th>Name</th><th>Total Offerings</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>';
-sorted.forEach(s=>{
-const date=s.timestamp?new Date(s.timestamp).toLocaleDateString():'N/A';
-const encodedName=s.name.replace(/'/g,"\\'");
-html+=`<tr>
-<td><strong>${s.name}</strong></td>
-<td>${s.totalClasses||0}</td>
-<td>${date}</td>
-<td><button class="btn btn-secondary btn-small" onclick="showStudentSchedule('${encodedName}')">📅 View Schedule</button></td>
-</tr>`;
-});
-html+='</tbody></table>';
-c.innerHTML=html;
-}
-
-showStudentSchedule = async function(studentName){
-try{
-const r=await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`);
-const d=await r.json();
-
-console.log('=== STUDENT SCHEDULE DEBUG ===');
-console.log('Student:', studentName);
-console.log('API Response:', d);
-console.log('Number of offerings:', d.offerings?.length);
-d.offerings?.forEach((o,idx)=>{
-console.log(`Offering ${idx+1}: "${o.name}"`);
-console.log(`  ID: ${o.id}`);
-console.log(`  Day: "${o.day}" (type: ${typeof o.day})`);
-console.log(`  Time: "${o.time}" (type: ${typeof o.time})`);
-console.log(`  Instructor: ${o.instructor}`);
-console.log(`  Location: ${o.location}`);
-});
-
-document.getElementById('studentScheduleModalTitle').textContent=`${studentName}'s Schedule`;
-
-// Set print header info
-document.getElementById('printStudentName').textContent=studentName;
-const now=new Date();
-const lastUpdated=`Last Updated: ${now.toLocaleDateString()}`;
-document.getElementById('printLastUpdated').textContent=lastUpdated;
-
-if(!d.success||!d.offerings||d.offerings.length===0){
-document.getElementById('studentScheduleGrid').innerHTML='<div style="text-align:center;padding:40px;color:#999">No offerings in schedule</div>';
-document.getElementById('studentScheduleModal').style.display='block';
-return;
-}
-
-// Build schedule grid
-const TIMES=[
-{name:'Block 1',time:'10:00-10:45'},
-{name:'Block 2',time:'10:50-11:35'},
-{name:'LUNCH',time:'11:35-12:05'},
-{name:'Block 3',time:'12:10-12:55'},
-{name:'Block 4',time:'1:00-1:50'},
-{name:'Block 5',time:'1:55-2:45'}
+const TIMES = [
+  { label:'Block 1', time:'10:00-10:45' },
+  { label:'Block 2', time:'10:50-11:35' },
+  { label:'🍽 LUNCH', time:'11:35-12:05', lunch:true },
+  { label:'Block 3', time:'12:10-12:55' },
+  { label:'Block 4', time:'1:00-1:50' },
+  { label:'Block 5', time:'1:55-2:45' }
 ];
-const DAYS=['monday','tuesday','wednesday','thursday','friday'];
-
-// Detect overlaps before building grid
-let hasAnyOverlaps=false;
-const overlapDetails=[];
-console.log('\n=== CHECKING FOR OVERLAPS ===');
-TIMES.forEach(block=>{
-if(block.time==='11:35-12:05')return; // Skip lunch
-DAYS.forEach(day=>{
-const matchingOfferings=d.offerings.filter(o=>{
-const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
-const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
-console.log(`Checking ${day} ${block.name} against ${o.name}:`);
-console.log(`  Offering days: [${offeringDays.join(', ')}]`);
-console.log(`  Offering times: [${offeringTimes.join(', ')}]`);
-console.log(`  Day match? ${offeringDays.includes(day)} (looking for "${day}")`);
-console.log(`  Time match? ${offeringTimes.includes(block.name)} || ${offeringTimes.includes(block.time)} (looking for "${block.name}" or "${block.time}")`);
-const matches=offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
-console.log(`  → MATCHES: ${matches}`);
-return matches;
-});
-if(matchingOfferings.length>0){
-console.log(`\n✓ ${day} ${block.name}: ${matchingOfferings.length} offering(s) -`, matchingOfferings.map(o=>o.name));
-}
-if(matchingOfferings.length>1){
-console.log('  ⚠️⚠️⚠️ OVERLAP DETECTED! ⚠️⚠️⚠️');
-hasAnyOverlaps=true;
-overlapDetails.push({
-day:day.charAt(0).toUpperCase()+day.slice(1),
-block:block.name,
-offerings:matchingOfferings.map(o=>o.name).join(', ')
-});
-}
-});
-});
-
-console.log('\n=== OVERLAP DETECTION SUMMARY ===');
-console.log('Has any overlaps?', hasAnyOverlaps);
-console.log('Number of overlaps:', overlapDetails.length);
-console.log('Overlap details:', overlapDetails);
-console.log('================================\n');
-
-// Store current student name for overlap overrides and offering notes
-window.currentScheduleStudent = studentName;
-window.currentScheduleOfferings = d.offerings; // Store for notes modal
-
-let html='';
-let offeringNotes = []; // Track offerings with notes
-
-// Load offering notes for this student
-try{
-const notesRes=await fetch(`${API}?action=getOfferingNotes&studentName=${encodeURIComponent(studentName)}`);
-const notesData=await notesRes.json();
-if(notesData.success&&notesData.notes){
-window.currentOfferingNotes=notesData.notes; // Store globally
-}else{
-window.currentOfferingNotes={};
-}
-}catch(e){
-console.error('Error loading offering notes:',e);
-window.currentOfferingNotes={};
-}
-
-// Check if override exception exists for this student
-let hasOverrideException=false;
-let overrideExceptionData=null;
-try{
-const exRes=await fetch(`${API}?action=getScheduleException&studentName=${encodeURIComponent(studentName)}`);
-const exData=await exRes.json();
-if(exData.success&&exData.exception&&exData.exception.note){
-hasOverrideException=true;
-overrideExceptionData=exData.exception;
-}
-}catch(e){
-console.error('Error checking override exception:',e);
-}
-
-// Show overlap warning only if overlaps exist AND no override approved
-if(hasAnyOverlaps&&!hasOverrideException){
-html+=`<div style="background:#fff3cd;border:2px solid #ff9800;border-radius:8px;padding:15px;margin-bottom:15px">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-<div style="display:flex;align-items:center;gap:10px">
-<span style="font-size:24px">⚠️</span>
-<strong style="color:#856404;font-size:16px">Schedule Conflicts Detected</strong>
-</div>
-<button class="btn btn-warning btn-small" onclick="showOverrideModal()" style="background:#ff9800;color:white">✓ Approve Override</button>
-</div>
-<div style="color:#856404;font-size:13px;line-height:1.6">
-This student is enrolled in multiple offerings during the same time block(s). Please review and resolve:
-<ul style="margin:8px 0;padding-left:20px">`;
-overlapDetails.forEach(overlap=>{
-html+=`<li><strong>${overlap.day} ${overlap.block}:</strong> ${overlap.offerings}</li>`;
-});
-html+=`</ul>
-</div>
-</div>`;
-}
-
-// Use CSS Grid instead of table for reliable printing
-html+='<div class="schedule-grid" style="display:grid;grid-template-columns:100px repeat(5,1fr);gap:0;width:100%;border:1px solid #ddd;font-size:11px">';
-
-// Headers
-html+='<div style="background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:11px">Time</div>';
-DAYS.forEach(day=>{
-html+=`<div style="background:#4CAF50;color:white;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:11px">${day.charAt(0).toUpperCase()+day.slice(1)}</div>`;
-});
-
-TIMES.forEach(block=>{
-if(block.time==='11:35-12:05'){
-// Lunch row
-html+=`<div style="background:#ffe0b2;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px">🍽️ ${block.name}</div>`;
-html+='<div style="grid-column:2/7;background:#fff9e6;text-align:center;color:#999;border:1px solid #ddd;font-size:10px;padding:6px">Lunch Break</div>';
-return;
-}
-
-// Time column
-html+=`<div style="background:#f8f9fa;padding:6px;border:1px solid #ddd;font-weight:bold;text-align:center;font-size:10px;line-height:1.3">${block.name}<br><small style="font-weight:normal;color:#666;font-size:9px">${block.time}</small></div>`;
-
-DAYS.forEach(day=>{
-// Find ALL offerings for this day/time (not just first one)
-const offerings=d.offerings.filter(o=>{
-const offeringDays=o.day?o.day.split(',').map(d=>d.trim().toLowerCase()):[];
-const offeringTimes=o.time?o.time.split(',').map(t=>t.trim()):[];
-// Match by block name (e.g., "Block 1") OR by time (e.g., "10:00-10:45")
-return offeringDays.includes(day)&&(offeringTimes.includes(block.name)||offeringTimes.includes(block.time));
-});
-
-if(offerings.length>0){
-// Check if there's an overlap (multiple offerings in same slot)
-const hasOverlap=offerings.length>1;
-const cellStyle=hasOverlap?'padding:6px;border:1px solid #ddd;background:#ffe6e6;border-left:4px solid #ff4444;min-height:85px':'padding:6px;border:1px solid #ddd;background:#e6f0ff;min-height:85px';
-
-html+=`<div style="${cellStyle}">`;
-if(hasOverlap){
-html+=`<div style="background:#ff4444;color:white;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:bold;margin-bottom:4px;display:inline-block">⚠️ OVERLAP</div>`;
-// Horizontal layout for overlapping offerings
-html+=`<div style="display:flex;gap:6px;margin-top:4px">`;
-offerings.forEach((offering,idx)=>{
-const hasNote=window.currentOfferingNotes&&window.currentOfferingNotes[offering.id];
-if(hasNote){
-offeringNotes.push({id:offering.id,name:offering.name,note:hasNote});
-}
-const asterisk=hasNote?'<span class="note-asterisk" style="color:#ff4444;font-weight:bold">*</span>':'';
-html+=`<div style="flex:1;${idx>0?'border-left:2px solid #ff4444;padding-left:6px':''}">`;
-html+=`<div style="font-size:10px;line-height:1.3;margin-bottom:2px">
-<strong style="color:#d32f2f">${offering.name}${asterisk}</strong>
-<button onclick="showOfferingNoteModal('${offering.id}','${offering.name.replace(/'/g,"\\'")}');" style="background:none;border:none;color:#666;cursor:pointer;font-size:10px;padding:0 2px" title="Add note">📝</button>
-</div>`;
-html+=`<div style="font-size:9px;color:#666;line-height:1.2">👤 ${offering.instructor}</div>`;
-html+=`<div style="font-size:9px;color:#666;line-height:1.2">📍 ${offering.location||'TBA'}</div>`;
-html+=`</div>`;
-});
-html+=`</div>`;
-}else{
-// Single offering - normal display
-offerings.forEach((offering,idx)=>{
-const hasNote=window.currentOfferingNotes&&window.currentOfferingNotes[offering.id];
-if(hasNote){
-offeringNotes.push({id:offering.id,name:offering.name,note:hasNote});
-}
-const asterisk=hasNote?'<span class="note-asterisk" style="color:#ff4444;font-weight:bold">*</span>':'';
-html+=`<div style="font-size:10px;line-height:1.3;margin-bottom:2px">
-<strong style="color:#2196F3">${offering.name}${asterisk}</strong>
-<button onclick="showOfferingNoteModal('${offering.id}','${offering.name.replace(/'/g,"\\'")}');" style="background:none;border:none;color:#666;cursor:pointer;font-size:10px;padding:0 2px" title="Add note">📝</button>
-</div>`;
-html+=`<div style="font-size:9px;color:#666;line-height:1.2">👤 ${offering.instructor}</div>`;
-html+=`<div style="font-size:9px;color:#666;line-height:1.2">📍 ${offering.location||'TBA'}</div>`;
-});
-}
-html+=`</div>`;
-}else{
-html+=`<div style="padding:6px;border:1px solid #ddd;text-align:center;color:#ccc;min-height:85px;display:flex;align-items:center;justify-content:center;font-size:10px">-</div>`;
-}
-});
-});
-
-html+='</div>'; // Close schedule-grid
-
-// Check if override exception exists and add it as a schedule note
-let overrideNote = null;
-if(hasAnyOverlaps&&overrideExceptionData){
-// Extract all unique conflicting offering names from overlapDetails
-const conflictingOfferings=new Set();
-overlapDetails.forEach(overlap=>{
-const offerings=overlap.offerings.split(', ');
-offerings.forEach(o=>conflictingOfferings.add(o));
-});
-const offeringNames=Array.from(conflictingOfferings).join(' / ');
-
-overrideNote={
-id:'override',
-name:offeringNames,
-note:`<strong style="color:#2e7d32">✓ Schedule Conflict Approved:</strong> ${overrideExceptionData.note}`,
-timestamp:overrideExceptionData.timestamp
-};
-}
-
-// Add offering notes legend if any notes exist
-// Deduplicate notes by offering ID
-const uniqueNotes = [];
-const seenIds = new Set();
-offeringNotes.forEach(note => {
-if (!seenIds.has(note.id)) {
-seenIds.add(note.id);
-uniqueNotes.push(note);
-}
-});
-
-// Add override note to the table if it exists
-if(overrideNote){
-uniqueNotes.unshift(overrideNote); // Add at beginning
-}
-
-console.log('Offering notes found:', uniqueNotes.length);
-
-if(uniqueNotes.length>0){
-html+=`<div id="offeringNotesLegend" style="margin-top:20px;padding:15px;background:#f8f9fa;border:1px solid #ddd;border-radius:8px;page-break-inside:avoid">
-<div style="font-weight:bold;font-size:14px;margin-bottom:10px;color:#333">
-<span style="color:#ff4444;font-weight:bold">*</span> Schedule Notes
-</div>
-<div class="notes-grid" style="display:grid;grid-template-columns:25% 60% 15%;gap:0;width:100%;border:1px solid #ddd;font-size:12px">
-<!-- Headers -->
-<div style="background:#f0f0f0;color:#333;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:left">Offering</div>
-<div style="background:#f0f0f0;color:#333;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:left">Note</div>
-<div style="background:#f0f0f0;color:#333;padding:8px;border:1px solid #ddd;font-weight:bold;text-align:center">Actions</div>`;
-
-uniqueNotes.forEach(note=>{
-const isOverride=note.id==='override';
-const rowBg=isOverride?'background:#e8f5e9;':'';
-const offeringLabel=isOverride?`<strong style="color:#2e7d32">${note.name}</strong>`:`<strong>${note.name}</strong>`;
-const editButton=isOverride
-?`<button class="btn btn-warning btn-small" onclick="showOverrideModal()" style="padding:4px 8px;font-size:11px">✏️ Edit</button>`
-:`<button class="btn btn-secondary btn-small" onclick="showOfferingNoteModal('${note.id}','${note.name.replace(/'/g,"\\'")}');" style="padding:4px 8px;font-size:11px">✏️ Edit</button>`;
-
-html+=`<div style="${rowBg}padding:8px;border:1px solid #ddd;vertical-align:top">${offeringLabel}</div>
-<div style="${rowBg}padding:8px;border:1px solid #ddd">${note.note}</div>
-<div style="${rowBg}padding:8px;border:1px solid #ddd;text-align:center">${editButton}</div>`;
-});
-html+=`</div></div>`; // Close notes-grid and offeringNotesLegend
-}
-
-document.getElementById('studentScheduleGrid').innerHTML=html;
-
-document.getElementById('studentScheduleModal').style.display='block';
-}catch(e){
-alert('Error loading schedule: '+e.message);
-}
-}
-
-function closeStudentScheduleModal(){closeModal('studentScheduleModal')}
-
-printStudentSchedule = function(){
-// Check if notes should be included
-const includeNotes = document.getElementById('printWithNotes').checked;
-
-// Add or remove body class based on checkbox
-if (!includeNotes) {
-document.body.classList.add('print-without-notes');
-} else {
-document.body.classList.remove('print-without-notes');
-}
-
-// Trigger browser print dialog
-window.print();
-
-// Clean up class after print (with delay to ensure print dialog uses it)
-setTimeout(() => {
-document.body.classList.remove('print-without-notes');
-}, 1000);
-}
-
-showOverrideModal = function(){
-if(!window.currentScheduleStudent){
-alert('Error: No student schedule loaded');
-return;
-}
-document.getElementById('overrideStudentName').value=window.currentScheduleStudent;
-document.getElementById('overrideNote').value='';
-document.getElementById('overrideModal').style.display='block';
-}
-
-closeOverrideModal = function(){
-closeModal('overrideModal');
-}
-
-saveOverrideException = async function(){
-const studentName=document.getElementById('overrideStudentName').value;
-const note=document.getElementById('overrideNote').value.trim();
-
-if(!note){
-alert('Please provide a reason for the override');
-return;
-}
-
-apiCall('saveScheduleException',{studentName:studentName,note:note},async()=>{
-msg('✅ Override exception approved and saved','success');
-closeOverrideModal();
-// Reload schedule to show updated notes
-await showStudentSchedule(studentName);
-});
-}
-
-showOfferingNoteModal = function(offeringId,offeringName){
-if(!window.currentScheduleStudent){
-alert('Error: No student schedule loaded');
-return;
-}
-document.getElementById('noteOfferingId').value=offeringId;
-document.getElementById('noteOfferingName').value=offeringName;
-document.getElementById('noteStudentName').value=window.currentScheduleStudent;
-
-// Load existing note if it exists
-const existingNote=window.currentOfferingNotes&&window.currentOfferingNotes[offeringId];
-document.getElementById('offeringNoteText').value=existingNote||'';
-
-// Show/hide delete button based on whether note exists
-document.getElementById('deleteNoteBtn').style.display=existingNote?'inline-block':'none';
-
-document.getElementById('offeringNoteModal').style.display='block';
-}
-
-closeOfferingNoteModal = function(){
-closeModal('offeringNoteModal');
-}
-
-saveOfferingNote = async function(){
-const studentName=document.getElementById('noteStudentName').value;
-const offeringId=document.getElementById('noteOfferingId').value;
-const offeringName=document.getElementById('noteOfferingName').value;
-const note=document.getElementById('offeringNoteText').value.trim();
-
-if(!note){
-alert('Please enter a note');
-return;
-}
-
-apiCall('saveOfferingNote',{
-studentName:studentName,
-offeringId:offeringId,
-offeringName:offeringName,
-note:note
-},async()=>{
-msg('✅ Note saved','success');
-closeOfferingNoteModal();
-await showStudentSchedule(studentName);
-});
-}
-
-deleteOfferingNote = async function(){
-if(!confirm('Delete this note?')){
-return;
-}
-
-const studentName=document.getElementById('noteStudentName').value;
-const offeringId=document.getElementById('noteOfferingId').value;
-
-apiCall('deleteOfferingNote',{
-studentName:studentName,
-offeringId:offeringId
-},async()=>{
-msg('✅ Note deleted','success');
-closeOfferingNoteModal();
-await showStudentSchedule(studentName);
-});
-}
-
-loadOfferings = async function(){
-try{
-offeringsLoaded=true;
-document.getElementById('offeringsContainer').innerHTML='<div class="loading"><div class="spinner"></div></div>';
-const r=await fetch(`${API}?action=loadOfferings`);
-const d=await r.json();
-offerings=d.offerings||[];
-document.getElementById('totalOfferings').textContent=offerings.length;
-
-// Also load students to calculate enrollment (only if not already loaded)
-if(students.length===0){
-const r2=await fetch(`${API}?action=loadAll`);
-const d2=await r2.json();
-students=d2.students||[];
-}
-
-// Load ALL students from Students sheet (master list) for dropdown (only if not already loaded)
-if(allStudentNames.length===0){
-const r3=await fetch(`${API}?action=getAllStudents`);
-const d3=await r3.json();
-if(d3.success){
-allStudentNames=d3.students||[];
-}else{
-// Fallback to approved students if Students sheet doesn't exist
-const r4=await fetch(`${API}?action=loadStudents`);
-const d4=await r4.json();
-allStudentNames=d4.students?d4.students.map(name=>({id:'',name:name})):[];
-}
-}
-
-renderOfferings();
-msg('✅ Loaded','success');
-}catch(e){msg('❌ '+e.message,'error')}
-}
-
-function getEnrolledStudents(offeringId){
-const enrolled=[];
-console.log('Getting enrolled students for offering:', offeringId, '(type:', typeof offeringId + ')');
-console.log('Total students in system:', students.length);
-
-// Convert offeringId to both string and number for comparison
-const offeringIdStr = String(offeringId);
-const offeringIdNum = parseInt(offeringId);
-
-console.log('Looking for offering:', offeringIdStr, '(string) or', offeringIdNum, '(number)');
-
-// Log first student to see data structure
-if(students.length > 0){
-console.log('Sample student data:', JSON.stringify(students[0], null, 2));
-}
-
-students.forEach(s=>{
-try{
-// Check if classes is already an array or a string
-let classes;
-if(typeof s.classes === 'string'){
-classes=JSON.parse(s.classes||'[]');
-}else if(Array.isArray(s.classes)){
-classes=s.classes;
-}else{
-classes=[];
-}
-
-// Only log students with enrollments
-if(classes.length > 0){
-console.log(`${s.name} has ${classes.length} class(es):`, JSON.stringify(classes), '- Types:', classes.map(c => typeof c).join(', '));
-}
-
-// Check if offering ID matches (handle both string and number)
-const isEnrolled = classes.some(classId => {
-const match = classId === offeringIdStr || 
-       classId === offeringIdNum || 
-       String(classId) === offeringIdStr ||
-       parseInt(classId) === offeringIdNum;
-if(match){
-console.log(`  ✓ MATCH: ${s.name} class "${classId}" matches offering "${offeringId}"`);
-}
-return match;
-});
-
-if(isEnrolled){
-enrolled.push(s.name);
-}else if(classes.length > 0){
-console.log(`  ✗ NO MATCH: ${s.name} classes ${JSON.stringify(classes)} vs offering "${offeringId}"`);
-}
-}catch(e){
-console.error(`Error parsing classes for ${s.name}:`, e, s.classes);
-}
-});
-
-console.log(`Total enrolled in offering ${offeringId}:`, enrolled.length, enrolled);
-return enrolled;
-}
-
-applyOfferingFilters = function(){
-renderOfferings();
-}
-
-function getFilteredAndSortedOfferings(){
-const sortBy=document.getElementById('sortBy').value;
-const filterType=document.getElementById('filterType').value;
-const filterLevel=document.getElementById('filterLevel').value;
-const filterDay=document.getElementById('filterDay').value;
-
-// Filter
-let filtered=offerings.filter(o=>{
-if(filterType&&o.type!==filterType)return false;
-if(filterLevel&&o.level!==filterLevel)return false;
-if(filterDay){
-const days=o.day.split(',').map(d=>d.trim().toLowerCase());
-if(!days.includes(filterDay))return false;
-}
-return true;
-});
-
-// Sort
-if(sortBy==='name'){
-filtered.sort((a,b)=>a.name.localeCompare(b.name));
-}else if(sortBy==='instructor'){
-filtered.sort((a,b)=>a.instructor.localeCompare(b.instructor));
-}else if(sortBy==='type'){
-filtered.sort((a,b)=>a.type.localeCompare(b.type));
-}else if(sortBy==='level'){
-filtered.sort((a,b)=>(a.level||'').localeCompare(b.level||''));
-}else if(sortBy==='enrollment'){
-filtered.sort((a,b)=>{
-const enrollA=getEnrolledStudents(a.id).length;
-const enrollB=getEnrolledStudents(b.id).length;
-return enrollB-enrollA;
-});
-}else{
-// Default: sort by day then time
-filtered.sort((a,b)=>{
-const dayOrder=['monday','tuesday','wednesday','thursday','friday'];
-const dayA=dayOrder.indexOf(a.day.split(',')[0].trim().toLowerCase());
-const dayB=dayOrder.indexOf(b.day.split(',')[0].trim().toLowerCase());
-if(dayA!==dayB)return dayA-dayB;
-return a.time.localeCompare(b.time);
-});
-}
-
-return filtered;
-}
-
-function renderOfferings(){
-const c=document.getElementById('offeringsContainer');
-const filtered=getFilteredAndSortedOfferings();
-
-if(filtered.length===0){
-c.innerHTML='<div class="empty">📚<br>No offerings match your filters</div>';
-return;
-}
-
-let html='<table><thead><tr><th>Name</th><th>Instructor</th><th>Day</th><th>Time</th><th>Type</th><th>Enrolled</th><th>Actions</th></tr></thead><tbody>';
-filtered.forEach(o=>{
-const day=o.day.charAt(0).toUpperCase()+o.day.slice(1);
-const enrolled=getEnrolledStudents(o.id);
-const capacity=o.capacity||999;
-const enrolledCount=enrolled.length;
-const isFull=enrolledCount>=capacity;
-const enrolledBtn=enrolledCount>0?
-`<button class="btn btn-secondary btn-small" onclick="showEnrolledModal(${o.id},'${o.name}')">${enrolledCount}/${capacity} 👥</button>`:
-`<span style="color:#999">${enrolledCount}/${capacity}</span>`;
-
-html+=`<tr style="${isFull?'background:#ffe6e6':''}">
-<td><strong>${o.name}</strong></td>
-<td class="editable-cell" onclick="quickEditInstructor(${o.id},'${o.instructor}')">${o.instructor} <span class="edit-icon">✏️</span></td>
-<td>${day}</td>
-<td style="font-size:11px">${o.time}</td>
-<td>${o.type}</td>
-<td>${enrolledBtn}</td>
-<td>
-<button class="btn btn-warning btn-small" onclick="editOffering(${o.id})">✏️ Edit</button>
-<button class="btn btn-primary btn-small" onclick="showEnrollModal(${o.id},'${o.name}')">➕ Add Learner</button>
-<button class="btn btn-secondary btn-small" onclick="duplicateOffering(${o.id})">📋 Duplicate</button>
-<button class="btn btn-danger btn-small" onclick="archiveOffering(${o.id},'${o.name}')">🗄️ Archive</button>
-</td>
-</tr>`;
-});
-html+='</tbody></table>';
-c.innerHTML=html;
-}
-
-function quickEditInstructor(id,currentName){
-const newName=prompt('Edit Instructor Name:',currentName);
-if(newName&&newName!==currentName){
-updateOfferingField(id,'instructor',newName);
-}
-}
-
-async function updateOfferingField(id,field,value){
-try{
-const offering=offerings.find(o=>o.id===id);
-if(!offering)return;
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'updateOffering',
-offeringId:id,
-name:offering.name,
-instructor:field==='instructor'?value:offering.instructor,
-location:offering.location,
-day:offering.day,
-time:offering.time,
-type:offering.type,
-level:offering.level,
-description:offering.description,
-capacity:offering.capacity
-})});
-const d=await r.json();
-if(d.success){
-msg('✅ Updated instructor','success');
-await loadOfferings();
-}else{
-msg('❌ '+d.message,'error');
-}
-}catch(e){msg('❌ '+e.message,'error')}
-}
-
-archiveOffering = async function(id,name){
-if(!confirm(`Archive "${name}"?\n\nThis will:\n• Remove it from the active offerings list\n• Keep it in the database for records\n• Remove all student enrollments\n\nThis action can be undone by editing the Google Sheet.`))return;
-apiCall('archiveOffering',{offeringId:id},async()=>{
-msg(`✅ Archived: ${name}`,'success');
-await loadOfferings();
-await loadStudents();
-});
-}
-
-duplicateOffering = function(id){
-const o=offerings.find(of=>of.id===id);
-if(!o)return;
-
-// Pre-fill create modal with offering data
-document.getElementById('createName').value=o.name+' (Copy)';
-document.getElementById('createInstructor').value=o.instructor;
-document.getElementById('createLocation').value=o.location||'';
-
-// Handle multi-select days
-const daysSelect=document.getElementById('createDays');
-Array.from(daysSelect.options).forEach(opt=>opt.selected=false); // Clear first
-const selectedDays=o.day.split(',').map(d=>d.trim().toLowerCase());
-Array.from(daysSelect.options).forEach(opt=>{
-if(selectedDays.includes(opt.value)){
-opt.selected=true;
-}
-});
-
-// Handle multi-select times
-const blocksSelect=document.getElementById('createBlocks');
-Array.from(blocksSelect.options).forEach(opt=>opt.selected=false); // Clear first
-const selectedBlocks=o.time.split(',').map(t=>t.trim());
-Array.from(blocksSelect.options).forEach(opt=>{
-if(selectedBlocks.includes(opt.value)){
-opt.selected=true;
-}
-});
-
-document.getElementById('createType').value=o.type;
-document.getElementById('createLevel').value=o.level||'';
-document.getElementById('createDescription').value=o.description||'';
-document.getElementById('createCapacity').value=o.capacity||12;
-
-// Open create modal
-document.getElementById('createModal').style.display='block';
-msg(`💡 Duplicating "${o.name}" - Edit details and click Create`,'info');
-}
-
-editOffering = function(id){
-const o=offerings.find(of=>of.id===id);
-if(!o)return;
-currentEditId=id;
-document.getElementById('editModalTitle').textContent='Edit: '+o.name;
-document.getElementById('editName').value=o.name;
-document.getElementById('editInstructor').value=o.instructor;
-document.getElementById('editLocation').value=o.location||'';
-
-// Handle multi-select days
-const daysSelect=document.getElementById('editDays');
-const selectedDays=o.day.split(',').map(d=>d.trim().toLowerCase());
-Array.from(daysSelect.options).forEach(opt=>{
-if(selectedDays.includes(opt.value)){
-opt.selected=true;
-}
-});
-
-// Handle multi-select times
-const blocksSelect=document.getElementById('editBlocks');
-const selectedBlocks=o.time.split(',').map(t=>t.trim());
-Array.from(blocksSelect.options).forEach(opt=>{
-if(selectedBlocks.includes(opt.value)){
-opt.selected=true;
-}
-});
-
-document.getElementById('editType').value=o.type;
-document.getElementById('editLevel').value=o.level||'';
-document.getElementById('editDescription').value=o.description||'';
-document.getElementById('editCapacity').value=o.capacity||12;
-document.getElementById('editModal').style.display='block';
-}
-
-function closeEditModal(){closeModal('editModal',['currentEditId'])}
-
-showCreateOfferingModal = function(){
-document.getElementById('createName').value='';
-document.getElementById('createInstructor').value='';
-document.getElementById('createLocation').value='';
-document.getElementById('createDays').selectedIndex=-1;
-document.getElementById('createBlocks').selectedIndex=-1;
-document.getElementById('createMultiple').checked=false;
-document.getElementById('createType').value='';
-document.getElementById('createLevel').value='';
-document.getElementById('createDescription').value='';
-document.getElementById('createCapacity').value='12';
-document.getElementById('createPreview').style.display='none';
-document.getElementById('createModal').style.display='block';
-}
-
-function closeCreateModal(){closeModal('createModal')}
-
-function toggleMultipleCreation(){
-updateCreatePreview();
-}
-
-function updateCreatePreview(){
-const daysSelect=document.getElementById('createDays');
-const blocksSelect=document.getElementById('createBlocks');
-const multiple=document.getElementById('createMultiple').checked;
-const name=document.getElementById('createName').value.trim();
-
-const selectedDays=Array.from(daysSelect.selectedOptions).map(o=>o.text);
-const selectedBlocks=Array.from(blocksSelect.selectedOptions).map(o=>o.value);
-
-if(selectedDays.length>0&&selectedBlocks.length>0){
-const preview=document.getElementById('createPreview');
-const previewText=document.getElementById('createPreviewText');
-preview.style.display='block';
-
-if(multiple){
-const count=selectedDays.length*selectedBlocks.length;
-previewText.innerHTML=`<strong>Will create ${count} separate offering(s):</strong><br>`;
-selectedDays.forEach(day=>{
-selectedBlocks.forEach(block=>{
-previewText.innerHTML+=`• ${name||'[Class]'} - ${day} ${block}<br>`;
-});
-});
-}else{
-previewText.innerHTML=`<strong>Will create 1 offering:</strong><br>`;
-previewText.innerHTML+=`• ${name||'[Class]'} - Days: ${selectedDays.join(', ')}<br>`;
-previewText.innerHTML+=`• Times: ${selectedBlocks.join(', ')}`;
-}
-}else{
-document.getElementById('createPreview').style.display='none';
-}
-}
-
-// Add event listeners for preview
-document.addEventListener('DOMContentLoaded',()=>{
-if(document.getElementById('createDays')){
-document.getElementById('createDays').addEventListener('change',updateCreatePreview);
-document.getElementById('createBlocks').addEventListener('change',updateCreatePreview);
-document.getElementById('createName').addEventListener('input',updateCreatePreview);
-}
-});
-
-async function createOffering(){
-const name=document.getElementById('createName').value.trim();
-const instructor=document.getElementById('createInstructor').value.trim();
-const type=document.getElementById('createType').value;
-
-const daysSelect=document.getElementById('createDays');
-const blocksSelect=document.getElementById('createBlocks');
-const selectedDays=Array.from(daysSelect.selectedOptions).map(o=>o.value);
-const selectedBlocks=Array.from(blocksSelect.selectedOptions).map(o=>o.value);
-const createMultiple=document.getElementById('createMultiple').checked;
-
-if(!name||!instructor||selectedDays.length===0||selectedBlocks.length===0||!type){
-alert('Please fill in all required fields:\n- Class Name\n- Instructor\n- At least one Day\n- At least one Time Block\n- Type');
-return;
-}
-
-const baseData={
-name:name,
-instructor:instructor,
-location:document.getElementById('createLocation').value.trim(),
-type:type,
-level:document.getElementById('createLevel').value,
-description:document.getElementById('createDescription').value.trim(),
-capacity:parseInt(document.getElementById('createCapacity').value)||12
+const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+
+// ─────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────
+let state = {
+  session:    {},
+  learners:   [],   // from loadAll — includes classes JSON
+  students:   [],   // from getAllStudents — { id, name, grade }
+  offerings:  [],
+  pending:    [],
+  proposals:  [],
+  enrollCounts: {},
+  addLearnerOfferingId: null
 };
 
-try{
-if(createMultiple){
-// Create separate offering for each day/block combination
-let created=0;
-for(const day of selectedDays){
-for(const block of selectedBlocks){
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'saveOffering',
-...baseData,
-day:day,
-time:block
-})});
-const d=await r.json();
-if(d.success)created++;
-}
-}
-msg(`✅ Created ${created} offering(s)!`,'success');
-closeCreateModal();
-await loadOfferings();
-}else{
-// Create single offering with multiple days/blocks
-const days=selectedDays.join(',');
-const times=selectedBlocks.join(',');
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'saveOffering',
-...baseData,
-day:days,
-time:times
-})});
-const d=await r.json();
-if(d.success){
-msg(`✅ Created: ${name}`,'success');
-closeCreateModal();
-await loadOfferings();
-}else{
-msg('❌ '+d.message,'error');
-}
-}
-}catch(e){msg('❌ '+e.message,'error')}
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const [sessionRes, offeringsRes, countsRes] = await Promise.all([
+      get('getSessionConfig'),
+      get('loadOfferings'),
+      get('getEnrollmentCounts')
+    ]);
+    if (sessionRes.success) {
+      state.session = sessionRes;
+      document.getElementById('sessionLabel').textContent = sessionRes.fullSessionName || sessionRes.sessionName;
+      document.getElementById('fSession').value = sessionRes.fullSessionName || '';
+    }
+    state.offerings   = offeringsRes.offerings  || [];
+    state.enrollCounts = countsRes.counts       || {};
+    updateStatCard('st-offerings', state.offerings.length);
+    showStatus('Dashboard ready', 'success');
+  } catch(e) {
+    showStatus('Init error: ' + e.message, 'error');
+  }
 }
 
-async function saveOffering(){
-if(!currentEditId)return;
-const o=offerings.find(of=>of.id===currentEditId);
-if(!o)return;
-
-const name=document.getElementById('editName').value.trim();
-const instructor=document.getElementById('editInstructor').value.trim();
-
-// Get selected days from multi-select
-const daysSelect=document.getElementById('editDays');
-const selectedDays=Array.from(daysSelect.selectedOptions).map(opt=>opt.value);
-const day=selectedDays.join(',');
-
-// Get selected time blocks from multi-select
-const blocksSelect=document.getElementById('editBlocks');
-const selectedBlocks=Array.from(blocksSelect.selectedOptions).map(opt=>opt.value);
-const time=selectedBlocks.join(',');
-
-const type=document.getElementById('editType').value;
-
-if(!name||!instructor||selectedDays.length===0||selectedBlocks.length===0||!type){
-alert('Please fill in all required fields:\n- Name\n- Instructor\n- At least one Day\n- At least one Time Block\n- Type');
-return;
+// ─────────────────────────────────────────────────────────────
+// HTTP HELPERS
+// ─────────────────────────────────────────────────────────────
+async function get(action, params = {}) {
+  const qs = new URLSearchParams({ action, ...params }).toString();
+  const r  = await fetch(`${API}?${qs}`);
+  return r.json();
 }
 
-try{
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'updateOffering',
-offeringId:currentEditId,
-name:name,
-instructor:instructor,
-location:document.getElementById('editLocation').value.trim(),
-day:day,
-time:time,
-type:type,
-level:document.getElementById('editLevel').value,
-description:document.getElementById('editDescription').value.trim(),
-capacity:parseInt(document.getElementById('editCapacity').value)||12
-})});
-const d=await r.json();
-if(d.success){
-msg('✅ Offering updated','success');
-closeEditModal();
-await loadOfferings();
-}else{
-msg('❌ '+d.message,'error');
-}
-}catch(e){msg('❌ '+e.message,'error')}
+async function post(body) {
+  const r = await fetch(API, { method:'POST', body: JSON.stringify(body) });
+  return r.json();
 }
 
-showEnrollModal = function(offeringId,offeringName){
-currentEnrollOfferingId=offeringId;
-document.getElementById('enrollModalTitle').textContent='Add Learners to Offering';
-document.getElementById('enrollClassName').textContent=offeringName;
-const select=document.getElementById('enrollStudent');
-select.innerHTML='';
+// ─────────────────────────────────────────────────────────────
+// STATUS / UI HELPERS
+// ─────────────────────────────────────────────────────────────
+function showStatus(text, type = 'info') {
+  const el = document.getElementById('status');
+  el.textContent = text;
+  el.className = 'status-' + type;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 4000);
+}
 
-// Sort students by name
-const sortedStudents=[...allStudentNames].sort((a,b)=>{
-const nameA=a.name||a;
-const nameB=b.name||b;
-return nameA.localeCompare(nameB);
+function setLoading(containerId, msg = 'Loading…') {
+  document.getElementById(containerId).innerHTML =
+    `<div class="loading"><div class="spinner"></div><p>${msg}</p></div>`;
+}
+
+function updateStatCard(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  document.querySelectorAll('.tab-content').forEach((t, idx) => t.classList.toggle('active', idx === i));
+}
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+window.addEventListener('click', e => {
+  if (e.target.classList.contains('modal')) e.target.style.display = 'none';
 });
 
-sortedStudents.forEach(student=>{
-const name=student.name||student;
-const id=student.id||'';
-const grade=student.grade||'';
-const level=student.level||'';
-let displayText=name;
-if(id)displayText+=` (ID: ${id})`;
-if(grade)displayText+=` - Grade ${grade}`;
-if(level)displayText+=` - ${level}`;
-select.innerHTML+=`<option value="${name}" data-id="${id}">${displayText}</option>`;
-});
-
-// Add event listener for preview
-select.addEventListener('change',updateEnrollPreview);
-document.getElementById('enrollPreview').style.display='none';
-document.getElementById('enrollModal').style.display='block';
+// ─────────────────────────────────────────────────────────────
+// NORMALISE TIME — handles "Block 1" or "10:00-10:45"
+// ─────────────────────────────────────────────────────────────
+const BLOCK_MAP = {
+  'block 1':'10:00-10:45','block 2':'10:50-11:35','block 3':'12:10-12:55',
+  'block 4':'1:00-1:50','block 5':'1:55-2:45','lunch':'11:35-12:05'
+};
+function normTime(t) {
+  if (!t) return '';
+  const s = String(t).trim();
+  return BLOCK_MAP[s.toLowerCase()] || s;
 }
 
-function updateEnrollPreview(){
-const select=document.getElementById('enrollStudent');
-const selectedOptions=Array.from(select.selectedOptions);
-const preview=document.getElementById('enrollPreview');
-const previewList=document.getElementById('enrollPreviewList');
+// ─────────────────────────────────────────────────────────────
+// ══ TAB 0 — LEARNERS ════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+async function loadLearners() {
+  setLoading('learnersContainer');
+  try {
+    const [allRes, stuRes, pendingRes] = await Promise.all([
+      get('loadAll'),
+      get('getAllStudents'),
+      get('getPendingRequests')
+    ]);
+    state.learners  = allRes.students    || [];
+    state.students  = stuRes.students    || [];
+    state.pending   = pendingRes.requests || [];
 
-if(selectedOptions.length>0){
-preview.style.display='block';
-previewList.innerHTML=selectedOptions.map((opt,i)=>`${i+1}. ${opt.text}`).join('<br>');
-}else{
-preview.style.display='none';
-}
-}
+    // Count learners with pending items
+    const pendingNames = new Set(state.pending.map(p => p.studentName.toLowerCase()));
 
-function closeEnrollModal(){closeModal('enrollModal',['currentEnrollOfferingId'])}
+    updateStatCard('st-total',     state.students.length);
+    updateStatCard('st-scheduled', state.learners.filter(l => l.totalClasses > 0).length);
+    updateStatCard('st-pending',   pendingNames.size);
+    updateStatCard('st-offerings', state.offerings.length);
 
-function showEnrolledModal(offeringId,offeringName){
-const offering=offerings.find(o=>o.id===offeringId);
-const enrolled=getEnrolledStudents(offeringId);
-const capacity=offering?offering.capacity||999:999;
-
-document.getElementById('enrolledModalTitle').textContent='Enrolled Learners';
-document.getElementById('enrolledClassName').textContent=offeringName;
-
-let html='<div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px">';
-html+=`<p style="margin:0"><strong>Enrolled:</strong> ${enrolled.length} / ${capacity}</p>`;
-if(enrolled.length>=capacity){
-html+=`<p style="margin:5px 0 0;color:#d32f2f;font-weight:bold">⚠️ CLASS IS FULL</p>`;
-}else{
-html+=`<p style="margin:5px 0 0;color:#4CAF50">${capacity-enrolled.length} spot(s) remaining</p>`;
-}
-html+='</div>';
-
-if(enrolled.length===0){
-html+='<p style="text-align:center;color:#999;padding:40px 20px">No learners enrolled yet</p>';
-}else{
-html+='<div style="max-height:400px;overflow-y:auto">';
-enrolled.sort().forEach((name,index)=>{
-html+=`<div style="background:white;padding:12px;margin:5px 0;border-radius:4px;border-left:3px solid #2196F3;display:flex;justify-content:space-between;align-items:center">
-<div><strong>${index+1}. ${name}</strong></div>
-<button class="btn btn-danger btn-small" onclick="removeStudentFromClass('${name}',${offeringId},'${offeringName}')">✗ Remove</button>
-</div>`;
-});
-html+='</div>';
+    renderLearners();
+    showStatus(`Loaded ${state.students.length} learners`, 'success');
+  } catch(e) {
+    showStatus('Error: ' + e.message, 'error');
+    document.getElementById('learnersContainer').innerHTML =
+      `<div class="empty">⚠️<p>${e.message}</p></div>`;
+  }
 }
 
-document.getElementById('enrolledList').innerHTML=html;
-document.getElementById('enrolledModal').style.display='block';
+function filterLearners() { renderLearners(); }
+
+function renderLearners() {
+  const q   = (document.getElementById('learnerSearch').value || '').toLowerCase();
+  const pendingNames = new Set(state.pending.map(p => p.studentName.toLowerCase()));
+
+  // Merge students list with loadAll data for class counts
+  const learnerMap = {};
+  state.learners.forEach(l => { learnerMap[l.name.toLowerCase()] = l; });
+
+  let rows = state.students
+    .filter(s => !q || s.name.toLowerCase().includes(q) || (s.grade||'').toLowerCase().includes(q))
+    .sort((a,b) => a.name.localeCompare(b.name));
+
+  if (!rows.length) {
+    document.getElementById('learnersContainer').innerHTML =
+      '<div class="empty">👥<p>No learners found</p></div>';
+    return;
+  }
+
+  let html = `<table>
+    <thead><tr>
+      <th>Name</th><th>Group</th><th>Offerings</th><th>Status</th><th>Actions</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach(s => {
+    const ldata      = learnerMap[s.name.toLowerCase()] || {};
+    const classCount = ldata.totalClasses || 0;
+    const hasPending = pendingNames.has(s.name.toLowerCase());
+    const badge      = hasPending
+      ? '<span class="badge badge-pending">Pending</span>'
+      : classCount > 0
+        ? '<span class="badge badge-approved">Scheduled</span>'
+        : '<span style="color:#bbb;font-size:12px">No schedule</span>';
+
+    html += `<tr>
+      <td><strong>${esc(s.name)}</strong></td>
+      <td>${esc(s.grade || '—')}</td>
+      <td>${classCount}</td>
+      <td>${badge}</td>
+      <td>
+        <button class="btn btn-blue btn-sm" onclick="viewStudentSchedule(${JSON.stringify(s.name)})">📅 Schedule</button>
+      </td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('learnersContainer').innerHTML = html;
 }
 
-function closeEnrolledModal(){closeModal('enrolledModal')}
+async function viewStudentSchedule(name) {
+  document.getElementById('schedModalTitle').textContent = name + "'s Schedule";
+  document.getElementById('schedModalBody').innerHTML =
+    '<div class="loading"><div class="spinner"></div><p>Loading…</p></div>';
+  document.getElementById('schedModal').style.display = 'block';
 
-async function removeStudentFromClass(studentName,offeringId,className){
-if(!confirm(`Remove ${studentName} from ${className}?`))return;
-apiCall('removeEnrollment',{studentName,offeringId},async()=>{
-msg(`✅ Removed ${studentName}`,'success');
-await loadStudents();
-await loadOfferings();
-closeEnrolledModal();
-});
+  try {
+    const d = await get('loadStudent', { studentName: name });
+    if (!d.success) throw new Error(d.message || 'Failed to load schedule');
+
+    const offerings = d.offerings || [];
+
+    if (!offerings.length) {
+      document.getElementById('schedModalBody').innerHTML =
+        '<div class="empty" style="font-size:24px">📭<p>No approved offerings yet</p></div>';
+      return;
+    }
+
+    // Build grid
+    let html = `<p style="font-size:13px;color:#666;margin-bottom:12px">
+      ${offerings.length} offering(s) approved
+    </p>
+    <div class="sched-grid">
+      <div class="sched-hdr">Time</div>
+      ${DAYS.map(d => `<div class="sched-hdr">${d.charAt(0).toUpperCase()+d.slice(1)}</div>`).join('')}`;
+
+    TIMES.forEach(block => {
+      html += `<div class="sched-time">${block.label}<br><small style="font-weight:normal">${block.time}</small></div>`;
+      if (block.lunch) {
+        html += `<div class="sched-lunch" style="display:flex;align-items:center;justify-content:center;color:#bbb">Lunch Break</div>`;
+        return;
+      }
+      DAYS.forEach(day => {
+        const matches = offerings.filter(o => {
+          const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+          const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+          return days.includes(day) && times.includes(block.time);
+        });
+        if (matches.length) {
+          html += `<div class="sched-cell">`;
+          matches.forEach(o => {
+            html += `<div class="sched-offering">${esc(o.name)}</div>
+              <div class="sched-detail">👤 ${esc(o.instructor)}</div>
+              <div class="sched-detail">📍 ${esc(o.location || 'TBA')}</div>`;
+          });
+          html += `</div>`;
+        } else {
+          html += `<div class="sched-cell empty">—</div>`;
+        }
+      });
+    });
+
+    html += '</div>';
+    document.getElementById('schedModalBody').innerHTML = html;
+  } catch(e) {
+    document.getElementById('schedModalBody').innerHTML =
+      `<div class="empty">⚠️<p>${e.message}</p></div>`;
+  }
 }
 
-async function addStudentsToClass(){
-const select=document.getElementById('enrollStudent');
-const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
-
-if(selectedStudents.length===0){
-alert('Please select at least one learner');
-return;
-}
-if(!currentEnrollOfferingId)return;
-
-const count=selectedStudents.length;
-const studentText=count===1?selectedStudents[0]:`${count} learners`;
-if(!confirm(`Add ${studentText} to this offering?`))return;
-
-try{
-let succeeded=0;
-let failed=0;
-const errors=[];
-
-for(const studentName of selectedStudents){
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'manualEnroll',
-studentName:studentName,
-offeringId:currentEnrollOfferingId
-})});
-const d=await r.json();
-if(d.success){
-succeeded++;
-}else{
-failed++;
-errors.push(`${studentName}: ${d.message}`);
-}
+// ─────────────────────────────────────────────────────────────
+// ══ TAB 1 — OFFERINGS ═══════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+async function loadOfferings() {
+  setLoading('offeringsContainer');
+  try {
+    const [offRes, countsRes] = await Promise.all([
+      get('loadOfferings'),
+      get('getEnrollmentCounts')
+    ]);
+    state.offerings   = offRes.offerings  || [];
+    state.enrollCounts = countsRes.counts || {};
+    renderOfferings();
+    showStatus(`Loaded ${state.offerings.length} offerings`, 'success');
+  } catch(e) {
+    showStatus('Error: ' + e.message, 'error');
+  }
 }
 
-if(succeeded>0){
-msg(`✅ Added ${succeeded} learner(s) to offering`,'success');
-await loadStudents();
-await loadOfferings();
-}
-if(failed>0){
-msg(`⚠️ ${failed} failed: ${errors.join(', ')}`,'error');
-}
-if(succeeded>0){
-closeEnrollModal();
-}
-}catch(e){msg('❌ '+e.message,'error')}
-}
+function getFiltered() {
+  const sortBy    = document.getElementById('sortBy').value;
+  const filterDay = document.getElementById('filterDay').value.toLowerCase();
+  const filterType= document.getElementById('filterType').value;
+  const filterGrp = document.getElementById('filterGroup').value;
 
-// ATTENDANCE FUNCTIONS
+  let list = state.offerings.filter(o => {
+    if (filterDay && !(o.day || '').toLowerCase().split(',').map(d=>d.trim()).includes(filterDay)) return false;
+    if (filterType && o.type !== filterType) return false;
+    if (filterGrp  && o.level !== filterGrp)  return false;
+    return true;
+  });
 
-loadAttendanceTab = async function(){
-try{
-console.log('=== LOADING ATTENDANCE TAB ===');
-document.getElementById('attendanceContainer').innerHTML='<div class="loading"><div class="spinner"></div><p>Loading students and offerings...</p></div>';
-
-// Set today's date
-const today=new Date().toISOString().split('T')[0];
-document.getElementById('attendanceDate').value=today;
-
-// ALWAYS load students (fresh data)
-console.log('Loading students...');
-await loadStudents();
-console.log('✓ Students loaded:', students.length);
-
-// ALWAYS load offerings (fresh data)
-console.log('Loading offerings...');
-await loadOfferings();
-console.log('✓ Offerings loaded:', offerings.length);
-
-// Populate offerings dropdown
-const select=document.getElementById('attendanceOffering');
-select.innerHTML='<option value="">-- Select Offering --</option>';
-offerings.forEach(o=>{
-// Handle multi-day offerings
-const days=o.day.split(',').map(d=>d.trim().charAt(0).toUpperCase()+d.trim().slice(1)).join(', ');
-const times=o.time.split(',').map(t=>t.trim()).join(', ');
-select.innerHTML+=`<option value="${o.id}">${o.name} - ${days} ${times}</option>`;
-});
-
-console.log('✓ Attendance dropdown populated with', offerings.length, 'offerings');
-
-await loadAttendanceForDate();
-
-// Show success message
-document.getElementById('attendanceContainer').innerHTML=`<div style="text-align:center;padding:60px 20px">
-<p style="font-size:18px;color:#4CAF50;margin-bottom:10px">✅ Data loaded successfully!</p>
-<p style="font-size:14px;color:#666">${students.length} students and ${offerings.length} offerings</p>
-<p style="font-size:14px;color:#999;margin-top:20px">Select an offering above to mark attendance</p>
-</div>`;
-
-msg('✅ Attendance data loaded','success');
-
-}catch(e){
-console.error('Error loading attendance tab:', e);
-document.getElementById('attendanceContainer').innerHTML=`<div style="text-align:center;padding:60px 20px;color:#d32f2f"><p style="font-size:18px">❌ Error loading attendance</p><p>${e.message}</p></div>`;
-msg('❌ '+e.message,'error');
-}
+  const dayOrder = ['monday','tuesday','wednesday','thursday','friday'];
+  if (sortBy === 'name')       list.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sortBy === 'instructor') list.sort((a,b) => a.instructor.localeCompare(b.instructor));
+  else if (sortBy === 'enrollment') list.sort((a,b) => (state.enrollCounts[b.id]||0) - (state.enrollCounts[a.id]||0));
+  else list.sort((a,b) => { // day/time default
+    const da = dayOrder.indexOf((a.day||'').split(',')[0].trim().toLowerCase());
+    const db = dayOrder.indexOf((b.day||'').split(',')[0].trim().toLowerCase());
+    return da !== db ? da - db : (a.time||'').localeCompare(b.time||'');
+  });
+  return list;
 }
 
-loadAttendanceForDate = async function(){
-const date=document.getElementById('attendanceDate').value;
-if(!date){
-console.log('No date selected');
-return;
+function renderOfferings() {
+  const list = getFiltered();
+  document.getElementById('offeringCount').textContent = list.length + ' / ' + state.offerings.length;
+
+  if (!list.length) {
+    document.getElementById('offeringsContainer').innerHTML =
+      '<div class="empty">📚<p>No offerings match filters</p></div>';
+    return;
+  }
+
+  let html = `<table>
+    <thead><tr>
+      <th>Name</th><th>Instructor</th><th>Day(s)</th><th>Block(s)</th>
+      <th>Group</th><th>Type</th><th>Enrolled</th><th>Actions</th>
+    </tr></thead><tbody>`;
+
+  list.forEach(o => {
+    const enrolled = state.enrollCounts[o.id] || 0;
+    const capacity = Number(o.capacity) || 999;
+    const full     = enrolled >= capacity;
+    const typeBadge = o.type === 'Commit'
+      ? '<span class="badge badge-commit">Commit</span>'
+      : o.type === 'Drop-in'
+        ? '<span class="badge badge-dropin">Drop-in</span>'
+        : `<span class="badge">${esc(o.type)}</span>`;
+
+    const days = (o.day||'').split(',').map(d => {
+      const x = d.trim(); return x.charAt(0).toUpperCase()+x.slice(1);
+    }).join(', ');
+
+    const times = (o.time||'').split(',').map(t => {
+      const n = normTime(t.trim());
+      const b = TIMES.find(x => x.time === n);
+      return b ? b.label : n;
+    }).join(', ');
+
+    html += `<tr style="${full ? 'background:#fff0f0' : ''}">
+      <td><strong>${esc(o.name)}</strong>${o.description ? `<div style="font-size:11px;color:#888;margin-top:2px">${esc(o.description).slice(0,60)}…</div>` : ''}</td>
+      <td>${esc(o.instructor)}</td>
+      <td>${days}</td>
+      <td style="font-size:12px">${times}</td>
+      <td>${esc(o.level||'—')}</td>
+      <td>${typeBadge}</td>
+      <td>
+        <button class="btn btn-blue btn-sm" onclick="showEnrolled(${o.id},'${esc(o.name)}')"
+          style="${full?'background:#f44336':''}">
+          ${enrolled}/${capacity===999?'∞':capacity} 👥
+        </button>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-warning btn-sm" onclick="openEditModal(${o.id})">✏️ Edit</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddLearnerModal(${o.id},'${esc(o.name)}')">➕ Add</button>
+        <button class="btn btn-danger btn-sm" onclick="archiveOffering(${o.id},'${esc(o.name)}')">🗄 Archive</button>
+      </td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('offeringsContainer').innerHTML = html;
 }
 
-console.log('Loading attendance for date:', date);
+// ── Enrolled modal ────────────────────────────────────────────
+function showEnrolled(offeringId, name) {
+  const o        = state.offerings.find(x => x.id === offeringId);
+  const enrolled = getEnrolledNames(offeringId);
+  const capacity = o ? (Number(o.capacity)||999) : 999;
 
-try{
-const r=await fetch(`${API}?action=getAttendance&date=${date}`);
-const d=await r.json();
-console.log('Attendance data received:', d);
-attendanceData=d.attendance||{};
-console.log('Attendance keys:', Object.keys(attendanceData));
-loadAttendanceRoster();
-}catch(e){
-console.error('Error loading attendance:',e);
-attendanceData={};
-msg('Error loading attendance: '+e.message,'error');
-}
-}
+  document.getElementById('enrolledTitle').textContent = name + ' — Enrolled Learners';
 
-loadAttendanceRoster = function(){
-const offeringId=document.getElementById('attendanceOffering').value;
-const date=document.getElementById('attendanceDate').value;
-const container=document.getElementById('attendanceContainer');
+  let html = `<div style="background:#f8f9fa;padding:12px;border-radius:6px;margin-bottom:14px">
+    <strong>${enrolled.length}</strong> / ${capacity===999?'∞':capacity} enrolled
+    ${enrolled.length >= capacity ? '<span style="color:#f44336;font-weight:700;margin-left:10px">CLASS FULL</span>' : ''}
+  </div>`;
 
-console.log('Loading attendance roster:', {date, offeringId, studentsCount: students.length, offeringsCount: offerings.length});
+  if (!enrolled.length) {
+    html += '<p style="text-align:center;color:#bbb;padding:30px">No learners enrolled yet</p>';
+  } else {
+    enrolled.sort().forEach((nm, i) => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #eee">
+        <strong>${i+1}. ${esc(nm)}</strong>
+        <button class="btn btn-danger btn-sm" onclick="removeEnrollment('${nm}',${offeringId},'${esc(name)}')">✗ Remove</button>
+      </div>`;
+    });
+  }
 
-if(!offeringId||!date){
-container.innerHTML=emptyState('Select a date and class to mark attendance');
-return;
-}
-
-const offering=offerings.find(o=>o.id==offeringId);
-if(!offering){
-container.innerHTML=emptyState('Offering not found');
-return;
+  document.getElementById('enrolledBody').innerHTML = html;
+  document.getElementById('enrolledModal').style.display = 'block';
 }
 
-const enrolled=getEnrolledStudents(offeringId);
-console.log('Enrolled students found:', enrolled.length, enrolled);
-
-const key=`${date}_${offeringId}`;
-const presentList=attendanceData[key]||[];
-console.log('Attendance data key:', key, 'Present list:', presentList);
-
-// Default: all enrolled students are checked (present) unless marked absent
-let studentStatuses=new Map();
-
-// First, mark all enrolled students as present by default
-enrolled.forEach(name=>{
-studentStatuses.set(name,{enrolled:true,present:true});
-});
-
-// Then update based on actual attendance data if it exists
-if(presentList.length>0){
-// If we have attendance data, respect it
-enrolled.forEach(name=>{
-studentStatuses.set(name,{enrolled:true,present:presentList.includes(name)});
-});
-// Check for other students who attended
-presentList.forEach(name=>{
-if(!enrolled.includes(name)){
-studentStatuses.set(name,{enrolled:false,present:true});
-}
-});
+function getEnrolledNames(offeringId) {
+  const idStr = String(offeringId);
+  const idNum = Number(offeringId);
+  return state.learners
+    .filter(l => {
+      try {
+        const classes = typeof l.classes === 'string' ? JSON.parse(l.classes||'[]') : (l.classes||[]);
+        return classes.some(c => String(c) === idStr || Number(c) === idNum);
+      } catch { return false; }
+    })
+    .map(l => l.name);
 }
 
-const totalPresent=Array.from(studentStatuses.values()).filter(s=>s.present).length;
-const totalAbsent=Array.from(studentStatuses.values()).filter(s=>!s.present).length;
-
-let html=`<div class="attendance-summary">
-<div>
-<strong style="font-size:16px">${offering.name}</strong><br>
-<span style="font-size:13px;color:#666">${new Date(date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</span>
-</div>
-<div style="flex:1"></div>
-<div class="attendance-stat">
-<div class="attendance-stat-number" style="color:#4CAF50">${totalPresent}</div>
-<div class="attendance-stat-label">Present</div>
-</div>
-<div class="attendance-stat">
-<div class="attendance-stat-number" style="color:#999">${totalAbsent}</div>
-<div class="attendance-stat-label">Absent</div>
-</div>
-<div class="attendance-stat">
-<div class="attendance-stat-number">${enrolled.length}</div>
-<div class="attendance-stat-label">Enrolled</div>
-</div>
-<button class="btn btn-secondary btn-small" onclick="showAddOtherStudentModal(${offeringId},'${date}')" style="margin-left:15px">➕ Add Other Student</button>
-</div>`;
-
-if(studentStatuses.size===0){
-html+='<div style="text-align:center;padding:60px 20px;color:#999"><p style="font-size:18px">No students enrolled in this offering</p></div>';
-container.innerHTML=html;
-return;
+async function removeEnrollment(studentName, offeringId, offeringName) {
+  if (!confirm(`Remove ${studentName} from "${offeringName}"?`)) return;
+  try {
+    const d = await post({ action:'removeEnrollment', studentName, offeringId });
+    if (d.success) {
+      showStatus(`Removed ${studentName}`, 'success');
+      await loadOfferings();
+      await loadLearners();
+      closeModal('enrolledModal');
+    } else {
+      showStatus('Error: ' + d.message, 'error');
+    }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
-html+='<div class="attendance-roster">';
-// Sort: enrolled first, then other
-const sortedStudents=Array.from(studentStatuses.entries()).sort((a,b)=>{
-if(a[1].enrolled&&!b[1].enrolled)return -1;
-if(!a[1].enrolled&&b[1].enrolled)return 1;
-return a[0].localeCompare(b[0]);
-});
+// ── Add learner modal ─────────────────────────────────────────
+function openAddLearnerModal(offeringId, offeringName) {
+  state.addLearnerOfferingId = offeringId;
+  document.getElementById('addLearnerTitle').textContent = 'Add Learner to Offering';
+  document.getElementById('addLearnerOffering').textContent = offeringName;
 
-sortedStudents.forEach(([studentName,status])=>{
-const isPresent=status.present;
-const isEnrolled=status.enrolled;
-html+=`<div class="attendance-card ${isPresent?'present':'absent'}">
-<input type="checkbox" class="attendance-checkbox" ${isPresent?'checked':''} 
-onchange="toggleAttendance('${studentName}',${offeringId},'${date}',this.checked)">
-<div style="flex:1">
-<div class="attendance-name">${studentName}</div>
-${!isEnrolled?'<div class="attendance-info" style="color:#ff9800;font-weight:600">⚠️ Other</div>':''}
-</div>
-${!isEnrolled?`<button class="btn btn-danger btn-small" onclick="removeOtherAttendance('${studentName}',${offeringId},'${date}')" style="margin-left:10px">✗</button>`:''}
-</div>`;
-});
-html+='</div>';
+  const enrolled = getEnrolledNames(offeringId);
+  const select   = document.getElementById('addLearnerSelect');
+  select.innerHTML = '';
 
-container.innerHTML=html;
+  [...state.students]
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .filter(s => !enrolled.includes(s.name))
+    .forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.name;
+      opt.textContent = s.grade ? `${s.name} — ${s.grade}` : s.name;
+      select.appendChild(opt);
+    });
+
+  document.getElementById('addLearnerModal').style.display = 'block';
 }
 
+async function doAddLearner() {
+  const selected = Array.from(document.getElementById('addLearnerSelect').selectedOptions).map(o => o.value);
+  if (!selected.length) { alert('Select at least one learner'); return; }
+  if (!state.addLearnerOfferingId) return;
 
-function showAddOtherStudentModal(offeringId,date){
-currentAttendanceOfferingId=offeringId;
-currentAttendanceDate=date;
-
-const offering=offerings.find(o=>o.id==offeringId);
-const enrolled=getEnrolledStudents(offeringId);
-
-document.getElementById('otherStudentModalTitle').textContent='Add Other Student to Attendance';
-document.getElementById('otherOfferingName').textContent=offering?offering.name:'';
-
-const select=document.getElementById('otherStudentSelect');
-select.innerHTML='';
-
-// Sort all students, filter out already enrolled
-const sortedStudents=[...allStudentNames].sort((a,b)=>{
-const nameA=a.name||a;
-const nameB=b.name||b;
-return nameA.localeCompare(nameB);
-});
-
-sortedStudents.forEach(student=>{
-const name=student.name||student;
-// Skip if already enrolled
-if(enrolled.includes(name))return;
-
-const id=student.id||'';
-const grade=student.grade||'';
-const level=student.level||'';
-let displayText=name;
-if(id)displayText+=` (ID: ${id})`;
-if(grade)displayText+=` - Grade ${grade}`;
-if(level)displayText+=` - ${level}`;
-select.innerHTML+=`<option value="${name}">${displayText}</option>`;
-});
-
-select.addEventListener('change',updateOtherStudentPreview);
-document.getElementById('otherStudentPreview').style.display='none';
-document.getElementById('otherStudentModal').style.display='block';
+  let ok = 0, fail = 0;
+  for (const name of selected) {
+    try {
+      const d = await post({ action:'manualEnroll', studentName:name, offeringId:state.addLearnerOfferingId });
+      d.success ? ok++ : fail++;
+    } catch { fail++; }
+  }
+  showStatus(`Added ${ok}${fail ? `, ${fail} failed` : ''} learner(s)`, ok ? 'success' : 'error');
+  if (ok) {
+    closeModal('addLearnerModal');
+    await loadOfferings();
+    await loadLearners();
+  }
 }
 
-function updateOtherStudentPreview(){
-const select=document.getElementById('otherStudentSelect');
-const selectedOptions=Array.from(select.selectedOptions);
-const preview=document.getElementById('otherStudentPreview');
-const previewList=document.getElementById('otherStudentPreviewList');
-
-if(selectedOptions.length>0){
-preview.style.display='block';
-previewList.innerHTML=selectedOptions.map((opt,i)=>`${i+1}. ${opt.text}`).join('<br>');
-}else{
-preview.style.display='none';
-}
-}
-
-
-function closeOtherStudentModal(){closeModal("otherStudentModal",["currentAttendanceOfferingId","currentAttendanceDate"])}
-
-
-
-
-
-async function addOtherStudentsToAttendance(){
-const select=document.getElementById('otherStudentSelect');
-const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
-
-if(selectedStudents.length===0){
-alert('Please select at least one student');
-return;
+// ── Create / Edit offering modal ──────────────────────────────
+function openCreateModal() {
+  document.getElementById('offeringModalTitle').textContent = 'New Offering';
+  document.getElementById('editId').value = '';
+  ['fName','fInstructor','fLocation','fDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fCapacity').value = '12';
+  document.getElementById('fLevel').value = '';
+  document.getElementById('fType').value = '';
+  document.getElementById('fSession').value = state.session.fullSessionName || '';
+  Array.from(document.getElementById('fDays').options).forEach(o => o.selected = false);
+  Array.from(document.getElementById('fBlocks').options).forEach(o => o.selected = false);
+  document.getElementById('offeringModal').style.display = 'block';
 }
 
-const count=selectedStudents.length;
-const studentText=count===1?selectedStudents[0]:`${count} students`;
-if(!confirm(`Mark ${studentText} as present (other)?`))return;
+function openEditModal(id) {
+  const o = state.offerings.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('offeringModalTitle').textContent = 'Edit: ' + o.name;
+  document.getElementById('editId').value       = id;
+  document.getElementById('fName').value        = o.name        || '';
+  document.getElementById('fInstructor').value  = o.instructor  || '';
+  document.getElementById('fLocation').value    = o.location    || '';
+  document.getElementById('fCapacity').value    = o.capacity    || '';
+  document.getElementById('fLevel').value       = o.level       || '';
+  document.getElementById('fType').value        = o.type        || '';
+  document.getElementById('fDesc').value        = o.description || '';
+  document.getElementById('fSession').value     = o.session     || state.session.fullSessionName || '';
 
-try{
-for(const studentName of selectedStudents){
-await toggleAttendance(studentName,currentAttendanceOfferingId,currentAttendanceDate,true);
-}
-msg(`✅ Added ${count} other student(s) to attendance`,'success');
-closeOtherStudentModal();
-}catch(e){
-msg('❌ '+e.message,'error');
-}
-}
-
-
-function showAddOtherModal(offeringId,date){
-currentAttendanceOfferingId=offeringId;
-currentAttendanceDate=date;
-
-const offering=offerings.find(o=>o.id==offeringId);
-const offeringName=offering?offering.name:'Unknown';
-
-document.getElementById('otherStudentModalTitle').textContent='Add Other Learners to Attendance';
-document.getElementById('otherOfferingName').textContent=offeringName;
-
-const enrolled=getEnrolledStudents(offeringId);
-const other=allStudentNames.filter(s=>{
-const name=s.name||s;
-return !enrolled.includes(name);
-});
-
-const select=document.getElementById('otherStudentSelect');
-select.innerHTML='';
-
-if(other.length===0){
-select.innerHTML='<option value="">All learners are enrolled</option>';
-document.getElementById('otherStudentModal').style.display='block';
-return;
+  const selDays   = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+  const selBlocks = (o.time || '').split(',').map(t => normTime(t.trim()));
+  Array.from(document.getElementById('fDays').options).forEach(opt =>
+    opt.selected = selDays.includes(opt.value)
+  );
+  Array.from(document.getElementById('fBlocks').options).forEach(opt =>
+    opt.selected = selBlocks.includes(opt.value)
+  );
+  document.getElementById('offeringModal').style.display = 'block';
 }
 
-// Sort and populate
-const sorted=[...other].sort((a,b)=>{
-const nameA=a.name||a;
-const nameB=b.name||b;
-return nameA.localeCompare(nameB);
-});
+async function saveOffering() {
+  const id         = document.getElementById('editId').value;
+  const name       = document.getElementById('fName').value.trim();
+  const instructor = document.getElementById('fInstructor').value.trim();
+  const days       = Array.from(document.getElementById('fDays').selectedOptions).map(o => o.value);
+  const blocks     = Array.from(document.getElementById('fBlocks').selectedOptions).map(o => o.value);
+  const type       = document.getElementById('fType').value;
 
-sorted.forEach(student=>{
-const name=student.name||student;
-const id=student.id||'';
-const grade=student.grade||'';
-const level=student.level||'';
-let displayText=name;
-if(id)displayText+=` (ID: ${id})`;
-if(grade)displayText+=` - Grade ${grade}`;
-if(level)displayText+=` - ${level}`;
-select.innerHTML+=`<option value="${name}">${displayText}</option>`;
-});
+  if (!name || !instructor || !days.length || !blocks.length || !type) {
+    alert('Please fill in: Name, Instructor, at least one Day, at least one Block, and Type.');
+    return;
+  }
 
-// Add event listener for preview
-select.addEventListener('change',updateOtherStudentPreview);
-document.getElementById('otherStudentPreview').style.display='none';
-document.getElementById('otherStudentModal').style.display='block';
-}
+  const payload = {
+    name, instructor,
+    location:    document.getElementById('fLocation').value.trim(),
+    day:         days.join(','),
+    time:        blocks.join(','),
+    type,
+    level:       document.getElementById('fLevel').value,
+    description: document.getElementById('fDesc').value.trim(),
+    capacity:    parseInt(document.getElementById('fCapacity').value) || 12,
+    session:     document.getElementById('fSession').value.trim()
+  };
 
-function updateOtherStudentPreview(){
-const select=document.getElementById('otherStudentSelect');
-const selectedOptions=Array.from(select.selectedOptions);
-const preview=document.getElementById('otherStudentPreview');
-const previewList=document.getElementById('otherStudentPreviewList');
-
-if(selectedOptions.length>0){
-preview.style.display='block';
-previewList.innerHTML=selectedOptions.map((opt,i)=>`${i+1}. ${opt.text}`).join('<br>');
-}else{
-preview.style.display='none';
-}
-}
-
-function closeOtherStudentModal(){
-document.getElementById('otherStudentModal').style.display='none';
-currentAttendanceOfferingId=null;
-currentAttendanceDate=null;
+  try {
+    const action = id ? 'updateOffering' : 'saveOffering';
+    if (id) payload.offeringId = Number(id);
+    const d = await post({ action, ...payload });
+    if (d.success) {
+      showStatus(id ? '✅ Offering updated' : '✅ Offering created', 'success');
+      closeModal('offeringModal');
+      await loadOfferings();
+    } else {
+      showStatus('Error: ' + d.message, 'error');
+    }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
-async function addOtherStudentsToAttendance(){
-const select=document.getElementById('otherStudentSelect');
-const selectedStudents=Array.from(select.selectedOptions).map(opt=>opt.value);
-
-if(selectedStudents.length===0){
-alert('Please select at least one student');
-return;
+async function archiveOffering(id, name) {
+  if (!confirm(`Archive "${name}"?\n\nThis removes it from the live schedule. Student records are preserved.`)) return;
+  try {
+    const d = await post({ action:'archiveOffering', offeringId: id });
+    if (d.success) {
+      showStatus(`Archived: ${name}`, 'success');
+      await loadOfferings();
+    } else {
+      showStatus('Error: ' + d.message, 'error');
+    }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
-if(!currentAttendanceOfferingId||!currentAttendanceDate)return;
-
-try{
-let succeeded=0;
-let failed=0;
-
-for(const studentName of selectedStudents){
-const r=await fetch(API,{method:'POST',body:JSON.stringify({
-action:'markAttendance',
-studentName:studentName,
-offeringId:currentAttendanceOfferingId,
-date:currentAttendanceDate,
-present:true
-})});
-const d=await r.json();
-if(d.success){
-succeeded++;
-// Update local data
-const key=`${currentAttendanceDate}_${currentAttendanceOfferingId}`;
-if(!attendanceData[key])attendanceData[key]=[];
-if(!attendanceData[key].includes(studentName)){
-attendanceData[key].push(studentName);
-}
-}else{
-failed++;
-}
+// ─────────────────────────────────────────────────────────────
+// ══ TAB 2 — PENDING SCHEDULE REQUESTS ═══════════════════════
+// ─────────────────────────────────────────────────────────────
+async function loadPending() {
+  setLoading('pendingContainer');
+  try {
+    const d = await get('getPendingRequests');
+    state.pending = d.requests || [];
+    renderPending();
+    showStatus(`Loaded ${state.pending.length} pending item(s)`, 'success');
+  } catch(e) {
+    showStatus('Error: ' + e.message, 'error');
+    document.getElementById('pendingContainer').innerHTML = `<div class="empty">⚠️<p>${e.message}</p></div>`;
+  }
 }
 
-if(succeeded>0){
-msg(`✅ Added ${succeeded} other learner(s) to attendance`,'success');
-closeOtherStudentModal();
-loadAttendanceRoster();
-}
-if(failed>0){
-msg(`⚠️ ${failed} failed to add`,'error');
-}
-}catch(e){
-msg('❌ '+e.message,'error');
-}
+function renderPending() {
+  const container = document.getElementById('pendingContainer');
+  const btn       = document.getElementById('approveAllBtn');
+  const countEl   = document.getElementById('pendingCount');
+
+  if (!state.pending.length) {
+    container.innerHTML = '<div class="empty">✅<p>No pending requests</p></div>';
+    btn.style.display = 'none';
+    countEl.textContent = '';
+    updateStatCard('st-pending', 0);
+    return;
+  }
+
+  // Group by student
+  const grouped = {};
+  state.pending.forEach(p => {
+    if (!grouped[p.studentName]) grouped[p.studentName] = [];
+    grouped[p.studentName].push(p);
+  });
+
+  const studentCount = Object.keys(grouped).length;
+  countEl.textContent = `${state.pending.length} request(s) from ${studentCount} learner(s)`;
+  btn.style.display = 'block';
+  updateStatCard('st-pending', studentCount);
+
+  let html = '';
+  Object.entries(grouped)
+    .sort(([a],[b]) => a.localeCompare(b))
+    .forEach(([studentName, requests]) => {
+      const first     = requests[0];
+      const dateStr   = first.submitted ? new Date(first.submitted).toLocaleString() : '—';
+      // Base request ID = "request_ROW" portion
+      const baseId    = first.requestId.split('_').slice(0,2).join('_');
+
+      html += `<div class="req-card">
+        <div class="req-header">
+          <div>
+            <div class="req-student">${esc(studentName)}</div>
+            <div class="req-meta">Submitted: ${dateStr}</div>
+          </div>
+          <span class="badge badge-pending">PENDING</span>
+        </div>`;
+
+      requests.forEach(req => {
+        html += `<div class="class-row">
+          <div class="class-row-info">
+            <div class="class-row-name">${esc(req.className)}</div>
+            <div class="class-row-detail">${esc(req.dayTime || '—')}</div>
+          </div>
+          <div style="white-space:nowrap">
+            <button class="btn btn-primary btn-sm"
+              onclick="approveOne('${req.requestId}','${esc(req.className)}','${esc(studentName)}')">
+              ✓ Approve
+            </button>
+            <button class="btn btn-danger btn-sm"
+              onclick="denyOne('${req.requestId}','${esc(req.className)}','${esc(studentName)}')">
+              ✗ Deny
+            </button>
+          </div>
+        </div>`;
+      });
+
+      html += `<div class="req-footer">
+        <button class="btn btn-primary btn-sm"
+          onclick="approveAllFor('${baseId}','${esc(studentName)}',${requests.length})">
+          ✅ Approve All (${requests.length})
+        </button>
+        <button class="btn btn-danger btn-sm"
+          onclick="denyAllFor('${baseId}','${esc(studentName)}',${requests.length})">
+          ✗ Deny All
+        </button>
+      </div></div>`;
+    });
+
+  container.innerHTML = html;
 }
 
-function removeOtherAttendance(studentName,offeringId,date){
-if(!confirm(`Remove ${studentName} from attendance? (They are not enrolled in this offering)`))return;
-toggleAttendance(studentName,offeringId,date,false);
+async function approveOne(requestId, className, studentName) {
+  if (!confirm(`Approve "${className}" for ${studentName}?`)) return;
+  try {
+    const d = await post({ action:'approveClass', requestId });
+    if (d.success) {
+      showStatus(`✅ Approved: ${className}`, 'success');
+      await loadPending();
+      // Refresh learner counts if tab visible
+      if (state.learners.length) await loadLearners();
+    } else { showStatus('Error: ' + d.message, 'error'); }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
-async function toggleAttendance(studentName,offeringId,date,isPresent){
-apiCall('markAttendance',{studentName,offeringId,date,present:isPresent},()=>{
-// Update local data
-const key=`${date}_${offeringId}`;
-if(!attendanceData[key])attendanceData[key]=[];
-if(isPresent){
-if(!attendanceData[key].includes(studentName))attendanceData[key].push(studentName);
-}else{
-attendanceData[key]=attendanceData[key].filter(n=>n!==studentName);
-}
-loadAttendanceRoster();
-},()=>loadAttendanceRoster());
+async function denyOne(requestId, className, studentName) {
+  if (!confirm(`Deny "${className}" for ${studentName}?`)) return;
+  try {
+    const d = await post({ action:'denyClass', requestId });
+    if (d.success) { showStatus(`Denied: ${className}`, 'info'); await loadPending(); }
+    else showStatus('Error: ' + d.message, 'error');
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
-window.onclick=e=>{
-if(e.target.classList.contains('modal'))e.target.style.display='none';
+async function approveAllFor(baseId, studentName, count) {
+  if (!confirm(`Approve all ${count} request(s) for ${studentName}?`)) return;
+  try {
+    const d = await post({ action:'approveAllClasses', requestId: baseId });
+    if (d.success) {
+      showStatus(`✅ Approved ${count} class(es) for ${studentName}`, 'success');
+      await loadPending();
+      if (state.learners.length) await loadLearners();
+    } else { showStatus('Error: ' + d.message, 'error'); }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
-// Load instantly - no API calls on startup
-window.onload=()=>{};
+async function denyAllFor(baseId, studentName, count) {
+  if (!confirm(`Deny all ${count} request(s) for ${studentName}?`)) return;
+  try {
+    const d = await post({ action:'denyAllClasses', requestId: baseId });
+    if (d.success) { showStatus(`Denied all for ${studentName}`, 'info'); await loadPending(); }
+    else showStatus('Error: ' + d.message, 'error');
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
+}
+
+async function approveAllPending() {
+  const names = [...new Set(state.pending.map(p => p.studentName))];
+  if (!confirm(`Approve ALL pending requests from ${names.length} learner(s)?`)) return;
+
+  // Group and approve each student's base request
+  const grouped = {};
+  state.pending.forEach(p => {
+    const base = p.requestId.split('_').slice(0,2).join('_');
+    grouped[base] = (grouped[base] || 0) + 1;
+  });
+
+  let ok = 0;
+  for (const [baseId, cnt] of Object.entries(grouped)) {
+    try {
+      const d = await post({ action:'approveAllClasses', requestId: baseId });
+      if (d.success) ok += cnt;
+    } catch {}
+  }
+
+  showStatus(`✅ Approved ${ok} request(s)`, 'success');
+  await loadPending();
+  if (state.learners.length) await loadLearners();
+}
+
+// ─────────────────────────────────────────────────────────────
+// ══ TAB 3 — OFFERING PROPOSALS ══════════════════════════════
+// ─────────────────────────────────────────────────────────────
+async function loadProposals() {
+  setLoading('proposalsContainer');
+  try {
+    const d = await get('getOfferingProposals');
+    state.proposals = d.proposals || [];
+    renderProposals();
+    showStatus(`Loaded ${state.proposals.length} proposal(s)`, 'success');
+  } catch(e) {
+    showStatus('Error: ' + e.message, 'error');
+    document.getElementById('proposalsContainer').innerHTML = `<div class="empty">⚠️<p>${e.message}</p></div>`;
+  }
+}
+
+function renderProposals() {
+  const pending = state.proposals.filter(p => p.status === 'pending');
+  document.getElementById('proposalCount').textContent =
+    `${pending.length} pending, ${state.proposals.length} total`;
+
+  if (!pending.length) {
+    document.getElementById('proposalsContainer').innerHTML =
+      '<div class="empty">✅<p>No pending proposals</p></div>';
+    return;
+  }
+
+  let html = '';
+  pending.forEach(p => {
+    html += `<div class="req-card">
+      <div class="req-header">
+        <div>
+          <div class="req-student">${esc(p.name || 'Untitled')}</div>
+          <div class="req-meta">Submitted by ${esc(p.submitter||'?')}
+            ${p.submitted ? ' · ' + new Date(p.submitted).toLocaleString() : ''}
+          </div>
+        </div>
+        <span class="badge badge-pending">PENDING</span>
+      </div>
+      <div class="class-row">
+        <div class="class-row-info">
+          <div class="class-row-detail">👤 ${esc(p.instructor||'TBA')}</div>
+          <div class="class-row-detail">📍 ${esc(p.location||'TBA')}</div>
+          <div class="class-row-detail">📅 ${esc(p.day||'TBA')} &nbsp;🕐 ${esc(p.time||'TBA')}</div>
+          <div class="class-row-detail">👥 ${esc(p.level||'—')} &nbsp;|&nbsp; ${esc(p.type||'—')} &nbsp;|&nbsp; Cap: ${esc(String(p.capacity||'∞'))}</div>
+          ${p.description ? `<div style="margin-top:6px;font-size:12px;color:#444;line-height:1.5">${esc(p.description)}</div>` : ''}
+        </div>
+      </div>
+      <div class="req-footer">
+        <button class="btn btn-primary btn-sm" onclick="approveProposal('${p.proposalId}','${esc(p.name||'')}')">✓ Approve & Add to Schedule</button>
+        <button class="btn btn-danger btn-sm" onclick="denyProposal('${p.proposalId}','${esc(p.name||'')}')">✗ Deny</button>
+      </div>
+    </div>`;
+  });
+
+  // Show previously reviewed at the bottom
+  const reviewed = state.proposals.filter(p => p.status !== 'pending');
+  if (reviewed.length) {
+    html += `<details style="margin-top:20px">
+      <summary style="cursor:pointer;font-weight:600;color:#888;padding:8px">
+        ${reviewed.length} previously reviewed proposal(s)
+      </summary>`;
+    reviewed.forEach(p => {
+      html += `<div style="padding:10px 14px;border-bottom:1px solid #eee;font-size:13px;color:#666">
+        <strong>${esc(p.name||'Untitled')}</strong> — 
+        <span class="badge badge-${p.status}">${p.status.toUpperCase()}</span>
+        &nbsp;by ${esc(p.submitter||'?')}
+      </div>`;
+    });
+    html += '</details>';
+  }
+
+  document.getElementById('proposalsContainer').innerHTML = html;
+}
+
+async function approveProposal(proposalId, name) {
+  if (!confirm(`Approve "${name}" and add it to the live schedule?`)) return;
+  try {
+    const d = await post({ action:'approveOfferingProposal', proposalId });
+    if (d.success) {
+      showStatus(`✅ "${name}" approved and added`, 'success');
+      await loadProposals();
+      await loadOfferings();
+    } else { showStatus('Error: ' + d.message, 'error'); }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
+}
+
+async function denyProposal(proposalId, name) {
+  if (!confirm(`Deny "${name}"?`)) return;
+  try {
+    const d = await post({ action:'denyOfferingProposal', proposalId });
+    if (d.success) { showStatus(`Denied: ${name}`, 'info'); await loadProposals(); }
+    else showStatus('Error: ' + d.message, 'error');
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
+}
+
+// ─────────────────────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ─────────────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
