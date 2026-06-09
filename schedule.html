@@ -503,16 +503,25 @@ function drawSchedule() {
   updateUI();
 }
 
+/**
+ * A multi-block offering is one where the SAME offering (same id) appears in
+ * multiple time blocks — meaning its `time` field contains more than one block.
+ * We no longer look for "sibling" offerings with matching name/instructor,
+ * because that causes unrelated offerings to be incorrectly linked when they
+ * happen to share a name or instructor across different days/sessions.
+ */
 function isPartOfMultiBlock(offering) {
-  return offerings.filter(o =>
-    o.name === offering.name &&
-    o.day.toLowerCase() === offering.day.toLowerCase() &&
-    o.instructor === offering.instructor
-  ).length > 1;
+  const times = (offering.time || '').split(',').map(t => t.trim()).filter(Boolean);
+  return times.length > 1;
 }
 
+/**
+ * Group key used to tie all appearances of a multi-block offering together
+ * across the grid. Uses the offering's own ID so it is always unique to that
+ * specific offering — no false matches with other offerings.
+ */
 function getGroupKey(o) {
-  return `${o.name}_${o.day}_${o.instructor}`.replace(/[^a-zA-Z0-9]/g, '_');
+  return `offering_${o.id}`;
 }
 
 function toggleClass(checkbox) {
@@ -520,32 +529,47 @@ function toggleClass(checkbox) {
   const id    = Number(card.dataset.id);
   const day   = card.dataset.day;
   const time  = card.dataset.time;
-  const group = card.dataset.group;
+  const group = card.dataset.group; // 'offering_ID' if multi-block, '' if single
   const key   = `${day}-${time}`;
 
   if (checkbox.checked) {
     if (group) {
-      const groupOfferings = offerings.filter(o =>
-        getGroupKey(o) === group && o.day.toLowerCase() === day
-      );
-      let canSelectAll = true;
-      groupOfferings.forEach(o => {
-        const k = `${o.day}-${o.time}`;
-        if (!selected[k]) selected[k] = [];
-        if (selected[k].filter(i => i !== id).length >= 2) canSelectAll = false;
+      // Multi-block offering — find the actual offering to get all its time slots
+      const offering = offerings.find(o => o.id === id);
+      if (!offering) return;
+
+      const allTimes = (offering.time || '').split(',').map(t => normalizeTime(t.trim())).filter(Boolean);
+      const allDays  = (offering.day  || '').split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
+
+      // Check all slots have room (max 2 per block)
+      let canSelect = true;
+      allDays.forEach(d => {
+        allTimes.forEach(t => {
+          const k = `${d}-${t}`;
+          if (!selected[k]) selected[k] = [];
+          if (selected[k].filter(i => i !== id).length >= 2) canSelect = false;
+        });
       });
-      if (!canSelectAll) {
+
+      if (!canSelect) {
         checkbox.checked = false;
         showStatus('⚠️ Cannot select — some blocks are full (max 2 per block)', 'error');
         return;
       }
-      groupOfferings.forEach(o => {
-        const k = `${o.day}-${o.time}`;
-        if (!selected[k]) selected[k] = [];
-        if (!selected[k].includes(o.id)) selected[k].push(o.id);
+
+      // Select this offering ID in all its day+time slots
+      allDays.forEach(d => {
+        allTimes.forEach(t => {
+          const k = `${d}-${t}`;
+          if (!selected[k]) selected[k] = [];
+          if (!selected[k].includes(id)) selected[k].push(id);
+        });
       });
-      showStatus(`✅ Selected all ${groupOfferings.length} blocks of this class`, 'success');
+
+      showStatus(`✅ Selected all ${allTimes.length} block(s) of this class`, 'success');
+
     } else {
+      // Single-block offering — normal selection
       if (!selected[key]) selected[key] = [];
       if (!selected[key].includes(id)) {
         if (selected[key].length >= 2) {
@@ -558,12 +582,20 @@ function toggleClass(checkbox) {
     }
   } else {
     if (group) {
-      offerings
-        .filter(o => getGroupKey(o) === group && o.day.toLowerCase() === day)
-        .forEach(o => {
-          const k = `${o.day}-${o.time}`;
-          if (selected[k]) selected[k] = selected[k].filter(i => i !== o.id);
+      // Deselect this offering from ALL its day+time slots
+      const offering = offerings.find(o => o.id === id);
+      if (!offering) return;
+
+      const allTimes = (offering.time || '').split(',').map(t => normalizeTime(t.trim())).filter(Boolean);
+      const allDays  = (offering.day  || '').split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
+
+      allDays.forEach(d => {
+        allTimes.forEach(t => {
+          const k = `${d}-${t}`;
+          if (selected[k]) selected[k] = selected[k].filter(i => i !== id);
         });
+      });
+
     } else {
       if (selected[key]) selected[key] = selected[key].filter(i => i !== id);
     }
