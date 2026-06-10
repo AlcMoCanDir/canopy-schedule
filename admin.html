@@ -558,8 +558,22 @@ async function refreshAll() {
 
 function updateStats() {
   const pendingNames = new Set(state.pending.map(p => (p.studentName||'').toLowerCase()));
+
+  // "Have a Schedule" = learners who appear in at least one offering's enrollCount.
+  // Build a set of names that have at least one approved offering using enrollCounts.
+  const enrolledNames = new Set();
+  state.learners.forEach(l => {
+    try {
+      const classes = typeof l.classes === 'string'
+        ? JSON.parse(l.classes || '[]') : (l.classes || []);
+      if (classes.length > 0) enrolledNames.add((l.name||'').toLowerCase());
+    } catch {}
+  });
+
+  // Total enrolled in each offering comes from enrollCounts (already deduplicated).
+  // Sum unique learners across all offerings for the "Have a Schedule" stat.
   setStat('st-total',     state.students.length);
-  setStat('st-scheduled', state.learners.filter(l => l.totalClasses > 0).length);
+  setStat('st-scheduled', enrolledNames.size);
   setStat('st-pending',   pendingNames.size);
   setStat('st-offerings', state.offerings.length);
 }
@@ -571,9 +585,23 @@ function renderLearners() {
   const q = (document.getElementById('learnerSearch').value || '').toLowerCase().trim();
   const pendingNames = new Set(state.pending.map(p => (p.studentName||'').toLowerCase()));
 
-  // Build a lookup from loadAll data for class counts
-  const learnerMap = {};
-  state.learners.forEach(l => { learnerMap[(l.name||'').toLowerCase()] = l; });
+  // Build per-learner class count using enrollCounts (deduplicated server-side)
+  // Cross-reference: for each learner find how many offerings list them as enrolled.
+  const countByName = {};
+  state.learners.forEach(l => {
+    const name = (l.name||'').toLowerCase();
+    try {
+      const classes = typeof l.classes === 'string'
+        ? JSON.parse(l.classes || '[]') : (l.classes || []);
+      // Only count offering IDs that still exist in state.offerings
+      const validCount = classes.filter(id =>
+        state.offerings.some(o => String(o.id) === String(id) || Number(o.id) === Number(id))
+      ).length;
+      countByName[name] = validCount;
+    } catch {
+      countByName[name] = 0;
+    }
+  });
 
   const rows = state.students
     .filter(s => !q ||
@@ -594,8 +622,7 @@ function renderLearners() {
   </tr></thead><tbody>`;
 
   rows.forEach(s => {
-    const ldata      = learnerMap[(s.name||'').toLowerCase()] || {};
-    const classCount = ldata.totalClasses || 0;
+    const classCount = countByName[(s.name||'').toLowerCase()] || 0;
     const hasPending = pendingNames.has((s.name||'').toLowerCase());
 
     const badge = hasPending
@@ -959,13 +986,22 @@ function showEnrolled(offeringId, name) {
 function getEnrolledNames(offeringId) {
   const idStr = String(offeringId);
   const idNum = Number(offeringId);
+  // Use state.learners classes JSON but only count each student once
+  // by deduplicating on name (loadAll already returns one row per student
+  // after the backend fix, but guard here too).
+  const seen = new Set();
   return state.learners.filter(l => {
+    const name = (l.name || '').toLowerCase();
+    if (seen.has(name)) return false;
     try {
       const classes = typeof l.classes === 'string'
-        ? JSON.parse(l.classes || '[]')
-        : (Array.isArray(l.classes) ? l.classes : []);
-      return classes.some(c => String(c) === idStr || Number(c) === idNum);
-    } catch { return false; }
+        ? JSON.parse(l.classes || '[]') : (Array.isArray(l.classes) ? l.classes : []);
+      if (classes.some(c => String(c) === idStr || Number(c) === idNum)) {
+        seen.add(name);
+        return true;
+      }
+    } catch {}
+    return false;
   }).map(l => l.name);
 }
 
