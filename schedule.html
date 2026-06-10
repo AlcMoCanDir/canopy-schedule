@@ -105,6 +105,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
   /* Hide everything on screen */
   body{background:white!important;margin:0!important;padding:0!important}
   .container{display:none!important}
+  .no-print{display:none!important}
 
   /* Show only the dedicated print sheet */
   #printSheet{display:block!important}
@@ -214,7 +215,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 
 <div id="status"></div>
 
-<p style="text-align:center;color:#666;font-size:12px;margin:10px 0;padding:10px;background:#f8f9fa;border-radius:4px">
+<p class="no-print" style="text-align:center;color:#666;font-size:12px;margin:10px 0;padding:10px;background:#f8f9fa;border-radius:4px">
   📋 Select a student, enter your name as the scheduler, then click Load Schedule to view or build their schedule
 </p>
 
