@@ -143,17 +143,59 @@ tr:hover td{background:#f0f7ff}
   .form-row{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr}
 }
+
 @media print{
-  body{background:white;padding:0}
-  .container{box-shadow:none;padding:8px}
-  .tabs,.toolbar,.btn,#status,.modal-foot,.modal-close,#loadOverlay{display:none!important}
-  #schedModal{display:block!important;position:static;background:none}
-  .modal-box{box-shadow:none;max-width:100%;margin:0;max-height:none}
-  .modal-head{background:white!important;color:#000!important;border-bottom:2px solid #000}
-  .modal-head h2{color:#000!important}
-  .sched-hdr{background:#4CAF50!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  @page{size:landscape;margin:.4in}
+  @page{
+    size:8.5in 11in portrait;
+    margin:0.4in 0.4in 0.4in 0.4in;
+  }
+  /* Hide everything */
+  body{background:white!important;margin:0!important;padding:0!important}
+  .container,#loadOverlay,.modal{display:none!important}
+  /* Show only the dedicated print sheet */
+  #adminPrintSheet{display:block!important}
 }
+
+/* Admin print sheet — hidden on screen */
+#adminPrintSheet{
+  display:none;
+  font-family:Arial,sans-serif;
+  font-size:9pt;
+  color:#000;
+}
+#adminPrintSheet .ps-title{
+  font-size:13pt;font-weight:bold;text-align:center;margin:0 0 2pt;
+}
+#adminPrintSheet .ps-meta{
+  font-size:8pt;text-align:center;color:#444;margin:0 0 8pt;
+}
+#adminPrintSheet table{
+  width:100%;border-collapse:collapse;table-layout:fixed;
+}
+#adminPrintSheet th,
+#adminPrintSheet td{
+  border:1pt solid #000;padding:3pt 4pt;
+  vertical-align:top;word-wrap:break-word;overflow:hidden;
+}
+#adminPrintSheet th{
+  background:#000!important;color:#fff!important;
+  font-weight:bold;font-size:8pt;text-align:center;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+#adminPrintSheet .ps-time{
+  background:#f0f0f0!important;font-weight:bold;
+  font-size:7.5pt;text-align:center;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+#adminPrintSheet .ps-lunch{
+  background:#f9f4e8!important;text-align:center;
+  font-size:7.5pt;color:#888;font-style:italic;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+#adminPrintSheet .ps-cell{font-size:8pt;min-height:18pt;}
+#adminPrintSheet .ps-name{font-weight:bold;font-size:8pt;display:block;margin-bottom:1pt;}
+#adminPrintSheet .ps-info{font-size:7pt;color:#333;display:block;line-height:1.3;}
+#adminPrintSheet .ps-empty{color:#ccc;text-align:center;font-size:8pt;}
 </style>
 </head>
 <body>
@@ -272,11 +314,14 @@ tr:hover td{background:#f0f7ff}
     </div>
     <div class="modal-body" id="schedModalBody"></div>
     <div class="modal-foot">
-      <button class="btn btn-blue" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-blue" onclick="printAdminSchedule()">🖨️ Print</button>
       <button class="btn btn-grey" onclick="closeModal('schedModal')">Close</button>
     </div>
   </div>
 </div>
+
+<!-- ── Dedicated print-only schedule ─────────────────────── -->
+<div id="adminPrintSheet"></div>
 
 <!-- ══ MODAL — CREATE / EDIT OFFERING ════════════════════════ -->
 <div class="modal" id="offeringModal">
@@ -672,7 +717,14 @@ async function loadLearners() {
 }
 
 // ── View schedule modal ──────────────────────────────────────
+// Store current schedule so printAdminSchedule() can access it
+let _printStudentName = '';
+let _printOfferings   = [];
+
 async function viewStudentSchedule(name) {
+  _printStudentName = name;
+  _printOfferings   = [];
+
   document.getElementById('schedModalTitle').textContent = name + "'s Schedule";
   document.getElementById('schedModalBody').innerHTML =
     '<div class="loading"><div class="spinner"></div><p>Loading…</p></div>';
@@ -682,6 +734,7 @@ async function viewStudentSchedule(name) {
     const d = await get('loadStudent', { studentName: name });
     if (!d.success) throw new Error(d.message || 'Failed to load');
     const offerings = d.offerings || [];
+    _printOfferings = offerings;
 
     if (!offerings.length) {
       document.getElementById('schedModalBody').innerHTML =
@@ -729,6 +782,82 @@ async function viewStudentSchedule(name) {
     document.getElementById('schedModalBody').innerHTML =
       `<div class="empty">⚠️<p>${esc(e.message)}</p></div>`;
   }
+}
+
+// ── Print schedule — same clean grid as schedule.html ────────
+function printAdminSchedule() {
+  if (!_printStudentName) { alert('No schedule loaded'); return; }
+
+  const dateStr = new Date().toLocaleDateString('en-US', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+  const sessionName = document.getElementById('sessionLabel').textContent || '';
+  const timeW = 13;
+  const dayW  = ((100 - timeW) / 5).toFixed(1);
+
+  let html = `
+    <div class="ps-title">${esc(_printStudentName)}'s Schedule</div>
+    <div class="ps-meta">${esc(sessionName)} · ${dateStr}</div>
+    <table>
+      <colgroup>
+        <col style="width:${timeW}%">
+        <col style="width:${dayW}%">
+        <col style="width:${dayW}%">
+        <col style="width:${dayW}%">
+        <col style="width:${dayW}%">
+        <col style="width:${dayW}%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  TIMES.forEach(block => {
+    if (block.lunch) {
+      html += `<tr>
+        <td class="ps-time">Lunch<br><span style="font-weight:normal;font-size:7pt">${block.time}</span></td>
+        <td colspan="5" class="ps-lunch">Lunch Break · ${block.time}</td>
+      </tr>`;
+      return;
+    }
+
+    html += `<tr>
+      <td class="ps-time">${block.label}<br>
+        <span style="font-weight:normal;font-size:7pt">${block.time}</span>
+      </td>`;
+
+    DAYS.forEach(day => {
+      const matches = _printOfferings.filter(o => {
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+        return days.includes(day) && times.includes(block.time);
+      });
+
+      if (!matches.length) {
+        html += `<td class="ps-cell ps-empty">—</td>`;
+      } else {
+        html += `<td class="ps-cell">`;
+        matches.forEach(o => {
+          const parts = [];
+          if (o.instructor) parts.push(o.instructor);
+          if (o.location)   parts.push(o.location);
+          html += `<span class="ps-name">${esc(o.name)}</span>`;
+          if (parts.length) html += `<span class="ps-info">${esc(parts.join(' · '))}</span>`;
+        });
+        html += `</td>`;
+      }
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+
+  document.getElementById('adminPrintSheet').innerHTML = html;
+  window.print();
 }
 
 // ─────────────────────────────────────────────────────────────
