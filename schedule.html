@@ -128,7 +128,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
   <select id="studentName" style="flex:1;min-width:200px;padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd">
     <option value="">-- Select Student Name --</option>
   </select>
-  <input type="password" id="studentPasscode" placeholder="Enter passcode" style="padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd;min-width:150px">
+  <input type="text" id="schedulerName" placeholder="Your name (who is making this schedule)" style="padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd;min-width:220px">
   <button onclick="loadSchedule()">📥 Load Schedule</button>
   <button onclick="saveSchedule()">💾 Save Schedule</button>
   <button class="secondary" onclick="window.print()">🖨️ Print</button>
@@ -137,7 +137,7 @@ input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
 <div id="status"></div>
 
 <p style="text-align:center;color:#666;font-size:12px;margin:10px 0;padding:10px;background:#f8f9fa;border-radius:4px">
-  🔒 To view "My Schedule": Select your name, enter your passcode (student ID or ask your facilitator), then click Load Schedule
+  📋 Select a student, enter your name as the scheduler, then click Load Schedule to view or build their schedule
 </p>
 
 <div class="tabs">
@@ -695,47 +695,23 @@ function renderMySchedule() {
 // ── Load / Save schedule ───────────────────────────────────
 
 /**
- * Validates the entered passcode against the student record.
- *
- * Priority:
- *  1. Student's own ID (from the Students sheet, passed via getAllStudents)
- *  2. Master passcode 'alc2026' — always accepted regardless of student record
- *
- * FIX: The old code reached the wrong branch when student.id was blank,
- * causing valid personal passcodes to silently fail.
+ * Returns the name of the facilitator making this schedule.
+ * Used for audit purposes when saving to PendingRequests.
  */
-function validatePasscode(name, passcode) {
-  const MASTER = 'alc2026';
-
-  // Master passcode always works
-  if (passcode.toLowerCase() === MASTER) return true;
-
-  // Look for a personal passcode in the student record
-  const student = studentNames.find(s => s.name === name);
-  if (student && student.id && student.id.trim() !== '') {
-    return student.id.trim() === passcode.trim();
-  }
-
-  // Student not found or has no ID set — only master passcode works
-  return false;
+function getSchedulerName() {
+  return document.getElementById('schedulerName').value.trim();
 }
 
 async function loadSchedule() {
-  const name     = document.getElementById('studentName').value;
-  const passcode = document.getElementById('studentPasscode').value.trim();
+  const studentName   = document.getElementById('studentName').value;
+  const schedulerName = getSchedulerName();
 
-  if (!name)     { showStatus('⚠️ Please select a student', 'error'); return; }
-  if (!passcode) { showStatus('⚠️ Please enter a passcode', 'error'); return; }
-
-  if (!validatePasscode(name, passcode)) {
-    showStatus('❌ Incorrect passcode', 'error');
-    document.getElementById('studentPasscode').value = '';
-    return;
-  }
+  if (!studentName)   { showStatus('⚠️ Please select a student', 'error'); return; }
+  if (!schedulerName) { showStatus('⚠️ Please enter your name as the scheduler', 'error'); return; }
 
   try {
     const [data, pendingRes] = await Promise.all([
-      fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r => r.json()),
+      fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`).then(r => r.json()),
       fetch(`${API}?action=getPendingRequests`).then(r => r.json()).catch(() => ({ requests:[] }))
     ]);
 
@@ -745,25 +721,37 @@ async function loadSchedule() {
 
     if (data.success && data.offerings) {
       data.offerings.forEach(o => {
-        const key = `${o.day.toLowerCase()}-${normalizeTime(o.time)}`;
-        if (!selected[key]) selected[key] = [];
-        selected[key].push(o.id);
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normalizeTime(t.trim()));
+        days.forEach(day => {
+          times.forEach(time => {
+            const key = `${day}-${time}`;
+            if (!selected[key]) selected[key] = [];
+            if (!selected[key].includes(o.id)) selected[key].push(o.id);
+          });
+        });
         approvedOfferings.push(o.id);
       });
     }
 
     if (pendingRes.requests) {
       pendingRes.requests
-        .filter(r => r.studentName.toLowerCase() === name.toLowerCase() && r.status === 'pending')
+        .filter(r => r.studentName.toLowerCase() === studentName.toLowerCase() && r.status === 'pending')
         .forEach(r => {
           const o = offerings.find(x => x.id === r.offeringId);
           if (!o) return;
-          const key = `${o.day.toLowerCase()}-${normalizeTime(o.time)}`;
-          if (!selected[key]) selected[key] = [];
-          if (!selected[key].includes(r.offeringId)) {
-            selected[key].push(r.offeringId);
-            pendingOfferings.push(r.offeringId);
-          }
+          const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+          const times = (o.time || '').split(',').map(t => normalizeTime(t.trim()));
+          days.forEach(day => {
+            times.forEach(time => {
+              const key = `${day}-${time}`;
+              if (!selected[key]) selected[key] = [];
+              if (!selected[key].includes(r.offeringId)) {
+                selected[key].push(r.offeringId);
+                pendingOfferings.push(r.offeringId);
+              }
+            });
+          });
         });
     }
 
@@ -772,7 +760,7 @@ async function loadSchedule() {
     if (total > 0) {
       showStatus(`✅ Schedule loaded: ${approvedOfferings.length} approved, ${pending} pending approval`, 'success');
     } else {
-      showStatus('ℹ️ No saved schedule found for this student', 'error');
+      showStatus('ℹ️ No saved schedule found — start selecting classes below', 'success');
     }
 
     updateUI();
@@ -782,20 +770,27 @@ async function loadSchedule() {
 }
 
 async function saveSchedule() {
-  const name   = document.getElementById('studentName').value;
-  const allIds = Object.values(selected).flat();
+  const studentName   = document.getElementById('studentName').value;
+  const schedulerName = getSchedulerName();
+  const allIds        = Object.values(selected).flat();
 
-  if (!name)          { showStatus('⚠️ Please select a student', 'error'); return; }
+  if (!studentName)   { showStatus('⚠️ Please select a student', 'error'); return; }
+  if (!schedulerName) { showStatus('⚠️ Please enter your name as the scheduler', 'error'); return; }
   if (!allIds.length) { showStatus('⚠️ Please select some classes first', 'error'); return; }
 
   try {
     const result = await fetch(API, {
       method: 'POST',
-      body: JSON.stringify({ action:'saveStudentSchedule', studentName:name, offeringIds:allIds })
+      body: JSON.stringify({
+        action:        'saveStudentSchedule',
+        studentName:   studentName,
+        offeringIds:   allIds,
+        scheduledBy:   schedulerName
+      })
     }).then(r => r.json());
 
     if (result.success) {
-      showStatus(`⏳ Schedule submitted (${allIds.length} classes) — awaiting admin approval.`, 'success');
+      showStatus(`⏳ Schedule submitted for ${studentName} by ${schedulerName} (${allIds.length} classes) — awaiting admin approval.`, 'success');
     } else {
       showStatus('❌ Error: ' + result.message, 'error');
     }
@@ -991,10 +986,8 @@ function resetOfferingForm() {
 // ── Tabs ───────────────────────────────────────────────────
 function switchTab(i) {
   if (i === 1) {
-    const name       = document.getElementById('studentName').value;
-    const hasSchedule = Object.keys(selected).length > 0;
-    if (!name)        { showStatus('⚠️ Please select a student and load their schedule first', 'error'); return; }
-    if (!hasSchedule) { showStatus('⚠️ Please load a schedule first (enter passcode and click Load)', 'error'); return; }
+    const studentName = document.getElementById('studentName').value;
+    if (!studentName) { showStatus('⚠️ Please select a student first', 'error'); return; }
   }
   if (i === 2) renderCourseCatalog();
   if (i === 3) { populateOfferingFormSuggestions(); attachCheckboxHighlight(); }
