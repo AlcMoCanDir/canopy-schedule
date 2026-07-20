@@ -3,1161 +3,369 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALC Mosaic Schedule</title>
+<title>ALC Mosaic — Offerings</title>
 <style>
 *{box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#fafafa;margin:0;padding:20px}
-.container{max-width:1400px;margin:auto;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-h1{text-align:center;color:#4CAF50;margin:10px 0}
-.controls{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;align-items:center}
-.controls select,.controls button{padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd}
-.controls button{background:#4CAF50;color:white;border-color:#4CAF50;cursor:pointer;font-weight:600}
-.controls button:hover{background:#45a049}
-.controls button.secondary{background:#2196F3;border-color:#2196F3}
-.controls button.secondary:hover{background:#0b7dda}
-#status{text-align:center;padding:10px;margin:10px 0;border-radius:4px;font-weight:bold;display:none}
-.status-success{background:#d4edda;color:#155724}
-.status-error{background:#f8d7da;color:#721c24}
+.container{max-width:1300px;margin:auto;background:white;padding:24px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+h1{text-align:center;color:#4CAF50;margin:0 0 4px}
+.subtitle{text-align:center;color:#888;font-size:14px;margin:0 0 20px}
 .tabs{display:flex;gap:5px;border-bottom:2px solid #ddd;margin:20px 0;flex-wrap:wrap}
-.tab{padding:12px 20px;background:#f0f0f0;border:none;cursor:pointer;font-size:15px;border-radius:8px 8px 0 0;font-weight:600}
+.tab{padding:11px 20px;background:#f0f0f0;border:none;cursor:pointer;font-size:14px;border-radius:8px 8px 0 0;font-weight:600;color:#555}
 .tab:hover{background:#e0e0e0}
 .tab.active{background:white;color:#4CAF50;border-bottom:3px solid #4CAF50}
 .tab-content{display:none}
 .tab-content.active{display:block}
-.schedule-table{width:100%;border-collapse:collapse;margin-top:10px}
-.schedule-table th,.schedule-table td{border:1px solid #ddd;padding:8px;font-size:13px;vertical-align:top}
+
+/* ── Filters ─────────────────────────────────────────────── */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  padding:12px 14px;background:#f8f9fa;border-radius:6px;margin-bottom:14px}
+.filter-bar input[type=text]{flex:1;min-width:180px;padding:7px 10px;
+  border:1px solid #ccc;border-radius:4px;font-size:13px}
+.filter-group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filter-group span{font-size:12px;font-weight:600;color:#666;white-space:nowrap}
+.filter-btn{padding:5px 12px;border:1px solid #ccc;background:white;
+  border-radius:4px;cursor:pointer;font-size:12px;color:#555;transition:all .15s}
+.filter-btn:hover{background:#e8f5e9;border-color:#4CAF50}
+.filter-btn.active{background:#4CAF50;color:white;border-color:#4CAF50}
+
+/* ── Weekly grid ─────────────────────────────────────────── */
+.schedule-table{width:100%;border-collapse:collapse;margin-top:4px}
+.schedule-table th,.schedule-table td{border:1px solid #ddd;padding:6px;font-size:12px;vertical-align:top}
 .schedule-table th{background:#4CAF50;color:white;font-weight:bold;text-align:center;position:sticky;top:0;z-index:10}
-.time-col{font-weight:bold;background:#f8f9fa;text-align:center;white-space:nowrap}
-.class-card{font-size:12px;padding:8px;margin:6px 0;border-left:4px solid #2196F3;background:#f7f7f7;border-radius:4px;cursor:pointer;transition:all 0.2s}
-.class-card:hover{background:#e6f0ff;transform:translateX(2px)}
-.class-card.selected{background:#e6f0ff;border-left-color:#003f9a;border-left-width:5px}
-.class-card.full{opacity:0.5;background:#ffe0e0;border-left-color:#d32f2f;cursor:not-allowed}
-.class-card.full:hover{transform:none}
-.class-name{font-weight:bold;margin-bottom:4px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.class-info{font-size:11px;color:#666;margin-top:4px}
-.class-desc{font-size:11px;color:#555;margin-top:6px;padding-top:6px;border-top:1px solid #ddd;display:none;line-height:1.4}
-.class-card.expanded .class-desc{display:block}
-.expand-icon{font-size:10px;color:#999}
-.type-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:bold;text-transform:uppercase}
+.time-col{font-weight:bold;background:#f8f9fa;text-align:center;white-space:nowrap;font-size:11px;color:#555}
+.lunch-row td{background:#fff9e6;text-align:center;color:#aaa;font-style:italic;font-size:11px;padding:5px}
+
+/* Offering cards — clickable */
+.view-card{font-size:11px;padding:7px 8px;margin:4px 0;border-left:3px solid #2196F3;
+  background:#f0f7ff;border-radius:4px;cursor:pointer;transition:all .15s}
+.view-card:hover{background:#dbeafe;border-left-color:#1d4ed8;transform:translateX(2px)}
+.view-card-name{font-weight:700;color:#1e3a5f;margin-bottom:2px}
+.view-card-info{font-size:10px;color:#555}
+.view-card-hint{font-size:9px;color:#94a3b8;margin-top:3px;font-style:italic}
+.type-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;
+  font-weight:700;text-transform:uppercase;margin-left:3px}
 .type-Commit{background:#ffcdd2;color:#c62828}
 .type-Drop-in{background:#c8e6c9;color:#2e7d32}
-.type-Private{background:#ffe0b2;color:#e65100}
-.link-icon{font-size:14px;color:#2196F3}
-input[type="checkbox"]{width:16px;height:16px;cursor:pointer;margin-right:6px}
-.my-schedule-table{width:100%;border-collapse:collapse;table-layout:fixed}
-.my-schedule-table th,.my-schedule-table td{border:1px solid #ddd;padding:10px;font-size:13px;height:80px;vertical-align:top}
-.my-schedule-table th{background:#2196F3;color:white}
-.my-schedule-card{background:#f0f7ff;padding:8px;margin:4px 0;border-left:3px solid #2196F3;border-radius:3px;min-height:60px;position:relative}
-.catalog-course{background:white;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:box-shadow 0.2s}
-.catalog-course:hover{box-shadow:0 4px 8px rgba(0,0,0,0.15)}
-.catalog-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;gap:15px}
-.catalog-title{font-size:18px;font-weight:bold;color:#2c3e50;margin:0;flex:1}
-.catalog-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.catalog-badge{display:inline-block;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
-.catalog-type-commit{background:#ffebee;color:#c62828}
-.catalog-type-drop-in{background:#e8f5e9;color:#2e7d32}
-.catalog-group{background:#e3f2fd;color:#1565c0}
-.catalog-instructor{color:#666;font-size:14px;margin-bottom:8px}
-.catalog-schedule{background:#f8f9fa;padding:10px;border-radius:4px;margin-bottom:12px;font-size:13px}
-.catalog-schedule-item{margin:4px 0;color:#555}
-.catalog-description{color:#444;line-height:1.6;font-size:14px}
-.catalog-no-desc{color:#999;font-style:italic}
-.catalog-search{width:100%;padding:12px;font-size:16px;border:2px solid #ddd;border-radius:8px;margin-bottom:20px;box-sizing:border-box}
-.catalog-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.catalog-filter-btn{padding:8px 16px;border:2px solid #ddd;background:white;border-radius:6px;cursor:pointer;font-size:14px;transition:all 0.2s}
-.catalog-filter-btn:hover{background:#f0f0f0}
-.catalog-filter-btn.active{background:#4CAF50;color:white;border-color:#4CAF50}
-.form-section{max-width:760px;margin:0 auto;padding:10px 20px 30px}
-.form-help{background:#fff3cd;border-left:4px solid #ffc107;padding:12px 15px;margin-bottom:25px;border-radius:4px;font-size:13px;color:#856404;line-height:1.5}
-.form-group{margin-bottom:20px}
-.form-group label{display:block;font-weight:600;color:#2c3e50;margin-bottom:8px;font-size:14px}
-.form-group .hint{font-size:12px;color:#888;font-weight:normal;margin-left:6px}
-.form-group .req{color:#d32f2f;margin-left:2px}
-.form-group input[type="text"],.form-group input[type="number"],.form-group select,.form-group textarea{
-  width:100%;padding:10px 12px;font-size:14px;border:2px solid #ddd;border-radius:6px;
-  font-family:inherit;background:white;transition:border-color 0.2s;box-sizing:border-box;color:#333
-}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#4CAF50}
-.form-group textarea{resize:vertical;min-height:90px;line-height:1.5}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.checkbox-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;padding:12px;background:#f8f9fa;border-radius:6px;border:2px solid #ddd}
-.checkbox-grid label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-weight:normal;padding:8px 10px;border-radius:4px;transition:background 0.15s;margin:0;line-height:1.3}
-.checkbox-grid label:hover{background:#e8f5e9}
-.checkbox-grid label.checked{background:#c8e6c9}
-.checkbox-grid input[type="checkbox"]{margin:2px 0 0 0;flex-shrink:0}
-.checkbox-grid .cb-text{flex:1}
-.checkbox-grid .cb-sub{display:block;font-size:11px;color:#888;margin-top:2px}
-.form-actions{display:flex;gap:10px;margin-top:30px;padding-top:20px;border-top:2px solid #f0f0f0}
-.form-actions button{padding:12px 24px;font-size:15px;font-weight:600;border-radius:6px;cursor:pointer;border:none;transition:background 0.2s}
-.form-actions .submit-btn{background:#4CAF50;color:white;flex:1}
-.form-actions .submit-btn:hover{background:#45a049}
-.form-actions .submit-btn:disabled{background:#a5d6a7;cursor:not-allowed}
-.form-actions .reset-btn{background:#f0f0f0;color:#333}
-.form-actions .reset-btn:hover{background:#e0e0e0}
-.form-success{background:#d4edda;border-left:4px solid #28a745;padding:15px 20px;border-radius:4px;color:#155724;margin-bottom:20px;display:none}
-.form-success.show{display:block}
+.view-card.faded{opacity:.3;pointer-events:none}
+
+/* ── Description popup (modal) ───────────────────────────── */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
+  align-items:center;justify-content:center;padding:20px}
+.popup-overlay.open{display:flex}
+.popup-box{background:white;border-radius:10px;width:100%;max-width:500px;
+  max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.25);padding:0}
+.popup-head{padding:16px 20px;background:#4CAF50;color:white;border-radius:10px 10px 0 0;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.popup-head h2{margin:0;font-size:16px;line-height:1.3}
+.popup-close{background:none;border:none;color:white;font-size:22px;cursor:pointer;
+  line-height:1;padding:0;flex-shrink:0}
+.popup-body{padding:18px 20px}
+.popup-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.popup-badge{display:inline-block;padding:3px 9px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase}
+.popup-badge-commit{background:#ffebee;color:#c62828}
+.popup-badge-dropin{background:#e8f5e9;color:#2e7d32}
+.popup-badge-group{background:#e3f2fd;color:#1565c0}
+.popup-detail{font-size:13px;color:#555;margin:5px 0;display:flex;gap:8px;align-items:flex-start}
+.popup-detail span{font-size:16px;flex-shrink:0}
+.popup-desc{margin-top:14px;padding-top:14px;border-top:1px solid #eee;
+  font-size:13px;color:#333;line-height:1.6}
+.popup-nodesc{margin-top:14px;padding-top:14px;border-top:1px solid #eee;
+  font-size:13px;color:#aaa;font-style:italic}
+
+/* ── Learner Schedule tab ────────────────────────────────── */
+.learner-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  background:#f8f9fa;padding:14px;border-radius:6px;margin-bottom:16px}
+.learner-controls label{font-weight:600;font-size:14px;color:#333;white-space:nowrap}
+.learner-controls select{flex:1;min-width:200px;padding:9px 12px;font-size:14px;
+  border:2px solid #ddd;border-radius:6px}
+.learner-controls button{padding:9px 18px;font-size:14px;font-weight:600;
+  border:none;border-radius:6px;cursor:pointer;color:white;white-space:nowrap}
+.btn-green{background:#4CAF50}.btn-green:hover{background:#43a047}
+.btn-blue{background:#2196F3}.btn-blue:hover{background:#1976d2}
+.ls-grid{width:100%;border-collapse:collapse;table-layout:fixed}
+.ls-grid th,.ls-grid td{border:1px solid #ddd;padding:8px;font-size:12px;vertical-align:top}
+.ls-grid th{background:#2196F3;color:white;font-weight:bold;text-align:center}
+.ls-time{background:#f8f9fa;font-weight:700;text-align:center;font-size:11px;color:#555;white-space:nowrap}
+.ls-lunch{background:#fff9e6;text-align:center;color:#aaa;font-style:italic;font-size:11px}
+.ls-cell{min-height:70px}
+.ls-card{padding:8px 10px;margin:4px 0;border-left:4px solid #2196F3;
+  background:#e8f4fd;border-radius:4px;font-size:12px}
+.ls-card-name{font-weight:700;color:#1565c0;font-size:13px;margin-bottom:4px}
+.ls-card-detail{font-size:11px;color:#555;margin:2px 0;line-height:1.4}
+.ls-card-badge{display:inline-block;padding:2px 6px;border-radius:3px;
+  font-size:9px;font-weight:700;text-transform:uppercase;margin-left:5px;vertical-align:middle}
+.ls-empty{color:#ccc;text-align:center;padding:16px 0;font-size:12px}
+
+.loading{text-align:center;padding:60px;color:#999}
+.spinner{border:4px solid #f3f3f3;border-top:4px solid #4CAF50;border-radius:50%;
+  width:36px;height:36px;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{padding:10px 14px;border-radius:6px;font-size:13px;font-weight:600;margin-bottom:12px;display:none}
+.msg-error{background:#f8d7da;color:#721c24}
+.msg-success{background:#d4edda;color:#155724}
+.msg-info{background:#cce5ff;color:#004085}
+
+/* ── Print ───────────────────────────────────────────────── */
 @media print{
-  @page{
-    size:8.5in 11in portrait;
-    margin:0.4in 0.4in 0.4in 0.4in;
-  }
-
-  /* Hide everything on screen */
+  @page{size:8.5in 11in portrait;margin:.4in}
   body{background:white!important;margin:0!important;padding:0!important}
-  .container{display:none!important}
-  .no-print{display:none!important}
-
-  /* Show only the dedicated print sheet */
+  .container,.popup-overlay{display:none!important}
   #printSheet{display:block!important}
 }
+#printSheet{display:none;font-family:Arial,sans-serif;font-size:9pt;color:#000}
+#printSheet .ps-title{font-size:13pt;font-weight:bold;text-align:center;margin:0 0 2pt}
+#printSheet .ps-meta{font-size:8pt;text-align:center;color:#444;margin:0 0 8pt}
+#printSheet table{width:100%;border-collapse:collapse;table-layout:fixed}
+#printSheet th,#printSheet td{border:1pt solid #000;padding:3pt 4pt;vertical-align:top;word-wrap:break-word}
+#printSheet th{background:#000!important;color:#fff!important;font-weight:bold;font-size:8pt;
+  text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printSheet .ps-time{background:#f0f0f0!important;font-weight:bold;font-size:7.5pt;text-align:center;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printSheet .ps-lunch{background:#f9f4e8!important;text-align:center;font-size:7.5pt;
+  color:#888;font-style:italic;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printSheet .ps-cell{font-size:8pt;min-height:18pt}
+#printSheet .ps-name{font-weight:bold;font-size:8pt;display:block;margin-bottom:1pt}
+#printSheet .ps-info{font-size:7pt;color:#333;display:block;line-height:1.3}
+#printSheet .ps-empty{color:#ccc;text-align:center;font-size:8pt}
 
-/* Print sheet — hidden on screen, shown only when printing */
-#printSheet{
-  display:none;
-  font-family:Arial,sans-serif;
-  font-size:9pt;
-  color:#000;
-}
-#printSheet .ps-title{
-  font-size:13pt;
-  font-weight:bold;
-  text-align:center;
-  margin:0 0 2pt;
-}
-#printSheet .ps-meta{
-  font-size:8pt;
-  text-align:center;
-  color:#444;
-  margin:0 0 8pt;
-}
-#printSheet table{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:fixed;
-}
-#printSheet th,
-#printSheet td{
-  border:1pt solid #000;
-  padding:3pt 4pt;
-  vertical-align:top;
-  word-wrap:break-word;
-  overflow:hidden;
-}
-#printSheet th{
-  background:#000!important;
-  color:#fff!important;
-  font-weight:bold;
-  font-size:8pt;
-  text-align:center;
-  -webkit-print-color-adjust:exact;
-  print-color-adjust:exact;
-}
-#printSheet .ps-time{
-  background:#f0f0f0!important;
-  font-weight:bold;
-  font-size:7.5pt;
-  text-align:center;
-  -webkit-print-color-adjust:exact;
-  print-color-adjust:exact;
-}
-#printSheet .ps-lunch{
-  background:#f9f4e8!important;
-  text-align:center;
-  font-size:7.5pt;
-  color:#888;
-  font-style:italic;
-  -webkit-print-color-adjust:exact;
-  print-color-adjust:exact;
-}
-#printSheet .ps-cell{
-  font-size:8pt;
-  min-height:18pt;
-}
-#printSheet .ps-name{
-  font-weight:bold;
-  font-size:8pt;
-  display:block;
-  margin-bottom:1pt;
-}
-#printSheet .ps-info{
-  font-size:7pt;
-  color:#333;
-  display:block;
-  line-height:1.3;
-}
-#printSheet .ps-empty{
-  color:#ccc;
-  text-align:center;
-  font-size:8pt;
-}
-@media (max-width:768px){
-  .controls{flex-direction:column}
-  .controls input,.controls button{width:100%}
-  .schedule-table{font-size:11px}
-  .class-card{font-size:11px;padding:6px}
-  .form-row{grid-template-columns:1fr}
+@media(max-width:768px){
+  .schedule-table{font-size:10px}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .learner-controls{flex-direction:column;align-items:stretch}
+  .learner-controls select,.learner-controls button{width:100%}
 }
 </style>
 </head>
 <body>
 <div class="container">
-<h1 id="pageTitle">ALC Mosaic - Loading...</h1>
 
-<div class="controls">
-  <select id="studentName" style="flex:1;min-width:200px;padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd">
-    <option value="">-- Select Student Name --</option>
-  </select>
-  <input type="text" id="schedulerName" placeholder="Your name (who is making this schedule)" style="padding:8px 15px;font-size:14px;border-radius:4px;border:2px solid #ddd;min-width:220px">
-  <button onclick="loadSchedule()">📥 Load Schedule</button>
-  <button onclick="saveSchedule()">💾 Save Schedule</button>
-  <button class="secondary" onclick="printSchedule()">🖨️ Print</button>
-</div>
-
-<div id="status"></div>
-
-<p class="no-print" style="text-align:center;color:#666;font-size:12px;margin:10px 0;padding:10px;background:#f8f9fa;border-radius:4px">
-  📋 Select a student, enter your name as the scheduler, then click Load Schedule to view or build their schedule
-</p>
+<h1 id="pageTitle">ALC Mosaic</h1>
+<p class="subtitle" id="sessionLabel">Loading…</p>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab(0)">📅 All Classes</div>
-  <div class="tab" onclick="switchTab(1)">✅ My Schedule</div>
-  <div class="tab" onclick="switchTab(2)">📋 Offering Descriptions</div>
-  <div class="tab" onclick="switchTab(3)">➕ Add Offering</div>
+  <div class="tab active" onclick="switchTab(0)">📅 Session Schedule</div>
+  <div class="tab" onclick="switchTab(1)">👤 Learner Schedules</div>
 </div>
 
-<!-- TAB 0: All Classes -->
-<div id="allClasses" class="tab-content active">
-  <p style="text-align:center;color:#666;font-size:13px;margin:10px 0">
-    Click classes to select • Max 2 per time block • 🔗 = Multi-block class • Click class name to see description
-  </p>
-  <table class="schedule-table" id="scheduleTable">
-    <thead>
-      <tr>
-        <th style="width:120px">Time</th>
-        <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
-      </tr>
-    </thead>
-    <tbody id="scheduleBody"></tbody>
-  </table>
-</div>
+<!-- ══ TAB 0 — Weekly Schedule ══════════════════════════════ -->
+<div class="tab-content active" id="tab-grid">
 
-<!-- TAB 1: My Schedule -->
-<div id="mySchedule" class="tab-content">
-  <h2 style="text-align:center;color:#2196F3;margin-bottom:20px" id="scheduleTitle"></h2>
-  <div id="printDate" style="text-align:center;font-size:12px;color:#666;margin-bottom:15px;display:none"></div>
-  <table class="my-schedule-table" id="myScheduleTable">
-    <thead>
-      <tr>
-        <th style="width:120px">Time</th>
-        <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
-      </tr>
-    </thead>
-    <tbody id="myScheduleBody"></tbody>
-  </table>
-</div>
-
-<!-- TAB 2: Offering Descriptions -->
-<div id="courseCatalog" class="tab-content">
-  <h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">📋 Offering Descriptions</h2>
-  <p style="text-align:center;color:#666;font-size:14px;margin-bottom:20px">Browse all available offerings with full descriptions</p>
-  <div style="max-width:900px;margin:0 auto 20px auto">
-    <input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Search by name, instructor, or description..." onkeyup="filterCatalog()">
-    <div class="catalog-filters">
-      <strong style="margin-right:10px;align-self:center">Filter by Group:</strong>
-      <button class="catalog-filter-btn active" data-filter="all" onclick="setGroupFilter('all')">All Groups</button>
-      <button class="catalog-filter-btn" data-filter="EC" onclick="setGroupFilter('EC')">EC</button>
-      <button class="catalog-filter-btn" data-filter="Saplings" onclick="setGroupFilter('Saplings')">Saplings</button>
-      <button class="catalog-filter-btn" data-filter="Canopy" onclick="setGroupFilter('Canopy')">Canopy</button>
-      <button class="catalog-filter-btn" data-filter="Acorns" onclick="setGroupFilter('Acorns')">Acorns</button>
+  <!-- Filters -->
+  <div class="filter-bar">
+    <input type="text" id="gridSearch" placeholder="🔍 Search offerings…" oninput="drawGrid()">
+    <div class="filter-group">
+      <span>Group:</span>
+      <button class="filter-btn active" data-gf="all"      onclick="setGf('all')">All</button>
+      <button class="filter-btn"        data-gf="EC"       onclick="setGf('EC')">EC</button>
+      <button class="filter-btn"        data-gf="Saplings" onclick="setGf('Saplings')">Saplings</button>
+      <button class="filter-btn"        data-gf="Canopy"   onclick="setGf('Canopy')">Canopy</button>
+      <button class="filter-btn"        data-gf="Acorns"   onclick="setGf('Acorns')">Acorns</button>
     </div>
-    <div class="catalog-filters">
-      <strong style="margin-right:10px;align-self:center">Filter by Type:</strong>
-      <button class="catalog-filter-btn active" data-type="all" onclick="setTypeFilter('all')">All Types</button>
-      <button class="catalog-filter-btn" data-type="Commit" onclick="setTypeFilter('Commit')">Commitment</button>
-      <button class="catalog-filter-btn" data-type="Drop-in" onclick="setTypeFilter('Drop-in')">Drop-in</button>
-    </div>
-    <div class="catalog-filters">
-      <strong style="margin-right:10px;align-self:center">Filter by Day:</strong>
-      <button class="catalog-filter-btn active" data-day="all" onclick="setDayFilter('all')">All Days</button>
-      <button class="catalog-filter-btn" data-day="Monday" onclick="setDayFilter('Monday')">Monday</button>
-      <button class="catalog-filter-btn" data-day="Tuesday" onclick="setDayFilter('Tuesday')">Tuesday</button>
-      <button class="catalog-filter-btn" data-day="Wednesday" onclick="setDayFilter('Wednesday')">Wednesday</button>
-      <button class="catalog-filter-btn" data-day="Thursday" onclick="setDayFilter('Thursday')">Thursday</button>
-      <button class="catalog-filter-btn" data-day="Friday" onclick="setDayFilter('Friday')">Friday</button>
+    <div class="filter-group">
+      <span>Type:</span>
+      <button class="filter-btn active" data-tf="all"     onclick="setTf('all')">All</button>
+      <button class="filter-btn"        data-tf="Commit"  onclick="setTf('Commit')">Commitment</button>
+      <button class="filter-btn"        data-tf="Drop-in" onclick="setTf('Drop-in')">Drop-in</button>
     </div>
   </div>
-  <div id="catalogContainer" style="max-width:900px;margin:0 auto"></div>
+
+  <p style="font-size:12px;color:#888;margin:0 0 10px;text-align:center">
+    Click any offering to see full details and description
+  </p>
+
+  <div id="gridContainer">
+    <div class="loading"><div class="spinner"></div><p>Loading schedule…</p></div>
+  </div>
 </div>
 
-<!-- TAB 3: Add Offering -->
-<div id="addOffering" class="tab-content">
-  <h2 style="text-align:center;color:#4CAF50;margin-bottom:20px">➕ Submit a New Offering</h2>
-  <div class="form-section">
-    <div class="form-help">
-      📋 <strong>How this works:</strong> Fill out the form below to propose a new class, workshop, or activity.
-      Submissions require admin approval before appearing in the schedule.
-    </div>
-    <div id="formSuccess" class="form-success"></div>
-    <div class="form-group">
-      <label for="submitterName">Your Name<span class="req">*</span><span class="hint">(so we know who to follow up with)</span></label>
-      <input type="text" id="submitterName" placeholder="e.g., Jane Smith">
-    </div>
-    <div class="form-group">
-      <label for="offeringName">Course / Offering Name<span class="req">*</span></label>
-      <input type="text" id="offeringName" placeholder="e.g., Beginner Pottery (Saplings+)">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="offeringInstructor">Instructor<span class="req">*</span></label>
-        <input type="text" id="offeringInstructor" list="instructorList" placeholder="Start typing — suggestions appear">
-        <datalist id="instructorList"></datalist>
-      </div>
-      <div class="form-group">
-        <label for="offeringLocation">Location<span class="hint">(optional)</span></label>
-        <input type="text" id="offeringLocation" list="locationList" placeholder="e.g., Art Room">
-        <datalist id="locationList"></datalist>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="offeringGroup">Group<span class="req">*</span></label>
-        <select id="offeringGroup">
-          <option value="">Choose group...</option>
-          <option value="EC">EC</option>
-          <option value="Saplings">Saplings</option>
-          <option value="Canopy">Canopy</option>
-          <option value="Acorns">Acorns</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="offeringType">Type<span class="req">*</span></label>
-        <select id="offeringType">
-          <option value="">Choose type...</option>
-          <option value="Commit">Commitment</option>
-          <option value="Drop-in">Drop-in</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Days<span class="req">*</span><span class="hint">(check all that apply)</span></label>
-      <div class="checkbox-grid" id="dayGrid">
-        <label><input type="checkbox" name="day" value="monday"><span class="cb-text">Monday</span></label>
-        <label><input type="checkbox" name="day" value="tuesday"><span class="cb-text">Tuesday</span></label>
-        <label><input type="checkbox" name="day" value="wednesday"><span class="cb-text">Wednesday</span></label>
-        <label><input type="checkbox" name="day" value="thursday"><span class="cb-text">Thursday</span></label>
-        <label><input type="checkbox" name="day" value="friday"><span class="cb-text">Friday</span></label>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Blocks / Times<span class="req">*</span><span class="hint">(check all that apply)</span></label>
-      <div class="checkbox-grid" id="timeGrid">
-        <label><input type="checkbox" name="time" value="10:00-10:45"><span class="cb-text">Block 1<span class="cb-sub">10:00-10:45 am</span></span></label>
-        <label><input type="checkbox" name="time" value="10:50-11:35"><span class="cb-text">Block 2<span class="cb-sub">10:50-11:35 am</span></span></label>
-        <label><input type="checkbox" name="time" value="12:10-12:55"><span class="cb-text">Block 3<span class="cb-sub">12:10-12:55 pm</span></span></label>
-        <label><input type="checkbox" name="time" value="1:00-1:50"><span class="cb-text">Block 4<span class="cb-sub">1:00-1:50 pm</span></span></label>
-        <label><input type="checkbox" name="time" value="1:55-2:45"><span class="cb-text">Block 5<span class="cb-sub">1:55-2:45 pm</span></span></label>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="offeringCapacity">Capacity<span class="hint">(leave blank for unlimited)</span></label>
-        <input type="number" id="offeringCapacity" placeholder="e.g., 12" min="1">
-      </div>
-      <div class="form-group">
-        <label for="offeringSession">Session<span class="hint">(auto-filled)</span></label>
-        <input type="text" id="offeringSession" placeholder="">
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="offeringDescription">Description<span class="hint">(what will students learn or do?)</span></label>
-      <textarea id="offeringDescription" placeholder="A brief description of the class for the catalog..."></textarea>
-    </div>
-    <div class="form-actions">
-      <button type="button" class="reset-btn" onclick="resetOfferingForm()">Reset Form</button>
-      <button type="button" class="submit-btn" id="submitOfferingBtn" onclick="submitNewOffering()">📨 Submit for Approval</button>
+<!-- ══ TAB 1 — Learner Schedules ════════════════════════════ -->
+<div class="tab-content" id="tab-learner">
+  <div class="learner-controls">
+    <label for="learnerSelect">Select Learner:</label>
+    <select id="learnerSelect">
+      <option value="">— Choose a learner —</option>
+    </select>
+    <button class="btn-green" onclick="loadLearnerSchedule()">📥 View Schedule</button>
+    <button class="btn-blue"  onclick="printLearnerSchedule()" id="printBtn" style="display:none">
+      🖨️ Print
+    </button>
+  </div>
+  <div class="msg" id="learnerMsg"></div>
+  <div id="learnerScheduleContainer">
+    <div style="text-align:center;padding:50px 20px;color:#bbb">
+      <div style="font-size:48px;margin-bottom:12px">👤</div>
+      <p style="font-size:16px;margin:0">Select a learner above to view their approved schedule</p>
     </div>
   </div>
 </div>
 
 </div><!-- /container -->
 
-<!-- ── Dedicated print-only schedule ──────────────────────── -->
+<!-- ══ Offering Description Popup ═══════════════════════════ -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
+  <div class="popup-box">
+    <div class="popup-head">
+      <h2 id="popupTitle">Offering Details</h2>
+      <button class="popup-close" onclick="closePopupDirect()">×</button>
+    </div>
+    <div class="popup-body" id="popupBody"></div>
+  </div>
+</div>
+
+<!-- Print-only sheet -->
 <div id="printSheet"></div>
 
 <script>
-console.log('===== SCHEDULE.HTML VERSION: 2026-06-03 =====');
-
 const API = 'https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdmWMpxdDWDogUEv4bFB2Gc5NcDGKSco9ytsmdxhNzu/exec';
 
 const TIMES = [
-  { name:'Block 1',    time:'10:00-10:45', display:'10:00-10:45 am' },
-  { name:'Block 2',    time:'10:50-11:35', display:'10:50-11:35 am' },
-  { name:'🍽️ LUNCH',  time:'11:35-12:05', display:'11:35 am-12:05 pm' },
-  { name:'Block 3',    time:'12:10-12:55', display:'12:10-12:55 pm' },
-  { name:'Block 4',    time:'1:00-1:50',   display:'1:00-1:50 pm' },
-  { name:'Block 5',    time:'1:55-2:45',   display:'1:55-2:45 pm' }
+  { name:'Block 1', time:'10:00-10:45', display:'10:00–10:45 am' },
+  { name:'Block 2', time:'10:50-11:35', display:'10:50–11:35 am' },
+  { name:'🍽 Lunch', time:'11:35-12:05', display:'11:35–12:05 pm', lunch:true },
+  { name:'Block 3', time:'12:10-12:55', display:'12:10–12:55 pm' },
+  { name:'Block 4', time:'1:00-1:50',   display:'1:00–1:50 pm' },
+  { name:'Block 5', time:'1:55-2:45',   display:'1:55–2:45 pm' }
 ];
-
 const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
-
-const BLOCK_TIME_MAP = {
-  'Block 1':'10:00-10:45',
-  'Block 2':'10:50-11:35',
-  'Block 3':'12:10-12:55',
-  'Block 4':'1:00-1:50',
-  'Block 5':'1:55-2:45',
-  'Lunch':'11:35-12:05',
-  'LUNCH':'11:35-12:05'
+const BLOCK_MAP = {
+  'block 1':'10:00-10:45','block 2':'10:50-11:35','block 3':'12:10-12:55',
+  'block 4':'1:00-1:50','block 5':'1:55-2:45','lunch':'11:35-12:05'
 };
 
-function normalizeTime(t) {
+let offerings    = [];
+let enrollCounts = {};
+let studentNames = [];
+let sessionConfig = {};
+let gridFilters  = { group:'all', type:'all', search:'' };
+let currentLearnerOfferings = [];
+let currentLearnerName = '';
+
+function normTime(t) {
   if (!t) return '';
-  const s = t.trim();
-  if (/^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/.test(s)) return s;
-  return BLOCK_TIME_MAP[s] || s;
+  const s = String(t).trim();
+  return BLOCK_MAP[s.toLowerCase()] || s;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function showMsg(text, type) {
+  const el = document.getElementById('learnerMsg');
+  el.textContent = text;
+  el.className = 'msg msg-' + type;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 5000);
 }
 
-// ── State ──────────────────────────────────────────────────
-let offerings       = [];
-let selected        = {};
-let enrollmentCounts = {};
-let descriptions    = {};
-let studentNames    = [];   // array of { id, name, grade }
-let approvedOfferings = [];
-let pendingOfferings  = [];
-let sessionConfig   = { sessionName:'', sessionDates:'', fullSessionName:'' };
-let catalogFilters  = { group:'all', type:'all', day:'all', search:'' };
-
-// ── Init ───────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────
 async function init() {
   try {
-    showStatus('Loading...', 'success');
-
-    const fetchJSON = url =>
-      Promise.race([
-        fetch(url).then(r => r.json()),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('Request timeout')), 12000))
-      ]);
-
-    const [sessionRes, offRes, enrollRes, studentsRes] = await Promise.all([
-      fetchJSON(`${API}?action=getSessionConfig`).catch(() => ({ success:false })),
-      fetchJSON(`${API}?action=loadOfferings`).catch(() => ({ offerings:[] })),
-      fetchJSON(`${API}?action=getEnrollmentCounts`).catch(() => ({ counts:{} })),
-      fetchJSON(`${API}?action=getAllStudents`).catch(() => ({ success:false, students:[] }))
+    const [sessionRes, offRes, countsRes, studentsRes] = await Promise.all([
+      fetch(`${API}?action=getSessionConfig`).then(r=>r.json()).catch(()=>({success:false})),
+      fetch(`${API}?action=loadOfferings`).then(r=>r.json()).catch(()=>({offerings:[]})),
+      fetch(`${API}?action=getEnrollmentCounts`).then(r=>r.json()).catch(()=>({counts:{}})),
+      fetch(`${API}?action=getAllStudents`).then(r=>r.json()).catch(()=>({success:false,students:[]}))
     ]);
 
-    sessionConfig    = sessionRes.success ? sessionRes : { sessionName:'Session', sessionDates:'', fullSessionName:'Session' };
-    offerings        = offRes.offerings || [];
-    enrollmentCounts = enrollRes.counts || {};
-    studentNames     = (studentsRes.success && Array.isArray(studentsRes.students)) ? studentsRes.students : [];
+    sessionConfig = sessionRes.success ? sessionRes : { fullSessionName:'ALC Mosaic', siteTitle:'ALC Mosaic', siteSubtitle:'' };
+    offerings     = offRes.offerings  || [];
+    enrollCounts  = countsRes.counts  || {};
+    studentNames  = (studentsRes.success && studentsRes.students) ? studentsRes.students : [];
 
-    applySessionToPage();
-    loadDescriptions();
-    populateStudentDropdown();
-    populateOfferingFormSuggestions();
-    drawSchedule();
-    checkURLParams();
+    const siteTitle    = sessionConfig.siteTitle    || 'ALC Mosaic';
+    const siteSubtitle = sessionConfig.siteSubtitle || sessionConfig.fullSessionName || '';
 
-    document.getElementById('status').style.display = 'none';
-  } catch (err) {
-    console.error('Init error:', err);
-    showStatus('Error loading: ' + err.message, 'error');
+    document.getElementById('pageTitle').textContent    = siteTitle;
+    document.getElementById('sessionLabel').textContent = siteSubtitle;
+    document.title = siteTitle;
+
+    populateLearnerDropdown();
+    drawGrid();
+  } catch(e) {
+    document.getElementById('gridContainer').innerHTML =
+      `<p style="text-align:center;color:#f44336;padding:40px">Error loading: ${esc(e.message)}</p>`;
   }
 }
 
-function applySessionToPage() {
-  const title = 'ALC Mosaic - ' + sessionConfig.fullSessionName;
-  document.getElementById('pageTitle').textContent = title;
-  document.title = title;
-  const si = document.getElementById('offeringSession');
-  if (si && !si.value) si.value = sessionConfig.fullSessionName;
+// ── Grid filters ──────────────────────────────────────────────
+function setGf(v) {
+  gridFilters.group = v;
+  document.querySelectorAll('[data-gf]').forEach(b => b.classList.toggle('active', b.dataset.gf === v));
+  drawGrid();
+}
+function setTf(v) {
+  gridFilters.type = v;
+  document.querySelectorAll('[data-tf]').forEach(b => b.classList.toggle('active', b.dataset.tf === v));
+  drawGrid();
 }
 
-// ── Student dropdown ───────────────────────────────────────
-function populateStudentDropdown() {
-  const select = document.getElementById('studentName');
-  select.innerHTML = '<option value="">-- Select Student Name --</option>';
-
-  if (!studentNames.length) {
-    const opt = document.createElement('option');
-    opt.value = ''; opt.textContent = '(No students yet)'; opt.disabled = true;
-    select.appendChild(opt);
-    return;
-  }
-
-  // studentNames is always an array of objects { id, name, grade }
-  [...studentNames]
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.name;
-      opt.textContent = s.grade ? `${s.name} — ${s.grade}` : s.name;
-      select.appendChild(opt);
-    });
-}
-
-// ── Descriptions (local fallback) ─────────────────────────
-function loadDescriptions() {
-  descriptions = {
-    'Math(A) (Canopy+)':           'Early middle school math topics with focus on geometry and algebra foundations.',
-    'Chemistry (Canopy+)':         'Foundations of Chemistry including elements, Periodic Table, matter, molecules, and reactions.',
-    'Intermediate Writing (Canopy+)':'Intermediate level writing with assignments between sessions.',
-    'Chemistry Lab (Canopy+)':     'Hands-on laboratory experiments reinforcing chemistry concepts.',
-    'Coding (Saplings+)':          'Game design and coding projects using Scratch platform.',
-    'D&D (Acorns)':                'Dungeons & Dragons role-playing adventure game.',
-    'History Lab (Saplings+)':     'Interactive deep dive into various historical eras and events.',
-    'Newspaper (Saplings+)':       'Create and publish school newspaper content and articles.',
-    'Art Fundamentals (Acorns)':   'Master pencil control, inking techniques, shading, and perspective drawing.',
-    'Songwriting (Saplings+)':     'Learn songwriting techniques and create original songs.',
-    'All things Lego':             'Free play in Lego room, brick films, and robotics exploration.',
-    'Theatre':                     'Theatre performance class with staging and acting techniques.',
-    'Debate Club (Canopy+)':       'Learn debate skills and practice structured debates on various topics.'
-  };
-}
-
-// ── Schedule grid ──────────────────────────────────────────
-function drawSchedule() {
-  const tbody = document.getElementById('scheduleBody');
-  tbody.innerHTML = '';
-
-  TIMES.forEach(block => {
-    const row      = document.createElement('tr');
-    const timeCell = document.createElement('td');
-    timeCell.className = 'time-col';
-    timeCell.innerHTML = `<div style="font-size:13px">${block.name}</div><div style="font-size:11px;color:#666">${block.display}</div>`;
-    row.appendChild(timeCell);
-
-    DAYS.forEach(day => {
-      const cell = document.createElement('td');
-      cell.id = `${day}-${block.time}`;
-
-      offerings
-        .filter(o => {
-          const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-          const times = (o.time || '').split(',').map(t => normalizeTime(t.trim()));
-          return days.includes(day) && times.includes(block.time);
-        })
-        .forEach(o => {
-          const enrolled   = enrollmentCounts[o.id] || 0;
-          const capacity   = Number(o.capacity) || 999;
-          const full       = enrolled >= capacity;
-          const multiBlock = isPartOfMultiBlock(o);
-          const desc       = descriptions[o.name] || o.description || '';
-
-          const card = document.createElement('div');
-          card.className   = 'class-card' + (full ? ' full' : '');
-          card.dataset.id  = o.id;
-          card.dataset.day = day;
-          card.dataset.time = block.time;
-          card.dataset.group = multiBlock ? getGroupKey(o) : '';
-
-          card.innerHTML = `
-            <label style="display:flex;align-items:start;cursor:${full?'not-allowed':'pointer'}">
-              <input type="checkbox" ${full ? 'disabled' : ''} onclick="event.stopPropagation();toggleClass(this)">
-              <div style="flex:1">
-                <div class="class-name">
-                  <span onclick="event.stopPropagation();toggleDesc(this)"
-                        style="cursor:pointer;text-decoration:${desc?'underline dotted':''}">${o.name}</span>
-                  ${multiBlock ? '<span class="link-icon" title="Multi-block class">🔗</span>' : ''}
-                  <span class="type-badge type-${o.type}">${o.type}</span>
-                  ${desc ? '<span class="expand-icon">▼</span>' : ''}
-                </div>
-                <div class="class-info">👤 ${o.instructor} | 📍 ${o.location||'TBA'} | 👥 ${enrolled}/${capacity===999?'∞':capacity}</div>
-                ${desc ? `<div class="class-desc">${desc}</div>` : ''}
-              </div>
-            </label>`;
-
-          card.onclick = function(e) {
-            if (e.target.tagName === 'INPUT' || e.target.closest('.class-name span')) return;
-            if (!full) { const cb = this.querySelector('input'); cb.checked = !cb.checked; toggleClass(cb); }
-          };
-
-          cell.appendChild(card);
-        });
-
-      row.appendChild(cell);
-    });
-
-    tbody.appendChild(row);
-  });
-
-  updateUI();
-}
-
-/**
- * A multi-block offering is one where the SAME offering (same id) appears in
- * multiple time blocks — meaning its `time` field contains more than one block.
- * We no longer look for "sibling" offerings with matching name/instructor,
- * because that causes unrelated offerings to be incorrectly linked when they
- * happen to share a name or instructor across different days/sessions.
- */
-function isPartOfMultiBlock(offering) {
-  const times = (offering.time || '').split(',').map(t => t.trim()).filter(Boolean);
-  return times.length > 1;
-}
-
-/**
- * Group key used to tie all appearances of a multi-block offering together
- * across the grid. Uses the offering's own ID so it is always unique to that
- * specific offering — no false matches with other offerings.
- */
-function getGroupKey(o) {
-  return `offering_${o.id}`;
-}
-
-function toggleClass(checkbox) {
-  const card  = checkbox.closest('.class-card');
-  const id    = Number(card.dataset.id);
-  const day   = card.dataset.day;
-  const time  = card.dataset.time;
-  const group = card.dataset.group; // 'offering_ID' if multi-block, '' if single
-  const key   = `${day}-${time}`;
-
-  if (checkbox.checked) {
-    if (group) {
-      // Multi-block offering — find the actual offering to get all its time slots
-      const offering = offerings.find(o => o.id === id);
-      if (!offering) return;
-
-      const allTimes = (offering.time || '').split(',').map(t => normalizeTime(t.trim())).filter(Boolean);
-      const allDays  = (offering.day  || '').split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
-
-      // Check all slots have room (max 2 per block)
-      let canSelect = true;
-      allDays.forEach(d => {
-        allTimes.forEach(t => {
-          const k = `${d}-${t}`;
-          if (!selected[k]) selected[k] = [];
-          if (selected[k].filter(i => i !== id).length >= 2) canSelect = false;
-        });
-      });
-
-      if (!canSelect) {
-        checkbox.checked = false;
-        showStatus('⚠️ Cannot select — some blocks are full (max 2 per block)', 'error');
-        return;
-      }
-
-      // Select this offering ID in all its day+time slots
-      allDays.forEach(d => {
-        allTimes.forEach(t => {
-          const k = `${d}-${t}`;
-          if (!selected[k]) selected[k] = [];
-          if (!selected[k].includes(id)) selected[k].push(id);
-        });
-      });
-
-      showStatus(`✅ Selected all ${allTimes.length} block(s) of this class`, 'success');
-
-    } else {
-      // Single-block offering — normal selection
-      if (!selected[key]) selected[key] = [];
-      if (!selected[key].includes(id)) {
-        if (selected[key].length >= 2) {
-          checkbox.checked = false;
-          showStatus('⚠️ Max 2 classes per time block', 'error');
-          return;
-        }
-        selected[key].push(id);
-      }
-    }
-  } else {
-    if (group) {
-      // Deselect this offering from ALL its day+time slots
-      const offering = offerings.find(o => o.id === id);
-      if (!offering) return;
-
-      const allTimes = (offering.time || '').split(',').map(t => normalizeTime(t.trim())).filter(Boolean);
-      const allDays  = (offering.day  || '').split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
-
-      allDays.forEach(d => {
-        allTimes.forEach(t => {
-          const k = `${d}-${t}`;
-          if (selected[k]) selected[k] = selected[k].filter(i => i !== id);
-        });
-      });
-
-    } else {
-      if (selected[key]) selected[key] = selected[key].filter(i => i !== id);
-    }
-  }
-
-  updateUI();
-}
-
-function toggleDesc(element) {
-  const card = element.closest('.class-card');
-  if (!card) return;
-  card.classList.toggle('expanded');
-  const icon = card.querySelector('.expand-icon');
-  if (icon) icon.textContent = card.classList.contains('expanded') ? '▲' : '▼';
-}
-
-function updateUI() {
-  document.querySelectorAll('.class-card').forEach(card => {
-    const id  = Number(card.dataset.id);
-    const key = `${card.dataset.day}-${card.dataset.time}`;
-    const sel = !!(selected[key] && selected[key].includes(id));
-    card.classList.toggle('selected', sel);
-    const cb = card.querySelector('input');
-    if (cb) cb.checked = sel;
-  });
-  renderMySchedule();
-}
-
-// ── My Schedule tab ────────────────────────────────────────
-function renderMySchedule() {
-  const tbody = document.getElementById('myScheduleBody');
-  tbody.innerHTML = '';
-
-  const name = document.getElementById('studentName').value;
-  document.getElementById('scheduleTitle').textContent = name ? `${name}'s Schedule` : 'My Schedule';
-  document.getElementById('printDate').textContent =
-    'Printed: ' + new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-  TIMES.forEach(block => {
-    const row      = document.createElement('tr');
-    const timeCell = document.createElement('td');
-    timeCell.className = 'time-col';
-    timeCell.innerHTML = `<div style="font-size:13px">${block.name}</div><div style="font-size:11px;color:#666">${block.display}</div>`;
-    row.appendChild(timeCell);
-
-    DAYS.forEach(day => {
-      const cell = document.createElement('td');
-      const ids  = (selected[`${day}-${block.time}`] || []);
-
-      if (!ids.length) {
-        cell.innerHTML = '<div style="color:#ccc;text-align:center;padding:20px">-</div>';
-      } else {
-        ids.forEach(id => {
-          const o = offerings.find(of => of.id === id);
-          if (!o) return;
-
-          const desc      = descriptions[o.name] || o.description || '';
-          const isPending = pendingOfferings.includes(id);
-          const parts     = [];
-          if (o.instructor) parts.push(`👤 ${o.instructor}`);
-          if (o.location)   parts.push(`📍 ${o.location}`);
-
-          const div = document.createElement('div');
-          div.className = 'my-schedule-card';
-          div.style.cursor = desc ? 'pointer' : 'default';
-          if (isPending) div.style.opacity = '0.7';
-          div.innerHTML = `
-            <div>
-              <strong style="font-size:13px;display:block;margin-bottom:4px">
-                ${o.name}
-                ${isPending ? '<span style="background:#ff9800;color:white;font-size:9px;padding:2px 6px;border-radius:3px;margin-left:6px;font-weight:bold">PENDING</span>' : ''}
-              </strong>
-              ${desc ? '<span style="font-size:10px;color:#999;position:absolute;top:8px;right:8px">▼</span>' : ''}
-              <div style="font-size:11px;color:#666">${parts.join(' • ') || 'TBA'}</div>
-            </div>
-            ${desc ? `<div class="class-desc" style="display:none;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #ddd;line-height:1.4">${desc}</div>` : ''}`;
-
-          if (desc) {
-            div.onclick = function() {
-              const d = this.querySelector('.class-desc');
-              const a = this.querySelector('span[style*="position:absolute"]');
-              const open = d.style.display === 'none';
-              d.style.display = open ? 'block' : 'none';
-              if (a) a.textContent = open ? '▲' : '▼';
-            };
-          }
-          cell.appendChild(div);
-        });
-      }
-      row.appendChild(cell);
-    });
-
-    tbody.appendChild(row);
-  });
-}
-
-// ── Load / Save schedule ───────────────────────────────────
-
-/**
- * Returns the name of the facilitator making this schedule.
- * Used for audit purposes when saving to PendingRequests.
- */
-function getSchedulerName() {
-  return document.getElementById('schedulerName').value.trim();
-}
-
-async function loadSchedule() {
-  const studentName   = document.getElementById('studentName').value;
-  const schedulerName = getSchedulerName();
-
-  if (!studentName)   { showStatus('⚠️ Please select a student', 'error'); return; }
-  if (!schedulerName) { showStatus('⚠️ Please enter your name as the scheduler', 'error'); return; }
-
-  try {
-    const [data, pendingRes] = await Promise.all([
-      fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(studentName)}`).then(r => r.json()),
-      fetch(`${API}?action=getPendingRequests`).then(r => r.json()).catch(() => ({ requests:[] }))
-    ]);
-
-    selected          = {};
-    approvedOfferings = [];
-    pendingOfferings  = [];
-
-    if (data.success && data.offerings) {
-      data.offerings.forEach(o => {
-        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-        const times = (o.time || '').split(',').map(t => normalizeTime(t.trim()));
-        days.forEach(day => {
-          times.forEach(time => {
-            const key = `${day}-${time}`;
-            if (!selected[key]) selected[key] = [];
-            if (!selected[key].includes(o.id)) selected[key].push(o.id);
-          });
-        });
-        approvedOfferings.push(o.id);
-      });
-    }
-
-    if (pendingRes.requests) {
-      pendingRes.requests
-        .filter(r => r.studentName.toLowerCase() === studentName.toLowerCase() && r.status === 'pending')
-        .forEach(r => {
-          const o = offerings.find(x => x.id === r.offeringId);
-          if (!o) return;
-          const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-          const times = (o.time || '').split(',').map(t => normalizeTime(t.trim()));
-          days.forEach(day => {
-            times.forEach(time => {
-              const key = `${day}-${time}`;
-              if (!selected[key]) selected[key] = [];
-              if (!selected[key].includes(r.offeringId)) {
-                selected[key].push(r.offeringId);
-                pendingOfferings.push(r.offeringId);
-              }
-            });
-          });
-        });
-    }
-
-    const total   = Object.values(selected).flat().length;
-    const pending = pendingOfferings.length;
-    if (total > 0) {
-      showStatus(`✅ Schedule loaded: ${approvedOfferings.length} approved, ${pending} pending approval`, 'success');
-    } else {
-      showStatus('ℹ️ No saved schedule found — start selecting classes below', 'success');
-    }
-
-    updateUI();
-  } catch (err) {
-    showStatus('❌ Error loading schedule: ' + err.message, 'error');
-  }
-}
-
-async function saveSchedule() {
-  const studentName   = document.getElementById('studentName').value;
-  const schedulerName = getSchedulerName();
-  const allIds        = Object.values(selected).flat();
-
-  if (!studentName)   { showStatus('⚠️ Please select a student', 'error'); return; }
-  if (!schedulerName) { showStatus('⚠️ Please enter your name as the scheduler', 'error'); return; }
-  if (!allIds.length) { showStatus('⚠️ Please select some classes first', 'error'); return; }
-
-  try {
-    const result = await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({
-        action:        'saveStudentSchedule',
-        studentName:   studentName,
-        offeringIds:   allIds,
-        scheduledBy:   schedulerName
-      })
-    }).then(r => r.json());
-
-    if (result.success) {
-      showStatus(`⏳ Schedule submitted for ${studentName} by ${schedulerName} (${allIds.length} classes) — awaiting admin approval.`, 'success');
-    } else {
-      showStatus('❌ Error: ' + result.message, 'error');
-    }
-  } catch (err) {
-    showStatus('❌ Error saving: ' + err.message, 'error');
-  }
-}
-
-// ── Catalog filters ────────────────────────────────────────
-function setGroupFilter(g) {
-  catalogFilters.group = g;
-  document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === g));
-  renderCourseCatalog();
-}
-function setTypeFilter(t) {
-  catalogFilters.type = t;
-  document.querySelectorAll('[data-type]').forEach(b => b.classList.toggle('active', b.dataset.type === t));
-  renderCourseCatalog();
-}
-function setDayFilter(d) {
-  catalogFilters.day = d;
-  document.querySelectorAll('[data-day]').forEach(b => b.classList.toggle('active', b.dataset.day === d));
-  renderCourseCatalog();
-}
-function filterCatalog() {
-  catalogFilters.search = document.getElementById('catalogSearch').value.toLowerCase();
-  renderCourseCatalog();
-}
-
-function matchesFilters(o) {
-  if (catalogFilters.group !== 'all' && o.level !== catalogFilters.group) return false;
-  if (catalogFilters.type  !== 'all' && o.type  !== catalogFilters.type)  return false;
-  if (catalogFilters.day   !== 'all') {
-    const days = (o.day || '').toLowerCase().split(',').map(d => d.trim());
-    if (!days.includes(catalogFilters.day.toLowerCase())) return false;
-  }
-  if (catalogFilters.search) {
-    const desc = descriptions[o.name] || o.description || '';
-    const text = (o.name + ' ' + o.instructor + ' ' + o.location + ' ' + desc).toLowerCase();
-    if (!text.includes(catalogFilters.search)) return false;
+function offeringMatchesGridFilter(o) {
+  if (gridFilters.group !== 'all' && o.level !== gridFilters.group) return false;
+  if (gridFilters.type  !== 'all' && o.type  !== gridFilters.type)  return false;
+  if (gridFilters.search) {
+    const text = (o.name+' '+o.instructor+' '+o.location+' '+(o.description||'')).toLowerCase();
+    if (!text.includes(gridFilters.search)) return false;
   }
   return true;
 }
 
-function renderCourseCatalog() {
-  const container = document.getElementById('catalogContainer');
-  if (!offerings.length) {
-    container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No offerings available</p>';
-    return;
-  }
+// ── TAB 0 — Weekly grid ───────────────────────────────────────
+function drawGrid() {
+  gridFilters.search = (document.getElementById('gridSearch').value || '').toLowerCase();
+  const activeIds = new Set(offerings.filter(offeringMatchesGridFilter).map(o => o.id));
+  const anyFilter = gridFilters.group !== 'all' || gridFilters.type !== 'all' || gridFilters.search;
 
-  const filtered = offerings.filter(matchesFilters);
-  if (!filtered.length) {
-    container.innerHTML = '<p style="text-align:center;color:#999;padding:40px">No offerings match your filters</p>';
-    return;
-  }
-
-  const groups = {};
-  filtered.forEach(o => {
-    const g = o.level || 'Other';
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(o);
-  });
-
-  let html = '';
-  let total = 0;
-  ['EC','Saplings','Canopy','Acorns','Other'].forEach(g => {
-    if (!groups[g] || !groups[g].length) return;
-    html += `<div style="margin-bottom:40px">
-      <h3 style="color:#4CAF50;border-bottom:3px solid #4CAF50;padding-bottom:8px;margin-bottom:20px">
-        ${g} <span style="color:#666;font-size:16px;font-weight:normal">(${groups[g].length} offering${groups[g].length !== 1 ? 's' : ''})</span>
-      </h3>`;
-
-    groups[g].sort((a,b) => a.name.localeCompare(b.name)).forEach(o => {
-      total++;
-      const desc     = descriptions[o.name] || o.description || '';
-      const enrolled = enrollmentCounts[o.id] || 0;
-      const capacity = Number(o.capacity) || 999;
-      const days     = (o.day || '').split(',').map(d => { const x=d.trim(); return x.charAt(0).toUpperCase()+x.slice(1); }).join(', ');
-      const times    = (o.time || '').split(',').map(t => {
-        const b = TIMES.find(x => x.time === normalizeTime(t.trim()));
-        return b ? b.display : t.trim();
-      }).join(', ');
-
-      html += `<div class="catalog-course">
-        <div class="catalog-header"><h4 class="catalog-title">${o.name}</h4></div>
-        <div class="catalog-meta">
-          <span class="catalog-badge catalog-type-${(o.type||'').toLowerCase()}">${o.type}</span>
-          <span class="catalog-badge catalog-group">${o.level}</span>
-        </div>
-        <div class="catalog-instructor">👤 ${o.instructor}${o.location ? ` • 📍 ${o.location}` : ''}</div>
-        <div class="catalog-schedule">
-          <div class="catalog-schedule-item">📅 ${days||'Schedule TBA'}</div>
-          <div class="catalog-schedule-item">🕐 ${times||'Time TBA'}</div>
-          <div class="catalog-schedule-item">👥 Enrollment: ${enrolled}/${capacity===999?'∞':capacity}</div>
-        </div>
-        ${desc ? `<div class="catalog-description">${desc}</div>` : '<div class="catalog-no-desc">No description available</div>'}
-      </div>`;
-    });
-    html += '</div>';
-  });
-
-  container.innerHTML = `
-    <div style="text-align:center;margin-bottom:20px;padding:10px;background:#f0f7ff;border-radius:6px;color:#666">
-      Showing <strong>${total}</strong> of <strong>${offerings.length}</strong> total offerings
-    </div>` + html;
-}
-
-// ── Add Offering form ──────────────────────────────────────
-function populateOfferingFormSuggestions() {
-  const instructors = new Set();
-  const locations   = new Set();
-  offerings.forEach(o => {
-    if (o.instructor) instructors.add(o.instructor.trim());
-    if (o.location)   locations.add(o.location.trim());
-  });
-  const iList = document.getElementById('instructorList');
-  if (iList) iList.innerHTML = [...instructors].sort().map(i => `<option value="${i}">`).join('');
-  const lList = document.getElementById('locationList');
-  if (lList) lList.innerHTML = [...locations].sort().map(l => `<option value="${l}">`).join('');
-}
-
-function attachCheckboxHighlight() {
-  document.querySelectorAll('#dayGrid input, #timeGrid input').forEach(cb => {
-    cb.addEventListener('change', () => cb.parentElement.classList.toggle('checked', cb.checked));
-  });
-}
-
-async function submitNewOffering() {
-  const get = id => document.getElementById(id).value.trim();
-  const submitter   = get('submitterName');
-  const name        = get('offeringName');
-  const instructor  = get('offeringInstructor');
-  const location    = get('offeringLocation');
-  const group       = get('offeringGroup');
-  const type        = get('offeringType');
-  const capacity    = get('offeringCapacity');
-  const session     = get('offeringSession');
-  const description = get('offeringDescription');
-  const days        = [...document.querySelectorAll('#dayGrid input:checked')].map(c => c.value);
-  const times       = [...document.querySelectorAll('#timeGrid input:checked')].map(c => c.value);
-
-  if (!submitter)   { showStatus('⚠️ Please enter your name', 'error');          return; }
-  if (!name)        { showStatus('⚠️ Please enter an offering name', 'error');   return; }
-  if (!instructor)  { showStatus('⚠️ Please enter an instructor', 'error');      return; }
-  if (!group)       { showStatus('⚠️ Please choose a group', 'error');           return; }
-  if (!type)        { showStatus('⚠️ Please choose a type', 'error');            return; }
-  if (!days.length) { showStatus('⚠️ Please select at least one day', 'error'); return; }
-  if (!times.length){ showStatus('⚠️ Please select at least one block', 'error'); return; }
-
-  const btn = document.getElementById('submitOfferingBtn');
-  btn.disabled = true; btn.textContent = '⏳ Submitting...';
-
-  try {
-    const result = await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'submitOffering',
-        offering: { submitter, name, instructor, location, day:days.join(','), time:times.join(','),
-                    capacity, level:group, type, description, session:session||sessionConfig.fullSessionName }
-      })
-    }).then(r => r.json());
-
-    if (result.success) {
-      showStatus(`✅ Submitted! "${name}" is awaiting admin review.`, 'success');
-      const box = document.getElementById('formSuccess');
-      box.innerHTML = `<strong>✅ Submitted successfully!</strong><br>"${name}" has been sent to admins for review.`;
-      box.classList.add('show');
-      resetOfferingForm();
-      setTimeout(() => box.classList.remove('show'), 8000);
-    } else {
-      showStatus('❌ Error: ' + (result.message || 'Unknown error'), 'error');
-    }
-  } catch (err) {
-    showStatus('❌ Error submitting: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '📨 Submit for Approval';
-  }
-}
-
-function resetOfferingForm() {
-  ['submitterName','offeringName','offeringInstructor','offeringLocation','offeringCapacity','offeringDescription']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  document.getElementById('offeringGroup').value = '';
-  document.getElementById('offeringType').value  = '';
-  document.getElementById('offeringSession').value = sessionConfig.fullSessionName;
-  document.querySelectorAll('#addOffering input[type="checkbox"]').forEach(c => {
-    c.checked = false;
-    c.parentElement.classList.remove('checked');
-  });
-}
-
-// ── Tabs ───────────────────────────────────────────────────
-function switchTab(i) {
-  if (i === 1) {
-    const studentName = document.getElementById('studentName').value;
-    if (!studentName) { showStatus('⚠️ Please select a student first', 'error'); return; }
-  }
-  if (i === 2) renderCourseCatalog();
-  if (i === 3) { populateOfferingFormSuggestions(); attachCheckboxHighlight(); }
-
-  document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
-  document.querySelectorAll('.tab-content').forEach((t, idx) => t.classList.toggle('active', idx === i));
-}
-
-// ── Utilities ──────────────────────────────────────────────
-function showStatus(msg, type) {
-  const el = document.getElementById('status');
-  el.textContent = msg;
-  el.className = 'status-' + type;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 4000);
-}
-
-function checkURLParams() {
-  const student = new URLSearchParams(window.location.search).get('student');
-  if (student) document.getElementById('studentName').value = student;
-}
-
-// ── Print ──────────────────────────────────────────────────
-function printSchedule() {
-  const studentName   = document.getElementById('studentName').value || 'Student';
-  const schedulerName = getSchedulerName();
-  const dateStr       = new Date().toLocaleDateString('en-US', {
-    weekday:'long', year:'numeric', month:'long', day:'numeric'
-  });
-
-  // Column widths: time col + 5 day cols (percentages summing to 100)
-  const timeW = 13;
-  const dayW  = ((100 - timeW) / 5).toFixed(1);
-
-  let html = `
-    <div class="ps-title">${esc(studentName)}'s Schedule</div>
-    <div class="ps-meta">
-      ${sessionConfig.fullSessionName || ''}
-      ${schedulerName ? ' · Prepared by ' + esc(schedulerName) : ''}
-      · ${dateStr}
-    </div>
-    <table>
-      <colgroup>
-        <col style="width:${timeW}%">
-        <col style="width:${dayW}%">
-        <col style="width:${dayW}%">
-        <col style="width:${dayW}%">
-        <col style="width:${dayW}%">
-        <col style="width:${dayW}%">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Monday</th>
-          <th>Tuesday</th>
-          <th>Wednesday</th>
-          <th>Thursday</th>
-          <th>Friday</th>
-        </tr>
-      </thead>
-      <tbody>`;
+  let html = `<table class="schedule-table">
+    <thead><tr>
+      <th style="width:100px">Time</th>
+      <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
+    </tr></thead><tbody>`;
 
   TIMES.forEach(block => {
-    if (block.name === '🍽️ LUNCH') {
-      html += `<tr>
-        <td class="ps-time">Lunch<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>
-        <td colspan="5" class="ps-lunch">Lunch Break · 11:35 am – 12:05 pm</td>
+    if (block.lunch) {
+      html += `<tr class="lunch-row">
+        <td style="font-weight:700;background:#f8f9fa;font-size:11px;color:#555;text-align:center">
+          ${block.name}<br><span style="font-size:10px;font-weight:normal">${block.display}</span>
+        </td>
+        <td colspan="5">Lunch Break</td>
       </tr>`;
       return;
     }
 
-    html += `<tr>
-      <td class="ps-time">${block.name}<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>`;
+    html += `<tr><td class="time-col">${block.name}<br>${block.display}</td>`;
 
     DAYS.forEach(day => {
-      const ids      = selected[`${day}-${block.time}`] || [];
-      const matching = ids.map(id => offerings.find(o => o.id === id)).filter(Boolean);
+      const matching = offerings.filter(o => {
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+        return days.includes(day) && times.includes(block.time);
+      });
 
       if (!matching.length) {
-        html += `<td class="ps-cell ps-empty">—</td>`;
+        html += `<td style="background:#fafafa"></td>`;
       } else {
-        html += `<td class="ps-cell">`;
+        html += `<td>`;
         matching.forEach(o => {
-          const parts = [];
-          if (o.instructor) parts.push(o.instructor);
-          if (o.location)   parts.push(o.location);
-          html += `<span class="ps-name">${esc(o.name)}</span>`;
-          if (parts.length) html += `<span class="ps-info">${esc(parts.join(' · '))}</span>`;
+          const enrolled  = enrollCounts[o.id] || 0;
+          const capacity  = Number(o.capacity) || 999;
+          const full      = enrolled >= capacity;
+          const faded     = anyFilter && !activeIds.has(o.id);
+          const fullLabel = full ? ' <span style="color:#f44336;font-size:9px;font-weight:700">FULL</span>' : '';
+
+          html += `<div class="view-card${faded?' faded':''}" onclick="showPopup(${o.id})">
+            <div class="view-card-name">
+              ${esc(o.name)}
+              <span class="type-badge type-${esc(o.type)}">${esc(o.type)}</span>
+              ${fullLabel}
+            </div>
+            <div class="view-card-info">
+              👤 ${esc(o.instructor)}
+              ${o.location ? ' · 📍 ' + esc(o.location) : ''}
+              · ${enrolled}/${capacity===999?'∞':capacity}
+            </div>
+            <div class="view-card-hint">Click for details</div>
+          </div>`;
         });
         html += `</td>`;
       }
@@ -1167,15 +375,237 @@ function printSchedule() {
   });
 
   html += `</tbody></table>`;
+  document.getElementById('gridContainer').innerHTML = html;
+}
 
+// ── Offering popup ────────────────────────────────────────────
+function showPopup(offeringId) {
+  const o        = offerings.find(x => x.id === offeringId);
+  if (!o) return;
+
+  const enrolled = enrollCounts[o.id] || 0;
+  const capacity = Number(o.capacity) || 999;
+  const full     = enrolled >= capacity;
+
+  const days  = (o.day  || '').split(',').map(d => { const x=d.trim(); return x.charAt(0).toUpperCase()+x.slice(1); }).join(', ');
+  const times = (o.time || '').split(',').map(t => {
+    const b = TIMES.find(x => x.time === normTime(t.trim()));
+    return b ? b.display : t.trim();
+  }).join(', ');
+
+  const typeBadgeCls = o.type === 'Commit' ? 'popup-badge-commit' : 'popup-badge-dropin';
+
+  document.getElementById('popupTitle').textContent = o.name;
+  document.getElementById('popupBody').innerHTML = `
+    <div class="popup-meta">
+      <span class="popup-badge ${typeBadgeCls}">${esc(o.type)}</span>
+      ${o.level ? `<span class="popup-badge popup-badge-group">${esc(o.level)}</span>` : ''}
+      ${full ? `<span class="popup-badge" style="background:#ffebee;color:#c62828">FULL</span>` : ''}
+    </div>
+    <div class="popup-detail"><span>👤</span><div><strong>Instructor:</strong> ${esc(o.instructor)}</div></div>
+    ${o.location ? `<div class="popup-detail"><span>📍</span><div><strong>Location:</strong> ${esc(o.location)}</div></div>` : ''}
+    <div class="popup-detail"><span>📅</span><div><strong>Days:</strong> ${esc(days || 'TBA')}</div></div>
+    <div class="popup-detail"><span>🕐</span><div><strong>Time:</strong> ${esc(times || 'TBA')}</div></div>
+    <div class="popup-detail"><span>🪑</span><div>
+      <strong>Enrollment:</strong> ${enrolled} / ${capacity===999?'unlimited':capacity}
+      ${full ? ' <span style="color:#f44336;font-weight:700">(Full)</span>' : `<span style="color:#4CAF50"> (${capacity===999?'open':capacity-enrolled+' spot'+(capacity-enrolled===1?'':'s')+' left'})</span>`}
+    </div></div>
+    ${o.description
+      ? `<div class="popup-desc">${esc(o.description)}</div>`
+      : `<div class="popup-nodesc">No description available for this offering.</div>`}`;
+
+  document.getElementById('popupOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePopup(e) {
+  // Only close if clicking the overlay backdrop itself, not the box
+  if (e.target === document.getElementById('popupOverlay')) closePopupDirect();
+}
+function closePopupDirect() {
+  document.getElementById('popupOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopupDirect(); });
+
+// ── TAB 1 — Learner Schedules ─────────────────────────────────
+function populateLearnerDropdown() {
+  const sel = document.getElementById('learnerSelect');
+  sel.innerHTML = '<option value="">— Choose a learner —</option>';
+  [...studentNames]
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.name;
+      opt.textContent = s.grade ? `${s.name} — ${s.grade}` : s.name;
+      sel.appendChild(opt);
+    });
+}
+
+async function loadLearnerSchedule() {
+  const name = document.getElementById('learnerSelect').value;
+  if (!name) { showMsg('Please select a learner first', 'error'); return; }
+
+  currentLearnerName = name;
+  currentLearnerOfferings = [];
+  document.getElementById('printBtn').style.display = 'none';
+  document.getElementById('learnerScheduleContainer').innerHTML =
+    '<div class="loading"><div class="spinner"></div><p>Loading…</p></div>';
+
+  try {
+    const d = await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json());
+    if (!d.success) throw new Error(d.message || 'Failed to load');
+
+    currentLearnerOfferings = d.offerings || [];
+
+    if (!currentLearnerOfferings.length) {
+      document.getElementById('learnerScheduleContainer').innerHTML =
+        `<div style="text-align:center;padding:50px 20px;color:#bbb">
+          <div style="font-size:40px;margin-bottom:10px">📭</div>
+          <p style="font-size:15px;margin:0">No approved schedule found for <strong>${esc(name)}</strong></p>
+          <p style="font-size:13px;color:#aaa;margin-top:8px">Ask your facilitator if your schedule has been approved</p>
+        </div>`;
+      showMsg(`No approved schedule found for ${name}`, 'info');
+      return;
+    }
+
+    renderLearnerSchedule();
+    document.getElementById('printBtn').style.display = 'inline-block';
+    showMsg(`✅ Loaded ${currentLearnerOfferings.length} offering(s) for ${name}`, 'success');
+  } catch(e) {
+    document.getElementById('learnerScheduleContainer').innerHTML =
+      `<p style="text-align:center;color:#f44336;padding:30px">Error: ${esc(e.message)}</p>`;
+    showMsg('Error loading schedule: ' + e.message, 'error');
+  }
+}
+
+function renderLearnerSchedule() {
+  const offs = currentLearnerOfferings;
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #e3f2fd">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#1565c0">${esc(currentLearnerName)}'s Schedule</div>
+        <div style="font-size:12px;color:#888;margin-top:2px">
+          ${offs.length} approved offering(s) · ${esc(sessionConfig.fullSessionName || '')}
+        </div>
+      </div>
+    </div>
+    <table class="ls-grid">
+      <thead><tr>
+        <th style="width:100px">Time</th>
+        <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
+      </tr></thead><tbody>`;
+
+  TIMES.forEach(block => {
+    if (block.lunch) {
+      html += `<tr>
+        <td class="ls-time">${block.name}<br><span style="font-weight:normal;font-size:10px">${block.display}</span></td>
+        <td colspan="5" class="ls-lunch">Lunch Break · ${block.display}</td>
+      </tr>`;
+      return;
+    }
+    html += `<tr><td class="ls-time">${block.name}<br>
+      <span style="font-weight:normal;font-size:10px">${block.display}</span></td>`;
+
+    DAYS.forEach(day => {
+      const matches = offs.filter(o => {
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+        return days.includes(day) && times.includes(block.time);
+      });
+      if (!matches.length) {
+        html += `<td class="ls-cell"><div class="ls-empty">—</div></td>`;
+      } else {
+        html += `<td class="ls-cell">`;
+        matches.forEach(o => {
+          const enrolled = enrollCounts[o.id] || 0;
+          const capacity = Number(o.capacity) || 999;
+          const typeCls  = o.type === 'Commit' ? 'type-Commit' : 'type-Drop-in';
+          html += `<div class="ls-card">
+            <div class="ls-card-name">
+              ${esc(o.name)}
+              <span class="ls-card-badge ${typeCls}">${esc(o.type)}</span>
+            </div>
+            <div class="ls-card-detail">👤 ${esc(o.instructor)}</div>
+            ${o.location ? `<div class="ls-card-detail">📍 ${esc(o.location)}</div>` : ''}
+            ${o.level    ? `<div class="ls-card-detail">👥 ${esc(o.level)}</div>` : ''}
+            <div class="ls-card-detail">🪑 ${enrolled}/${capacity===999?'∞':capacity} enrolled</div>
+            ${o.description ? `<div class="ls-card-detail" style="margin-top:5px;padding-top:5px;
+              border-top:1px solid #c5d9f0;color:#444;line-height:1.4">${esc(o.description)}</div>` : ''}
+          </div>`;
+        });
+        html += `</td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById('learnerScheduleContainer').innerHTML = html;
+}
+
+function printLearnerSchedule() {
+  if (!currentLearnerOfferings.length) return;
+  const name    = currentLearnerName;
+  const offs    = currentLearnerOfferings;
+  const dateStr = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const timeW   = 13;
+  const dayW    = ((100 - timeW) / 5).toFixed(1);
+
+  let html = `
+    <div class="ps-title">${esc(name)}'s Schedule</div>
+    <div class="ps-meta">${esc(sessionConfig.fullSessionName||'')} · ${dateStr}</div>
+    <table>
+      <colgroup>
+        <col style="width:${timeW}%">
+        ${DAYS.map(()=>`<col style="width:${dayW}%">`).join('')}
+      </colgroup>
+      <thead><tr>
+        <th>Time</th>
+        ${DAYS.map(d=>`<th>${d.charAt(0).toUpperCase()+d.slice(1)}</th>`).join('')}
+      </tr></thead><tbody>`;
+
+  TIMES.forEach(block => {
+    if (block.lunch) {
+      html += `<tr>
+        <td class="ps-time">Lunch<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>
+        <td colspan="5" class="ps-lunch">Lunch Break · ${block.display}</td>
+      </tr>`;
+      return;
+    }
+    html += `<tr><td class="ps-time">${block.name}<br>
+      <span style="font-weight:normal;font-size:7pt">${block.display}</span></td>`;
+    DAYS.forEach(day => {
+      const matches = offs.filter(o => {
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+        return days.includes(day) && times.includes(block.time);
+      });
+      if (!matches.length) {
+        html += `<td class="ps-cell ps-empty">—</td>`;
+      } else {
+        html += `<td class="ps-cell">`;
+        matches.forEach(o => {
+          const parts = [o.instructor, o.location].filter(Boolean);
+          html += `<span class="ps-name">${esc(o.name)}</span>`;
+          if (parts.length) html += `<span class="ps-info">${esc(parts.join(' · '))}</span>`;
+        });
+        html += `</td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
   document.getElementById('printSheet').innerHTML = html;
   window.print();
 }
 
-function esc(s) {
-  return String(s || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,idx) => t.classList.toggle('active', idx===i));
+  document.querySelectorAll('.tab-content').forEach((t,idx) => t.classList.toggle('active', idx===i));
 }
 
 window.onload = init;
