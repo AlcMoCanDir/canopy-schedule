@@ -230,11 +230,9 @@ tr:hover td{background:#f0f7ff}
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab(0)">👥 Learners</button>
-    <button class="tab" onclick="switchTab(1)">📚 Offerings</button>
-    <button class="tab" onclick="switchTab(2)">⏳ Pending Requests</button>
-    <button class="tab" onclick="switchTab(3)">📝 Offering Proposals</button>
-    <button class="tab" onclick="switchTab(4)">🗓️ Schedule Builder</button>
-    <button class="tab" onclick="switchTab(5)">⚙️ Settings</button>
+    <button class="tab" onclick="switchTab(1)">📚 Offering Schedule Builder</button>
+    <button class="tab" onclick="switchTab(2)">🗓️ Learner Schedule Builder</button>
+    <button class="tab" onclick="switchTab(3)">⚙️ Settings</button>
   </div>
 
   <!-- ══ TAB 0 — LEARNERS ══════════════════════════════════ -->
@@ -242,7 +240,7 @@ tr:hover td{background:#f0f7ff}
     <div class="stats">
       <div class="stat-card stat-blue"><h3 id="st-total">—</h3><p>Total Learners</p></div>
       <div class="stat-card stat-green"><h3 id="st-scheduled">—</h3><p>Have a Schedule</p></div>
-      <div class="stat-card stat-orange"><h3 id="st-pending">—</h3><p>Pending Approval</p></div>
+      <div class="stat-card stat-orange"><h3 id="st-pending">—</h3><p>Total Enrolled</p></div>
       <div class="stat-card stat-teal"><h3 id="st-offerings">—</h3><p>Active Offerings</p></div>
     </div>
     <div class="toolbar">
@@ -297,32 +295,7 @@ tr:hover td{background:#f0f7ff}
     </div>
   </div>
 
-  <!-- ══ TAB 2 — PENDING REQUESTS ══════════════════════════ -->
-  <div class="tab-content" id="tab-pending">
-    <div class="toolbar">
-      <button class="btn btn-blue" onclick="loadPending()">🔄 Refresh</button>
-      <button class="btn btn-primary" id="approveAllBtn" onclick="approveAllPending()" style="display:none">
-        ✅ Approve All
-      </button>
-      <span id="pendingCount" style="font-size:13px;color:#666"></span>
-    </div>
-    <div id="pendingContainer">
-      <div class="loading"><div class="spinner"></div><p>Loading pending requests…</p></div>
-    </div>
-  </div>
-
-  <!-- ══ TAB 3 — OFFERING PROPOSALS ════════════════════════ -->
-  <div class="tab-content" id="tab-proposals">
-    <div class="toolbar">
-      <button class="btn btn-blue" onclick="loadProposals()">🔄 Refresh</button>
-      <span id="proposalCount" style="font-size:13px;color:#666"></span>
-    </div>
-    <div id="proposalsContainer">
-      <div class="loading"><div class="spinner"></div><p>Loading proposals…</p></div>
-    </div>
-  </div>
-
-  <!-- ══ TAB 4 — SCHEDULE BUILDER ══════════════════════════ -->
+  <!-- ══ TAB 2 — LEARNER SCHEDULE BUILDER ═════════════════ -->
   <div class="tab-content" id="tab-builder">
     <div class="toolbar" style="flex-wrap:wrap;gap:12px">
       <div style="display:flex;gap:8px;align-items:center;flex:1;min-width:280px">
@@ -356,7 +329,7 @@ tr:hover td{background:#f0f7ff}
     </table>
   </div>
 
-  <!-- ══ TAB 5 — SETTINGS ══════════════════════════════════ -->
+  <!-- ══ TAB 3 — SETTINGS ══════════════════════════════════ -->
   <div class="tab-content" id="tab-settings">
     <div style="max-width:580px;margin:0 auto;padding:10px 0">
 
@@ -570,8 +543,6 @@ const state = {
   learners:     [],
   offerings:    [],
   enrollCounts: {},
-  pending:      [],
-  proposals:    [],
   offeringView: 'table',
   addLearnerOfferingId: null,
   _addLearnerAllOptions: []
@@ -614,11 +585,11 @@ function setStat(id, val) {
 function switchTab(i) {
   document.querySelectorAll('.tab').forEach((t,idx) => t.classList.toggle('active', idx===i));
   document.querySelectorAll('.tab-content').forEach((t,idx) => t.classList.toggle('active', idx===i));
-  if (i === 4) {
+  if (i === 2) {
     populateBuilderDropdown();
     if (state.offerings.length) drawBuilder();
   }
-  if (i === 5) {
+  if (i === 3) {
     loadSettings();
   }
 }
@@ -699,15 +670,13 @@ async function init() {
     loadMsg.textContent = 'Loading session, offerings & learners…';
 
     // Fire all requests simultaneously
-    const [sessionRes, offeringsRes, countsRes, studentsRes, learnersRes, pendingRes, proposalsRes] =
+    const [sessionRes, offeringsRes, countsRes, studentsRes, learnersRes] =
       await Promise.all([
         get('getSessionConfig').catch(() => ({ success:false })),
         get('loadOfferings').catch(() => ({ offerings:[] })),
         get('getEnrollmentCounts').catch(() => ({ counts:{} })),
         get('getAllStudents').catch(() => ({ success:false, students:[] })),
-        get('loadAll').catch(() => ({ success:false, students:[] })),
-        get('getPendingRequests').catch(() => ({ requests:[] })),
-        get('getOfferingProposals').catch(() => ({ proposals:[] }))
+        get('loadAll').catch(() => ({ success:false, students:[] }))
       ]);
 
     // ── Session ───────────────────────────────────────────
@@ -737,19 +706,13 @@ async function init() {
       }));
     }
 
-    // ── Pending / Proposals ───────────────────────────────
-    state.pending   = pendingRes.requests  || [];
-    state.proposals = proposalsRes.proposals || [];
-
     // ── Render all tabs ───────────────────────────────────
     updateStats();
     renderLearners();
     renderOfferings();
-    renderPending();
-    renderProposals();
 
     overlay.classList.add('hidden');
-    showStatus(`Loaded: ${state.students.length} learners · ${state.offerings.length} offerings · ${state.pending.length} pending`, 'success');
+    showStatus(`Loaded: ${state.students.length} learners · ${state.offerings.length} offerings`, 'success');
 
   } catch(e) {
     loadMsg.textContent = '❌ Error loading: ' + e.message;
@@ -766,10 +729,6 @@ async function refreshAll() {
 }
 
 function updateStats() {
-  const pendingNames = new Set(state.pending.map(p => (p.studentName||'').toLowerCase()));
-
-  // "Have a Schedule" = learners who appear in at least one offering's enrollCount.
-  // Build a set of names that have at least one approved offering using enrollCounts.
   const enrolledNames = new Set();
   state.learners.forEach(l => {
     try {
@@ -779,11 +738,12 @@ function updateStats() {
     } catch {}
   });
 
-  // Total enrolled in each offering comes from enrollCounts (already deduplicated).
-  // Sum unique learners across all offerings for the "Have a Schedule" stat.
+  // Total enrolled = sum of all enrollment counts (one learner can be in many offerings)
+  const totalEnrolled = Object.values(state.enrollCounts).reduce((sum, n) => sum + n, 0);
+
   setStat('st-total',     state.students.length);
   setStat('st-scheduled', enrolledNames.size);
-  setStat('st-pending',   pendingNames.size);
+  setStat('st-pending',   totalEnrolled);
   setStat('st-offerings', state.offerings.length);
 }
 
@@ -792,17 +752,13 @@ function updateStats() {
 // ─────────────────────────────────────────────────────────────
 function renderLearners() {
   const q = (document.getElementById('learnerSearch').value || '').toLowerCase().trim();
-  const pendingNames = new Set(state.pending.map(p => (p.studentName||'').toLowerCase()));
 
-  // Build per-learner class count using enrollCounts (deduplicated server-side)
-  // Cross-reference: for each learner find how many offerings list them as enrolled.
   const countByName = {};
   state.learners.forEach(l => {
     const name = (l.name||'').toLowerCase();
     try {
       const classes = typeof l.classes === 'string'
         ? JSON.parse(l.classes || '[]') : (l.classes || []);
-      // Only count offering IDs that still exist in state.offerings
       const validCount = classes.filter(id =>
         state.offerings.some(o => String(o.id) === String(id) || Number(o.id) === Number(id))
       ).length;
@@ -832,13 +788,10 @@ function renderLearners() {
 
   rows.forEach(s => {
     const classCount = countByName[(s.name||'').toLowerCase()] || 0;
-    const hasPending = pendingNames.has((s.name||'').toLowerCase());
 
-    const badge = hasPending
-      ? '<span class="badge badge-pending">⏳ Pending</span>'
-      : classCount > 0
-        ? `<span class="badge badge-approved">✅ ${classCount} scheduled</span>`
-        : '<span style="color:#bbb;font-size:12px">No schedule yet</span>';
+    const badge = classCount > 0
+      ? `<span class="badge badge-approved">✅ ${classCount} scheduled</span>`
+      : '<span style="color:#bbb;font-size:12px">No schedule yet</span>';
 
     html += `<tr>
       <td><strong>${esc(s.name)}</strong></td>
@@ -860,16 +813,13 @@ function renderLearners() {
 async function loadLearners() {
   setLoad('learnersContainer', 'Loading learners…');
   try {
-    const [stuRes, allRes, pendingRes] = await Promise.all([
+    const [stuRes, allRes] = await Promise.all([
       get('getAllStudents'),
-      get('loadAll'),
-      get('getPendingRequests')
+      get('loadAll')
     ]);
     state.students = stuRes.students  || [];
     state.learners = allRes.students  || [];
-    state.pending  = pendingRes.requests || [];
 
-    // Fallback merge
     if (!state.students.length && state.learners.length) {
       state.students = state.learners.map(l => ({ id:l.id||'', name:l.name||'', grade:l.grade||'' }));
     }
