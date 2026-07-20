@@ -234,6 +234,7 @@ tr:hover td{background:#f0f7ff}
     <button class="tab" onclick="switchTab(2)">⏳ Pending Requests</button>
     <button class="tab" onclick="switchTab(3)">📝 Offering Proposals</button>
     <button class="tab" onclick="switchTab(4)">🗓️ Schedule Builder</button>
+    <button class="tab" onclick="switchTab(5)">⚙️ Settings</button>
   </div>
 
   <!-- ══ TAB 0 — LEARNERS ══════════════════════════════════ -->
@@ -354,6 +355,59 @@ tr:hover td{background:#f0f7ff}
       <tbody id="builderBody"></tbody>
     </table>
   </div>
+
+  <!-- ══ TAB 5 — SETTINGS ══════════════════════════════════ -->
+  <div class="tab-content" id="tab-settings">
+    <div style="max-width:580px;margin:0 auto;padding:10px 0">
+
+      <h2 style="color:#2196F3;margin:0 0 4px;font-size:18px">⚙️ Site Settings</h2>
+      <p style="color:#888;font-size:13px;margin:0 0 24px">
+        Changes take effect immediately on schedule.html — no redeployment needed.
+      </p>
+
+      <div style="background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:20px">
+        <h3 style="margin:0 0 16px;font-size:15px;color:#333">Page Header</h3>
+
+        <div class="fg">
+          <label>Site Title <small style="font-weight:normal;color:#888">(large heading on schedule.html)</small></label>
+          <input type="text" id="cfgSiteTitle" placeholder="e.g. ALC Mosaic">
+        </div>
+        <div class="fg">
+          <label>Subtitle <small style="font-weight:normal;color:#888">(smaller text below the title)</small></label>
+          <input type="text" id="cfgSiteSubtitle" placeholder="e.g. Agile Learning Center — Session 1">
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa;border-radius:8px;padding:20px;margin-bottom:24px">
+        <h3 style="margin:0 0 16px;font-size:15px;color:#333">Session Info</h3>
+
+        <div class="fg">
+          <label>Session Name <small style="font-weight:normal;color:#888">(e.g. Session 1)</small></label>
+          <input type="text" id="cfgSessionName" placeholder="e.g. Session 1">
+        </div>
+        <div class="fg">
+          <label>Session Dates <small style="font-weight:normal;color:#888">(e.g. Aug–Dec 2026)</small></label>
+          <input type="text" id="cfgSessionDates" placeholder="e.g. Aug–Dec 2026">
+        </div>
+        <p style="font-size:12px;color:#888;margin:8px 0 0">
+          Session Name + Dates combine into the full session name shown in the admin dashboard header.
+        </p>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="saveSettings()" style="flex:1;padding:12px">
+          💾 Save Settings
+        </button>
+        <button class="btn btn-grey" onclick="loadSettings()" style="padding:12px">
+          🔄 Reload
+        </button>
+      </div>
+
+      <div id="settingsMsg" style="display:none;margin-top:14px;padding:10px 14px;
+        border-radius:6px;font-size:13px;font-weight:600"></div>
+    </div>
+  </div>
+
 </div>
 
 
@@ -564,6 +618,61 @@ function switchTab(i) {
     populateBuilderDropdown();
     if (state.offerings.length) drawBuilder();
   }
+  if (i === 5) {
+    loadSettings();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// ══ TAB 5 — SETTINGS
+// ─────────────────────────────────────────────────────────────
+function loadSettings() {
+  // Populate from state.session which was loaded on init
+  const s = state.session;
+  document.getElementById('cfgSiteTitle').value    = s.siteTitle    || '';
+  document.getElementById('cfgSiteSubtitle').value = s.siteSubtitle || '';
+  document.getElementById('cfgSessionName').value  = s.sessionName  || '';
+  document.getElementById('cfgSessionDates').value = s.sessionDates || '';
+}
+
+async function saveSettings() {
+  const siteTitle    = document.getElementById('cfgSiteTitle').value.trim();
+  const siteSubtitle = document.getElementById('cfgSiteSubtitle').value.trim();
+  const sessionName  = document.getElementById('cfgSessionName').value.trim();
+  const sessionDates = document.getElementById('cfgSessionDates').value.trim();
+
+  if (!siteTitle)   { settingsMsg('⚠️ Site title cannot be empty', 'error'); return; }
+  if (!sessionName) { settingsMsg('⚠️ Session name cannot be empty', 'error'); return; }
+
+  try {
+    const d = await post({
+      action: 'saveConfig',
+      keys: { siteTitle, siteSubtitle, sessionName, sessionDates }
+    });
+
+    if (d.success) {
+      // Update local state so the admin header and builder reflect changes immediately
+      const newFull = sessionDates ? sessionName + ': ' + sessionDates : sessionName;
+      state.session = { ...state.session, siteTitle, siteSubtitle, sessionName, sessionDates, fullSessionName: newFull };
+      document.getElementById('sessionLabel').textContent = newFull;
+      document.getElementById('fSession').value = newFull;
+      settingsMsg('✅ Settings saved — schedule.html will reflect changes immediately', 'success');
+    } else {
+      settingsMsg('❌ ' + d.message, 'error');
+    }
+  } catch(e) {
+    settingsMsg('❌ Error: ' + e.message, 'error');
+  }
+}
+
+function settingsMsg(text, type) {
+  const el = document.getElementById('settingsMsg');
+  el.textContent = text;
+  el.style.display = 'block';
+  el.style.background = type === 'error' ? '#f8d7da' : '#d4edda';
+  el.style.color      = type === 'error' ? '#721c24' : '#155724';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 6000);
 }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 window.addEventListener('click', e => {
@@ -609,7 +718,6 @@ async function init() {
       document.getElementById('fSession').value =
         sessionRes.fullSessionName || '';
     }
-
     // ── Offerings ─────────────────────────────────────────
     state.offerings    = offeringsRes.offerings || [];
     state.enrollCounts = countsRes.counts       || {};
