@@ -29,7 +29,7 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
 .filter-btn:hover{background:#e8f5e9;border-color:#4CAF50}
 .filter-btn.active{background:#4CAF50;color:white;border-color:#4CAF50}
 
-/* ── Weekly grid ─────────────────────────────────────────── */
+/* ── Weekly grid (desktop) ───────────────────────────────── */
 .schedule-table{width:100%;border-collapse:collapse;margin-top:4px}
 .schedule-table th,.schedule-table td{border:1px solid #ddd;padding:6px;font-size:12px;vertical-align:top}
 .schedule-table th{background:#4CAF50;color:white;font-weight:bold;text-align:center;position:sticky;top:0;z-index:10}
@@ -49,6 +49,25 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
 .type-Drop-in{background:#c8e6c9;color:#2e7d32}
 .view-card.faded{opacity:.3;pointer-events:none}
 
+/* ── Mobile day-by-day view ──────────────────────────────── */
+.day-view{display:none}
+.day-tabs{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:4px;margin-bottom:10px}
+.day-tab-btn{flex:1 0 auto;min-width:64px;padding:10px 4px;border:1px solid #ddd;
+  background:white;border-radius:6px;font-size:12px;font-weight:700;color:#555;cursor:pointer}
+.day-tab-btn.active{background:#4CAF50;color:white;border-color:#4CAF50}
+.day-block{margin-bottom:14px}
+.day-block-head{font-size:12px;font-weight:700;color:#4CAF50;text-transform:uppercase;
+  letter-spacing:.3px;padding:6px 2px;border-bottom:2px solid #e8f5e9;margin-bottom:6px;
+  display:flex;justify-content:space-between}
+.day-block-head span:last-child{color:#999;font-weight:600;text-transform:none}
+.day-block-empty{font-size:12px;color:#bbb;font-style:italic;padding:6px 2px}
+.day-lunch-strip{background:#fff9e6;color:#aaa;font-style:italic;font-size:12px;
+  text-align:center;padding:8px;border-radius:4px;margin-bottom:14px}
+.view-card.mobile{font-size:13px;padding:10px}
+.view-card.mobile .view-card-name{font-size:14px}
+.view-card.mobile .view-card-info{font-size:11.5px}
+
 /* ── Description popup (modal) ───────────────────────────── */
 .popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
   align-items:center;justify-content:center;padding:20px}
@@ -56,10 +75,11 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
 .popup-box{background:white;border-radius:10px;width:100%;max-width:500px;
   max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.25);padding:0}
 .popup-head{padding:16px 20px;background:#4CAF50;color:white;border-radius:10px 10px 0 0;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  position:sticky;top:0}
 .popup-head h2{margin:0;font-size:16px;line-height:1.3}
-.popup-close{background:none;border:none;color:white;font-size:22px;cursor:pointer;
-  line-height:1;padding:0;flex-shrink:0}
+.popup-close{background:none;border:none;color:white;font-size:26px;cursor:pointer;
+  line-height:1;padding:4px 6px;flex-shrink:0}
 .popup-body{padding:18px 20px}
 .popup-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .popup-badge{display:inline-block;padding:3px 9px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase}
@@ -147,11 +167,24 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 #printSheet .sess-full{color:#c62828;font-size:5.5pt;font-weight:700}
 
+/* ── Mobile breakpoint ───────────────────────────────────── */
 @media(max-width:768px){
-  .schedule-table{font-size:10px}
-  .filter-bar{flex-direction:column;align-items:stretch}
+  body{padding:8px}
+  .container{padding:14px 10px;border-radius:6px}
+  h1{font-size:20px}
+  .tabs{margin:14px 0}
+  .tab{flex:1;padding:10px 6px;font-size:13px;text-align:center}
+  .filter-bar{flex-direction:column;align-items:stretch;padding:10px}
+  .filter-bar input[type=text]{min-width:0}
+  .filter-group{justify-content:space-between}
+  .filter-group .filter-btn{flex:1;text-align:center}
+  .filter-bar button.btn-blue{margin-left:0!important;width:100%}
   .learner-controls{flex-direction:column;align-items:stretch}
   .learner-controls select,.learner-controls button{width:100%}
+
+  /* hide the wide 5-day table, show the swipeable day view instead */
+  .schedule-table, .ls-grid{display:none}
+  .day-view{display:block}
 }
 </style>
 </head>
@@ -194,8 +227,14 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
   </div>
 
   <p style="font-size:12px;color:#888;margin:0 0 10px;text-align:center">
-    Click any offering to see full details and description
+    Tap any offering to see full details and description
   </p>
+
+  <!-- Mobile day-by-day view -->
+  <div class="day-view" id="gridDayView">
+    <div class="day-tabs" id="gridDayTabs"></div>
+    <div id="gridDayContent"></div>
+  </div>
 
   <div id="gridContainer">
     <div class="loading"><div class="spinner"></div><p>Loading schedule…</p></div>
@@ -215,6 +254,13 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
     </button>
   </div>
   <div class="msg" id="learnerMsg"></div>
+
+  <!-- Mobile day-by-day view -->
+  <div class="day-view" id="learnerDayView">
+    <div class="day-tabs" id="learnerDayTabs"></div>
+    <div id="learnerDayContent"></div>
+  </div>
+
   <div id="learnerScheduleContainer">
     <div style="text-align:center;padding:50px 20px;color:#bbb">
       <div style="font-size:48px;margin-bottom:12px">👤</div>
@@ -251,6 +297,7 @@ const TIMES = [
   { name:'Block 5', time:'1:55-2:45',   display:'1:55–2:45 pm' }
 ];
 const DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+const DAY_LABELS = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri' };
 const BLOCK_MAP = {
   'block 1':'10:00-10:45','block 2':'10:50-11:35','block 3':'12:10-12:55',
   'block 4':'1:00-1:50','block 5':'1:55-2:45','lunch':'11:35-12:05'
@@ -263,6 +310,15 @@ let sessionConfig = {};
 let gridFilters  = { group:'all', type:'all', search:'' };
 let currentLearnerOfferings = [];
 let currentLearnerName = '';
+
+// Which day is selected in each mobile day-view (defaults to today if Mon–Fri, else Monday)
+function defaultDay() {
+  const jsDay = new Date().getDay(); // 0=Sun..6=Sat
+  const idx = jsDay - 1;
+  return (idx >= 0 && idx <= 4) ? DAYS[idx] : DAYS[0];
+}
+let gridSelectedDay    = defaultDay();
+let learnerSelectedDay = defaultDay();
 
 function normTime(t) {
   if (!t) return '';
@@ -304,11 +360,28 @@ async function init() {
     document.title = siteTitle;
 
     populateLearnerDropdown();
+    renderDayTabs('gridDayTabs', gridSelectedDay, d => { gridSelectedDay = d; drawGrid(); });
     drawGrid();
   } catch(e) {
     document.getElementById('gridContainer').innerHTML =
       `<p style="text-align:center;color:#f44336;padding:40px">Error loading: ${esc(e.message)}</p>`;
   }
+}
+
+// ── Shared: day-tab strip (mobile) ────────────────────────────
+function renderDayTabs(containerId, selected, onSelect) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = DAYS.map(d => `
+    <button type="button" class="day-tab-btn${d===selected?' active':''}" data-day="${d}">
+      ${DAY_LABELS[d]}
+    </button>`).join('');
+  el.querySelectorAll('.day-tab-btn').forEach(btn => {
+    btn.onclick = () => {
+      el.querySelectorAll('.day-tab-btn').forEach(b => b.classList.toggle('active', b===btn));
+      onSelect(btn.dataset.day);
+    };
+  });
 }
 
 // ── Grid filters ──────────────────────────────────────────────
@@ -333,12 +406,41 @@ function offeringMatchesGridFilter(o) {
   return true;
 }
 
-// ── TAB 0 — Weekly grid ───────────────────────────────────────
+function offeringsForBlock(list, day, blockTime) {
+  return list.filter(o => {
+    const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+    const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+    return days.includes(day) && times.includes(blockTime);
+  });
+}
+
+function offeringCardHtml(o, mobile) {
+  const enrolled  = enrollCounts[o.id] || 0;
+  const capacity  = Number(o.capacity) || 999;
+  const full      = enrolled >= capacity;
+  const fullLabel = full ? ' <span style="color:#f44336;font-size:9px;font-weight:700">FULL</span>' : '';
+  return `<div class="view-card${mobile?' mobile':''}" onclick="showPopup(${o.id})">
+    <div class="view-card-name">
+      ${esc(o.name)}
+      <span class="type-badge type-${esc(o.type)}">${esc(o.type)}</span>
+      ${fullLabel}
+    </div>
+    <div class="view-card-info">
+      👤 ${esc(o.instructor)}
+      ${o.location ? ' · 📍 ' + esc(o.location) : ''}
+      · ${enrolled}/${capacity===999?'∞':capacity}
+    </div>
+    <div class="view-card-hint">Tap for details</div>
+  </div>`;
+}
+
+// ── TAB 0 — Weekly grid (desktop table + mobile day view) ─────
 function drawGrid() {
   gridFilters.search = (document.getElementById('gridSearch').value || '').toLowerCase();
   const activeIds = new Set(offerings.filter(offeringMatchesGridFilter).map(o => o.id));
   const anyFilter = gridFilters.group !== 'all' || gridFilters.type !== 'all' || gridFilters.search;
 
+  // ── Desktop table ──
   let html = `<table class="schedule-table">
     <thead><tr>
       <th style="width:100px">Time</th>
@@ -359,36 +461,15 @@ function drawGrid() {
     html += `<tr><td class="time-col">${block.name}<br>${block.display}</td>`;
 
     DAYS.forEach(day => {
-      const matching = offerings.filter(o => {
-        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
-        return days.includes(day) && times.includes(block.time);
-      });
+      const matching = offeringsForBlock(offerings, day, block.time);
 
       if (!matching.length) {
         html += `<td style="background:#fafafa"></td>`;
       } else {
         html += `<td>`;
         matching.forEach(o => {
-          const enrolled  = enrollCounts[o.id] || 0;
-          const capacity  = Number(o.capacity) || 999;
-          const full      = enrolled >= capacity;
-          const faded     = anyFilter && !activeIds.has(o.id);
-          const fullLabel = full ? ' <span style="color:#f44336;font-size:9px;font-weight:700">FULL</span>' : '';
-
-          html += `<div class="view-card${faded?' faded':''}" onclick="showPopup(${o.id})">
-            <div class="view-card-name">
-              ${esc(o.name)}
-              <span class="type-badge type-${esc(o.type)}">${esc(o.type)}</span>
-              ${fullLabel}
-            </div>
-            <div class="view-card-info">
-              👤 ${esc(o.instructor)}
-              ${o.location ? ' · 📍 ' + esc(o.location) : ''}
-              · ${enrolled}/${capacity===999?'∞':capacity}
-            </div>
-            <div class="view-card-hint">Click for details</div>
-          </div>`;
+          const faded = anyFilter && !activeIds.has(o.id);
+          html += offeringCardHtml(o, false).replace('class="view-card"', `class="view-card${faded?' faded':''}"`);
         });
         html += `</td>`;
       }
@@ -399,6 +480,35 @@ function drawGrid() {
 
   html += `</tbody></table>`;
   document.getElementById('gridContainer').innerHTML = html;
+
+  // ── Mobile day view ──
+  renderDayContent('gridDayContent', offerings, gridSelectedDay, activeIds, anyFilter);
+}
+
+function renderDayContent(containerId, list, day, activeIds, anyFilter) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let html = '';
+  TIMES.forEach(block => {
+    if (block.lunch) {
+      html += `<div class="day-lunch-strip">🍽 Lunch Break · ${block.display}</div>`;
+      return;
+    }
+    const matching = offeringsForBlock(list, day, block.time);
+    html += `<div class="day-block">
+      <div class="day-block-head"><span>${block.name}</span><span>${block.display}</span></div>`;
+    if (!matching.length) {
+      html += `<div class="day-block-empty">Nothing scheduled</div>`;
+    } else {
+      matching.forEach(o => {
+        const faded = activeIds && anyFilter && !activeIds.has(o.id);
+        const card = offeringCardHtml(o, true);
+        html += faded ? card.replace('class="view-card mobile"', 'class="view-card mobile faded"') : card;
+      });
+    }
+    html += `</div>`;
+  });
+  el.innerHTML = html;
 }
 
 // ── Offering popup ────────────────────────────────────────────
@@ -474,6 +584,7 @@ async function loadLearnerSchedule() {
   document.getElementById('printBtn').style.display = 'none';
   document.getElementById('learnerScheduleContainer').innerHTML =
     '<div class="loading"><div class="spinner"></div><p>Loading…</p></div>';
+  document.getElementById('learnerDayContent').innerHTML = '';
 
   try {
     const d = await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json());
@@ -488,11 +599,15 @@ async function loadLearnerSchedule() {
           <p style="font-size:15px;margin:0">No approved schedule found for <strong>${esc(name)}</strong></p>
           <p style="font-size:13px;color:#aaa;margin-top:8px">Ask your facilitator if your schedule has been approved</p>
         </div>`;
+      document.getElementById('learnerDayView').style.display = 'none';
       showMsg(`No approved schedule found for ${name}`, 'info');
       return;
     }
 
+    document.getElementById('learnerDayView').style.display = '';
     renderLearnerSchedule();
+    renderDayTabs('learnerDayTabs', learnerSelectedDay, d => { learnerSelectedDay = d; renderLearnerDayContent(); });
+    renderLearnerDayContent();
     document.getElementById('printBtn').style.display = 'inline-block';
     showMsg(`✅ Loaded ${currentLearnerOfferings.length} offering(s) for ${name}`, 'success');
   } catch(e) {
@@ -502,11 +617,49 @@ async function loadLearnerSchedule() {
   }
 }
 
+function renderLearnerDayContent() {
+  const el = document.getElementById('learnerDayContent');
+  if (!el) return;
+  let html = '';
+  TIMES.forEach(block => {
+    if (block.lunch) {
+      html += `<div class="day-lunch-strip">🍽 Lunch Break · ${block.display}</div>`;
+      return;
+    }
+    const matches = offeringsForBlock(currentLearnerOfferings, learnerSelectedDay, block.time);
+    html += `<div class="day-block">
+      <div class="day-block-head"><span>${block.name}</span><span>${block.display}</span></div>`;
+    if (!matches.length) {
+      html += `<div class="day-block-empty">Free block</div>`;
+    } else {
+      matches.forEach(o => {
+        const enrolled = enrollCounts[o.id] || 0;
+        const capacity = Number(o.capacity) || 999;
+        const typeCls  = o.type === 'Commit' ? 'type-Commit' : 'type-Drop-in';
+        html += `<div class="ls-card">
+          <div class="ls-card-name">
+            ${esc(o.name)}
+            <span class="ls-card-badge ${typeCls}">${esc(o.type)}</span>
+          </div>
+          <div class="ls-card-detail">👤 ${esc(o.instructor)}</div>
+          ${o.location ? `<div class="ls-card-detail">📍 ${esc(o.location)}</div>` : ''}
+          ${o.level    ? `<div class="ls-card-detail">👥 ${esc(o.level)}</div>` : ''}
+          <div class="ls-card-detail">🪑 ${enrolled}/${capacity===999?'∞':capacity} enrolled</div>
+          ${o.description ? `<div class="ls-card-detail" style="margin-top:5px;padding-top:5px;
+            border-top:1px solid #c5d9f0;color:#444;line-height:1.4">${esc(o.description)}</div>` : ''}
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
 function renderLearnerSchedule() {
   const offs = currentLearnerOfferings;
   let html = `
     <div style="display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #e3f2fd">
+      margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #e3f2fd;flex-wrap:wrap;gap:6px">
       <div>
         <div style="font-size:18px;font-weight:700;color:#1565c0">${esc(currentLearnerName)}'s Schedule</div>
         <div style="font-size:12px;color:#888;margin-top:2px">
@@ -532,11 +685,7 @@ function renderLearnerSchedule() {
       <span style="font-weight:normal;font-size:10px">${block.display}</span></td>`;
 
     DAYS.forEach(day => {
-      const matches = offs.filter(o => {
-        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
-        return days.includes(day) && times.includes(block.time);
-      });
+      const matches = offeringsForBlock(offs, day, block.time);
       if (!matches.length) {
         html += `<td class="ls-cell"><div class="ls-empty">—</div></td>`;
       } else {
@@ -621,11 +770,7 @@ function printSessionSchedule() {
       </td>`;
 
     DAYS.forEach(day => {
-      const matches = visibleOfferings.filter(o => {
-        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
-        return days.includes(day) && times.includes(block.time);
-      });
+      const matches = offeringsForBlock(visibleOfferings, day, block.time);
 
       if (!matches.length) {
         html += `<td style="background:#fafafa"></td>`;
@@ -708,11 +853,7 @@ function printLearnerSchedule() {
     html += `<tr><td class="ps-time">${block.name}<br>
       <span style="font-weight:normal;font-size:7pt">${block.display}</span></td>`;
     DAYS.forEach(day => {
-      const matches = offs.filter(o => {
-        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
-        return days.includes(day) && times.includes(block.time);
-      });
+      const matches = offeringsForBlock(offs, day, block.time);
       if (!matches.length) {
         html += `<td class="ps-cell ps-empty">—</td>`;
       } else {
