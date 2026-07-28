@@ -49,6 +49,12 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
 .type-Drop-in{background:#c8e6c9;color:#2e7d32}
 .view-card.faded{opacity:.3;pointer-events:none}
 
+/* ── Mobile view toggle (Day / Week) ─────────────────────── */
+.view-toggle{display:none;gap:8px;margin-bottom:10px}
+.view-toggle button{flex:1;padding:9px;border:1px solid #ddd;background:white;
+  border-radius:6px;font-size:12.5px;font-weight:700;color:#555;cursor:pointer}
+.view-toggle button.active{background:#2196F3;color:white;border-color:#2196F3}
+
 /* ── Mobile day-by-day view ──────────────────────────────── */
 .day-view{display:none}
 .day-tabs{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
@@ -139,6 +145,7 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
   @page{size:11in 8.5in landscape;margin:.3in}
 }
 #printSheet{display:none;font-family:Arial,sans-serif;font-size:9pt;color:#000}
+#printSheet .print-scale-wrap{transform-origin:top left}
 #printSheet .ps-title{font-size:13pt;font-weight:bold;text-align:center;margin:0 0 2pt}
 #printSheet .ps-meta{font-size:8pt;text-align:center;color:#444;margin:0 0 8pt}
 #printSheet table{width:100%;border-collapse:collapse;table-layout:fixed}
@@ -182,9 +189,18 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
   .learner-controls{flex-direction:column;align-items:stretch}
   .learner-controls select,.learner-controls button{width:100%}
 
-  /* hide the wide 5-day table, show the swipeable day view instead */
-  .schedule-table, .ls-grid{display:none}
-  .day-view{display:block}
+  .view-toggle{display:flex}
+
+  #gridContainer, #learnerScheduleContainer{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Day mode (default): hide the wide table, show the swipeable day view */
+  .mode-day .schedule-table, .mode-day .ls-grid{display:none}
+  .mode-day .day-view{display:block}
+
+  /* Week mode: show the full table, scrollable sideways since 5 columns
+     don't comfortably fit a phone screen */
+  .mode-week .day-view{display:none}
+  .mode-week .schedule-table, .mode-week .ls-grid{display:table;min-width:640px}
 }
 </style>
 </head>
@@ -230,6 +246,11 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
     Tap any offering to see full details and description
   </p>
 
+  <div class="view-toggle" id="gridViewToggle">
+    <button type="button"                data-mode="day"  onclick="setGridViewMode('day')">📆 Day view</button>
+    <button type="button" class="active" data-mode="week" onclick="setGridViewMode('week')">🗓️ Full week</button>
+  </div>
+
   <!-- Mobile day-by-day view -->
   <div class="day-view" id="gridDayView">
     <div class="day-tabs" id="gridDayTabs"></div>
@@ -254,6 +275,11 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px}
     </button>
   </div>
   <div class="msg" id="learnerMsg"></div>
+
+  <div class="view-toggle" id="learnerViewToggle">
+    <button type="button"                data-mode="day"  onclick="setLearnerViewMode('day')">📆 Day view</button>
+    <button type="button" class="active" data-mode="week" onclick="setLearnerViewMode('week')">🗓️ Full week</button>
+  </div>
 
   <!-- Mobile day-by-day view -->
   <div class="day-view" id="learnerDayView">
@@ -319,6 +345,21 @@ function defaultDay() {
 }
 let gridSelectedDay    = defaultDay();
 let learnerSelectedDay = defaultDay();
+let gridViewMode    = 'week';   // 'day' | 'week' — mobile only, desktop always shows the full table
+let learnerViewMode = 'week';
+
+function setGridViewMode(mode) {
+  gridViewMode = mode;
+  document.getElementById('tab-grid').classList.toggle('mode-day',  mode === 'day');
+  document.getElementById('tab-grid').classList.toggle('mode-week', mode === 'week');
+  document.querySelectorAll('#gridViewToggle button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+}
+function setLearnerViewMode(mode) {
+  learnerViewMode = mode;
+  document.getElementById('tab-learner').classList.toggle('mode-day',  mode === 'day');
+  document.getElementById('tab-learner').classList.toggle('mode-week', mode === 'week');
+  document.querySelectorAll('#learnerViewToggle button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+}
 
 function normTime(t) {
   if (!t) return '';
@@ -360,6 +401,8 @@ async function init() {
     document.title = siteTitle;
 
     populateLearnerDropdown();
+    document.getElementById('tab-grid').classList.add('mode-week');
+    document.getElementById('tab-learner').classList.add('mode-week');
     renderDayTabs('gridDayTabs', gridSelectedDay, d => { gridSelectedDay = d; drawGrid(); });
     drawGrid();
   } catch(e) {
@@ -717,6 +760,54 @@ function renderLearnerSchedule() {
   document.getElementById('learnerScheduleContainer').innerHTML = html;
 }
 
+// ── Scale print content to fit a single page ──────────────────
+// Measures the rendered height of the print content at the exact width it
+// will print at, and shrinks it (uniformly, preserving proportions) just
+// enough to fit within one page of the given size, so nothing spills to a
+// second sheet.
+function fitPrintSheetAndPrint(pageWidthIn, pageHeightIn, marginIn) {
+  const sheet = document.getElementById('printSheet');
+  const wrap  = sheet.querySelector('.print-scale-wrap');
+  if (!wrap) { window.print(); return; }
+
+  const contentWidthIn  = pageWidthIn  - marginIn * 2;
+  const contentHeightIn = pageHeightIn - marginIn * 2;
+
+  wrap.style.transform = 'none';
+
+  // Lay the sheet out off-screen at the exact width it will print at, so we
+  // can measure its true rendered height before committing to a scale.
+  const prevStyle = { display: sheet.style.display, position: sheet.style.position,
+    left: sheet.style.left, top: sheet.style.top, visibility: sheet.style.visibility,
+    width: sheet.style.width };
+  sheet.style.display    = 'block';
+  sheet.style.position   = 'fixed';
+  sheet.style.left       = '-10000px';
+  sheet.style.top        = '0';
+  sheet.style.visibility = 'hidden';
+  sheet.style.width      = contentWidthIn + 'in';
+
+  const pxPerIn        = sheet.getBoundingClientRect().width / contentWidthIn;
+  const maxHeightPx    = contentHeightIn * pxPerIn;
+  const actualHeightPx = wrap.scrollHeight;
+
+  const scale = actualHeightPx > maxHeightPx ? Math.max(maxHeightPx / actualHeightPx, 0.35) : 1;
+  wrap.style.transformOrigin = 'top left';
+  wrap.style.transform = `scale(${scale})`;
+
+  // Undo the measurement overrides — the print stylesheet takes over display from here
+  sheet.style.display    = prevStyle.display;
+  sheet.style.position   = prevStyle.position;
+  sheet.style.left       = prevStyle.left;
+  sheet.style.top        = prevStyle.top;
+  sheet.style.visibility = prevStyle.visibility;
+  sheet.style.width      = prevStyle.width;
+
+  window.print();
+
+  setTimeout(() => { wrap.style.transform = 'none'; }, 1000);
+}
+
 // ── Print session schedule (landscape) ───────────────────────
 function printSessionSchedule() {
   const dateStr     = new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
@@ -813,8 +904,8 @@ function printSessionSchedule() {
   }
   styleEl.textContent = '@page{size:11in 8.5in landscape;margin:.3in}';
 
-  document.getElementById('printSheet').innerHTML = html;
-  window.print();
+  document.getElementById('printSheet').innerHTML = `<div class="print-scale-wrap">${html}</div>`;
+  fitPrintSheetAndPrint(11, 8.5, 0.3);
 
   // Restore default after print dialog
   setTimeout(() => { styleEl.textContent = ''; }, 1500);
@@ -870,8 +961,8 @@ function printLearnerSchedule() {
   });
 
   html += `</tbody></table>`;
-  document.getElementById('printSheet').innerHTML = html;
-  window.print();
+  document.getElementById('printSheet').innerHTML = `<div class="print-scale-wrap">${html}</div>`;
+  fitPrintSheetAndPrint(8.5, 11, 0.4);
 }
 
 // ── Tab switching ─────────────────────────────────────────────
