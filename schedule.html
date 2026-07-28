@@ -294,6 +294,7 @@ const BLOCK_MAP = {
 let offerings    = [];
 let enrollCounts = {};
 let studentNames = [];
+let learnerData  = []; // from loadAll — used to show enrolled names in popup
 let sessionConfig = {};
 let gridFilters  = { group:'all', type:'all', search:'' };
 let currentLearnerOfferings = [];
@@ -319,17 +320,19 @@ function showMsg(text, type) {
 // ── Init ──────────────────────────────────────────────────────
 async function init() {
   try {
-    const [sessionRes, offRes, countsRes, studentsRes] = await Promise.all([
+    const [sessionRes, offRes, countsRes, studentsRes, learnersRes] = await Promise.all([
       fetch(`${API}?action=getSessionConfig`).then(r=>r.json()).catch(()=>({success:false})),
       fetch(`${API}?action=loadOfferings`).then(r=>r.json()).catch(()=>({offerings:[]})),
       fetch(`${API}?action=getEnrollmentCounts`).then(r=>r.json()).catch(()=>({counts:{}})),
-      fetch(`${API}?action=getAllStudents`).then(r=>r.json()).catch(()=>({success:false,students:[]}))
+      fetch(`${API}?action=getAllStudents`).then(r=>r.json()).catch(()=>({success:false,students:[]})),
+      fetch(`${API}?action=loadAll`).then(r=>r.json()).catch(()=>({success:false,students:[]}))
     ]);
 
     sessionConfig = sessionRes.success ? sessionRes : { fullSessionName:'ALC Mosaic', siteTitle:'ALC Mosaic', siteSubtitle:'' };
     offerings     = offRes.offerings  || [];
     enrollCounts  = countsRes.counts  || {};
     studentNames  = (studentsRes.success && studentsRes.students) ? studentsRes.students : [];
+    learnerData   = (learnersRes.success && learnersRes.students) ? learnersRes.students : [];
 
     const siteTitle    = sessionConfig.siteTitle    || 'ALC Mosaic';
     const siteSubtitle = sessionConfig.siteSubtitle || sessionConfig.fullSessionName || '';
@@ -446,6 +449,49 @@ function showPopup(offeringId) {
 
   const typeBadgeCls = o.type === 'Commit' ? 'popup-badge-commit' : 'popup-badge-dropin';
 
+  // Find enrolled learner names from cached learnerData
+  const idStr  = String(offeringId);
+  const idNum  = Number(offeringId);
+  const names  = learnerData
+    .filter(l => {
+      try {
+        const classes = typeof l.classes === 'string'
+          ? JSON.parse(l.classes || '[]') : (l.classes || []);
+        return classes.some(c => String(c) === idStr || Number(c) === idNum);
+      } catch { return false; }
+    })
+    .map(l => l.name)
+    .sort();
+
+  // Build enrolled section
+  let enrolledSection = `
+    <div class="popup-detail"><span>🪑</span><div>
+      <strong>Enrollment:</strong> ${enrolled} / ${capacity===999?'unlimited':capacity}
+      ${full
+        ? ' <span style="color:#f44336;font-weight:700">(Full)</span>'
+        : `<span style="color:#4CAF50"> (${capacity===999?'open':capacity-enrolled+' spot'+(capacity-enrolled===1?'':'s')+' left'})</span>`}
+    </div></div>`;
+
+  if (names.length) {
+    enrolledSection += `
+      <div style="margin:8px 0 0 32px;padding:8px 12px;background:#f8f9fa;
+        border-radius:6px;border-left:3px solid #4CAF50">
+        <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">
+          Enrolled Learners
+        </div>
+        ${names.map(n => `
+          <div style="font-size:13px;color:#333;padding:3px 0;border-bottom:1px solid #eee;line-height:1.4">
+            ${esc(n)}
+          </div>`).join('')}
+      </div>`;
+  } else if (enrolled > 0) {
+    // Count exists but names not cached yet — show count only
+    enrolledSection += `
+      <div style="margin:6px 0 0 32px;font-size:12px;color:#aaa;font-style:italic">
+        Names not available
+      </div>`;
+  }
+
   document.getElementById('popupTitle').textContent = o.name;
   document.getElementById('popupBody').innerHTML = `
     <div class="popup-meta">
@@ -457,10 +503,7 @@ function showPopup(offeringId) {
     ${o.location ? `<div class="popup-detail"><span>📍</span><div><strong>Location:</strong> ${esc(o.location)}</div></div>` : ''}
     <div class="popup-detail"><span>📅</span><div><strong>Days:</strong> ${esc(days || 'TBA')}</div></div>
     <div class="popup-detail"><span>🕐</span><div><strong>Time:</strong> ${esc(times || 'TBA')}</div></div>
-    <div class="popup-detail"><span>🪑</span><div>
-      <strong>Enrollment:</strong> ${enrolled} / ${capacity===999?'unlimited':capacity}
-      ${full ? ' <span style="color:#f44336;font-weight:700">(Full)</span>' : `<span style="color:#4CAF50"> (${capacity===999?'open':capacity-enrolled+' spot'+(capacity-enrolled===1?'':'s')+' left'})</span>`}
-    </div></div>
+    ${enrolledSection}
     ${o.description
       ? `<div class="popup-desc">${esc(o.description)}</div>`
       : `<div class="popup-nodesc">No description available for this offering.</div>`}`;
