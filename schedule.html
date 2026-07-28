@@ -146,12 +146,6 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px;font-size:clamp(20px,5vw,32px)
   .filter-bar input[type=text]{font-size:16px}/* prevent iOS zoom */
   .filter-group{gap:4px}
   .filter-btn{font-size:11px;padding:5px 8px}
-  /* Hide the 5-col grid, show mobile stacked view */
-  .grid-wrap{display:none}
-  .mobile-day-view{display:block}
-  /* Hide desktop learner grid, show stacked */
-  .ls-wrap{display:none}
-  .ls-mobile{display:block}
   /* Learner controls stack */
   .learner-controls{flex-direction:column;align-items:stretch}
   .learner-controls label{display:none}
@@ -230,16 +224,11 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px;font-size:clamp(20px,5vw,32px)
     Click any offering to see full details and description
   </p>
 
-  <!-- Desktop: scrollable 5-col table -->
+  <!-- Scrollable week grid -->
   <div class="grid-wrap">
     <div id="gridContainer">
       <div class="loading"><div class="spinner"></div><p>Loading schedule…</p></div>
     </div>
-  </div>
-
-  <!-- Mobile: stacked day-by-day view -->
-  <div class="mobile-day-view" id="mobileGridContainer">
-    <div class="loading"><div class="spinner"></div><p>Loading schedule…</p></div>
   </div>
 </div>
 
@@ -354,8 +343,6 @@ async function init() {
   } catch(e) {
     document.getElementById('gridContainer').innerHTML =
       `<p style="text-align:center;color:#f44336;padding:40px">Error loading: ${esc(e.message)}</p>`;
-    document.getElementById('mobileGridContainer').innerHTML =
-      `<p style="text-align:center;color:#f44336;padding:40px">Error loading: ${esc(e.message)}</p>`;
   }
 }
 
@@ -387,7 +374,6 @@ function drawGrid() {
   const activeIds = new Set(offerings.filter(offeringMatchesGridFilter).map(o => o.id));
   const anyFilter = gridFilters.group !== 'all' || gridFilters.type !== 'all' || gridFilters.search;
 
-  // Shared card builder used by both desktop and mobile
   function cardHtml(o) {
     const enrolled = enrollCounts[o.id] || 0;
     const capacity = Number(o.capacity) || 999;
@@ -407,7 +393,6 @@ function drawGrid() {
     </div>`;
   }
 
-  // ── Desktop: 5-column table ───────────────────────────────
   let html = `<table class="schedule-table">
     <thead><tr>
       <th style="width:80px">Time</th>
@@ -439,36 +424,9 @@ function drawGrid() {
     });
     html += `</tr>`;
   });
+
   html += `</tbody></table>`;
   document.getElementById('gridContainer').innerHTML = html;
-
-  // ── Mobile: stacked day-by-day list ──────────────────────
-  let mhtml = '';
-  DAYS.forEach(day => {
-    const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
-    let dayContent = '';
-    TIMES.forEach(block => {
-      if (block.lunch) return;
-      const matching = offerings.filter(o => {
-        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
-        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
-        return days.includes(day) && times.includes(block.time)
-          && (!anyFilter || activeIds.has(o.id));
-      });
-      if (!matching.length) return;
-      dayContent += `<div class="mobile-block">
-        <div class="mobile-block-time">${block.name} · ${block.display}</div>
-        ${matching.map(cardHtml).join('')}
-      </div>`;
-    });
-    if (dayContent) {
-      mhtml += `<div class="mobile-day-header">📅 ${dayLabel}</div>${dayContent}`;
-    }
-  });
-
-  const mobileEl = document.getElementById('mobileGridContainer');
-  mobileEl.innerHTML = mhtml ||
-    '<p style="text-align:center;color:#bbb;padding:30px">No offerings match your filters</p>';
 }
 
 // ── Offering popup ────────────────────────────────────────────
