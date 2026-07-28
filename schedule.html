@@ -354,6 +354,8 @@ async function init() {
   } catch(e) {
     document.getElementById('gridContainer').innerHTML =
       `<p style="text-align:center;color:#f44336;padding:40px">Error loading: ${esc(e.message)}</p>`;
+    document.getElementById('mobileGridContainer').innerHTML =
+      `<p style="text-align:center;color:#f44336;padding:40px">Error loading: ${esc(e.message)}</p>`;
   }
 }
 
@@ -385,66 +387,88 @@ function drawGrid() {
   const activeIds = new Set(offerings.filter(offeringMatchesGridFilter).map(o => o.id));
   const anyFilter = gridFilters.group !== 'all' || gridFilters.type !== 'all' || gridFilters.search;
 
+  // Shared card builder used by both desktop and mobile
+  function cardHtml(o) {
+    const enrolled = enrollCounts[o.id] || 0;
+    const capacity = Number(o.capacity) || 999;
+    const full     = enrolled >= capacity;
+    const faded    = anyFilter && !activeIds.has(o.id);
+    return `<div class="view-card${faded?' faded':''}" onclick="showPopup(${o.id})">
+      <div class="view-card-name">
+        ${esc(o.name)}
+        <span class="type-badge type-${esc(o.type)}">${esc(o.type)}</span>
+        ${full?'<span style="color:#f44336;font-size:8px;font-weight:700"> FULL</span>':''}
+      </div>
+      <div class="view-card-info">
+        👤 ${esc(o.instructor)}${o.location?' · 📍 '+esc(o.location):''}
+        · ${enrolled}/${capacity===999?'∞':capacity}
+      </div>
+      <div class="view-card-hint">Tap for details</div>
+    </div>`;
+  }
+
+  // ── Desktop: 5-column table ───────────────────────────────
   let html = `<table class="schedule-table">
     <thead><tr>
-      <th style="width:100px">Time</th>
+      <th style="width:80px">Time</th>
       <th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>
     </tr></thead><tbody>`;
 
   TIMES.forEach(block => {
     if (block.lunch) {
       html += `<tr class="lunch-row">
-        <td style="font-weight:700;background:#f8f9fa;font-size:11px;color:#555;text-align:center">
-          ${block.name}<br><span style="font-size:10px;font-weight:normal">${block.display}</span>
+        <td class="time-col">${block.name}<br>
+          <span style="font-size:9px;font-weight:normal">${block.display}</span>
         </td>
         <td colspan="5">Lunch Break</td>
       </tr>`;
       return;
     }
-
-    html += `<tr><td class="time-col">${block.name}<br>${block.display}</td>`;
-
+    html += `<tr>
+      <td class="time-col">${block.name}<br>
+        <span style="font-size:9px;font-weight:normal">${block.display}</span>
+      </td>`;
     DAYS.forEach(day => {
       const matching = offerings.filter(o => {
         const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
         const times = (o.time || '').split(',').map(t => normTime(t.trim()));
         return days.includes(day) && times.includes(block.time);
       });
-
-      if (!matching.length) {
-        html += `<td style="background:#fafafa"></td>`;
-      } else {
-        html += `<td>`;
-        matching.forEach(o => {
-          const enrolled  = enrollCounts[o.id] || 0;
-          const capacity  = Number(o.capacity) || 999;
-          const full      = enrolled >= capacity;
-          const faded     = anyFilter && !activeIds.has(o.id);
-          const fullLabel = full ? ' <span style="color:#f44336;font-size:9px;font-weight:700">FULL</span>' : '';
-
-          html += `<div class="view-card${faded?' faded':''}" onclick="showPopup(${o.id})">
-            <div class="view-card-name">
-              ${esc(o.name)}
-              <span class="type-badge type-${esc(o.type)}">${esc(o.type)}</span>
-              ${fullLabel}
-            </div>
-            <div class="view-card-info">
-              👤 ${esc(o.instructor)}
-              ${o.location ? ' · 📍 ' + esc(o.location) : ''}
-              · ${enrolled}/${capacity===999?'∞':capacity}
-            </div>
-            <div class="view-card-hint">Click for details</div>
-          </div>`;
-        });
-        html += `</td>`;
-      }
+      if (!matching.length) { html += `<td style="background:#fafafa"></td>`; return; }
+      html += `<td>${matching.map(cardHtml).join('')}</td>`;
     });
-
     html += `</tr>`;
   });
-
   html += `</tbody></table>`;
   document.getElementById('gridContainer').innerHTML = html;
+
+  // ── Mobile: stacked day-by-day list ──────────────────────
+  let mhtml = '';
+  DAYS.forEach(day => {
+    const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+    let dayContent = '';
+    TIMES.forEach(block => {
+      if (block.lunch) return;
+      const matching = offerings.filter(o => {
+        const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
+        const times = (o.time || '').split(',').map(t => normTime(t.trim()));
+        return days.includes(day) && times.includes(block.time)
+          && (!anyFilter || activeIds.has(o.id));
+      });
+      if (!matching.length) return;
+      dayContent += `<div class="mobile-block">
+        <div class="mobile-block-time">${block.name} · ${block.display}</div>
+        ${matching.map(cardHtml).join('')}
+      </div>`;
+    });
+    if (dayContent) {
+      mhtml += `<div class="mobile-day-header">📅 ${dayLabel}</div>${dayContent}`;
+    }
+  });
+
+  const mobileEl = document.getElementById('mobileGridContainer');
+  mobileEl.innerHTML = mhtml ||
+    '<p style="text-align:center;color:#bbb;padding:30px">No offerings match your filters</p>';
 }
 
 // ── Offering popup ────────────────────────────────────────────
