@@ -189,11 +189,7 @@ h1{text-align:center;color:#4CAF50;margin:0 0 4px;font-size:clamp(20px,5vw,32px)
   display:inline-block;margin-right:2pt;line-height:1.4}
 #printSheet .ps-tag-c{border:0.5pt solid #c62828;color:#c62828}
 #printSheet .ps-tag-d{border:0.5pt solid #2e7d32;color:#2e7d32}
-#printSheet .ps-group{font-size:6pt;color:#555;font-style:italic;display:inline}
 #printSheet .ps-full{font-size:6pt;font-weight:700;color:#c62828;display:inline;margin-left:2pt}
-/* Checkbox circle for group marking */
-#printSheet .ps-check{display:inline-block;width:7pt;height:7pt;border:0.5pt solid #999;
-  border-radius:50%;margin-right:1.5pt;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -634,40 +630,42 @@ function printSessionSchedule() {
   if (gridFilters.search)          filterParts.push(`"${gridFilters.search}"`);
   const filterNote = filterParts.length ? ' · ' + filterParts.join(', ') : '';
 
-  const timeW = 11;
+  const timeW = 10;
   const dayW  = ((100 - timeW) / 5).toFixed(1);
 
   let html = `
     <div class="ps-title">${esc(siteTitle)} — Session Schedule</div>
     <div class="ps-meta">${esc(siteSubtitle)}${esc(filterNote)} · ${dateStr}</div>
-    <div style="font-size:6pt;text-align:right;color:#888;margin-bottom:4pt">
-      C = Commitment &nbsp;&nbsp; D = Drop-in &nbsp;&nbsp; ○ = circle the group that applies
+    <div style="font-size:5.5pt;text-align:right;color:#999;margin-bottom:3pt">
+      C = Commitment &nbsp; D = Drop-in
     </div>
-    <table>
+    <table style="font-size:6.5pt">
       <colgroup>
         <col style="width:${timeW}%">
         ${DAYS.map(() => `<col style="width:${dayW}%">`).join('')}
       </colgroup>
       <thead><tr>
-        <th>Time</th>
-        ${DAYS.map(d => `<th>${d.charAt(0).toUpperCase()+d.slice(1)}</th>`).join('')}
+        <th style="font-size:7pt;padding:2pt 3pt">Time</th>
+        ${DAYS.map(d => `<th style="font-size:7pt;padding:2pt 3pt">${d.charAt(0).toUpperCase()+d.slice(1)}</th>`).join('')}
       </tr></thead>
       <tbody>`;
 
   TIMES.forEach(block => {
     if (block.lunch) {
       html += `<tr>
-        <td class="ps-time">Lunch<br>
-          <span style="font-weight:normal;font-size:6pt">${block.display}</span>
+        <td class="ps-time" style="padding:2pt 3pt;font-size:6pt">
+          Lunch<br><span style="font-weight:normal;font-size:5.5pt">${block.display}</span>
         </td>
-        <td colspan="5" class="ps-lunch">Lunch Break · ${block.display}</td>
+        <td colspan="5" class="ps-lunch" style="font-size:6pt;padding:2pt 3pt">
+          Lunch Break · ${block.display}
+        </td>
       </tr>`;
       return;
     }
 
     html += `<tr>
-      <td class="ps-time">${block.name}<br>
-        <span style="font-weight:normal;font-size:6pt">${block.display}</span>
+      <td class="ps-time" style="padding:2pt 3pt;font-size:6pt">
+        ${block.name}<br><span style="font-weight:normal;font-size:5.5pt">${block.display}</span>
       </td>`;
 
     DAYS.forEach(day => {
@@ -678,34 +676,24 @@ function printSessionSchedule() {
       });
 
       if (!matches.length) {
-        html += `<td class="ps-cell ps-empty">—</td>`;
+        html += `<td class="ps-cell ps-empty" style="padding:2pt 3pt">—</td>`;
       } else {
-        html += `<td class="ps-cell">`;
+        html += `<td class="ps-cell" style="padding:2pt 3pt">`;
         matches.forEach((o, i) => {
           const enrolled = enrollCounts[o.id] || 0;
           const capacity = Number(o.capacity) || 999;
           const full     = capacity !== 999 && enrolled >= capacity;
           const typeTag  = o.type === 'Commit' ? 'C' : o.type === 'Drop-in' ? 'D' : (o.type?.charAt(0) || '?');
           const tagCls   = o.type === 'Commit' ? 'ps-tag-c' : 'ps-tag-d';
+          const grp      = o.level ? ` <span style="font-size:5.5pt;color:#555;font-style:italic">${esc(o.level)}</span>` : '';
 
-          // Group indicators — bold if it matches the offering's level, faint circle otherwise
-          const groups   = ['EC','Sap','Can','Acn'];
-          const lvl      = (o.level || '').toLowerCase();
-          const groupRow = groups.map(g => {
-            const match = lvl.startsWith(g.toLowerCase().slice(0,2));
-            return match
-              ? `<span style="font-size:6pt;font-weight:700;color:#000;margin-right:3pt">${g}</span>`
-              : `<span style="font-size:5.5pt;color:#bbb;margin-right:3pt"><span class="ps-check"></span>${g}</span>`;
-          }).join('');
-
-          if (i > 0) html += `<div style="border-top:0.5pt solid #e0e0e0;margin:2pt 0"></div>`;
+          if (i > 0) html += `<div style="border-top:0.5pt solid #e0e0e0;margin:1.5pt 0"></div>`;
           html += `
-            <span class="ps-name">
-              <span class="ps-tag ${tagCls}">${typeTag}</span>${esc(o.name)}
+            <span class="ps-name" style="font-size:6.5pt">
+              <span class="ps-tag ${tagCls}">${typeTag}</span>${esc(o.name)}${grp}
               ${full ? '<span class="ps-full"> FULL</span>' : ''}
             </span>
-            <span class="ps-info">${esc([o.instructor, o.location].filter(Boolean).join(' · '))}</span>
-            <span style="display:block;margin-top:2pt">${groupRow}</span>`;
+            <span class="ps-info" style="font-size:6pt">${esc([o.instructor, o.location].filter(Boolean).join(' · '))}</span>`;
         });
         html += `</td>`;
       }
@@ -716,7 +704,6 @@ function printSessionSchedule() {
 
   html += `</tbody></table>`;
 
-  // @page default is already landscape — no override needed
   document.getElementById('printSheet').innerHTML = html;
   window.print();
 }
