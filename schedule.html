@@ -280,7 +280,7 @@ const API = 'https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdm
 const TIMES = [
   { name:'Block 1', time:'10:00-10:45', display:'10:00–10:45 am' },
   { name:'Block 2', time:'10:50-11:35', display:'10:50–11:35 am' },
-  { name:'🍽 Lunch', time:'11:35-12:05', display:'11:35–12:05 pm', lunch:true },
+  { name:'🍽 Lunch', time:'11:35-12:05', display:'11:35–12:05 pm' },
   { name:'Block 3', time:'12:10-12:55', display:'12:10–12:55 pm' },
   { name:'Block 4', time:'1:00-1:50',   display:'1:00–1:50 pm' },
   { name:'Block 5', time:'1:55-2:45',   display:'1:55–2:45 pm' }
@@ -298,6 +298,7 @@ let learnerData  = []; // from loadAll — used to show enrolled names in popup
 let sessionConfig = {};
 let gridFilters  = { group:'all', type:'all', search:'' };
 let currentLearnerOfferings = [];
+let currentLearnerNotes     = [];
 let currentLearnerName = '';
 
 function normTime(t) {
@@ -403,17 +404,10 @@ function drawGrid() {
     </tr></thead><tbody>`;
 
   TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<tr class="lunch-row">
-        <td class="time-col">${block.name}<br>
-          <span style="font-size:9px;font-weight:normal">${block.display}</span>
-        </td>
-        <td colspan="5">Lunch Break</td>
-      </tr>`;
-      return;
-    }
-    html += `<tr>
-      <td class="time-col">${block.name}<br>
+    const isLunch = block.time === '11:35-12:05';
+    html += `<tr${isLunch?' class="lunch-row"':''}>
+      <td class="time-col" style="${isLunch?'color:#aaa;':''}">
+        ${block.name}<br>
         <span style="font-size:9px;font-weight:normal">${block.display}</span>
       </td>`;
     DAYS.forEach(day => {
@@ -539,19 +533,24 @@ async function loadLearnerSchedule() {
   const name = document.getElementById('learnerSelect').value;
   if (!name) { showMsg('Please select a learner first', 'error'); return; }
 
-  currentLearnerName = name;
+  currentLearnerName      = name;
   currentLearnerOfferings = [];
+  currentLearnerNotes     = [];
   document.getElementById('printBtn').style.display = 'none';
   document.getElementById('learnerScheduleContainer').innerHTML =
     '<div class="loading"><div class="spinner"></div><p>Loading…</p></div>';
 
   try {
-    const d = await fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json());
+    const [d, notesRes] = await Promise.all([
+      fetch(`${API}?action=loadStudent&studentName=${encodeURIComponent(name)}`).then(r=>r.json()),
+      fetch(`${API}?action=getStudentNotes&studentName=${encodeURIComponent(name)}`).then(r=>r.json()).catch(()=>({notes:[]}))
+    ]);
     if (!d.success) throw new Error(d.message || 'Failed to load');
 
     currentLearnerOfferings = d.offerings || [];
+    currentLearnerNotes     = notesRes.notes || [];
 
-    if (!currentLearnerOfferings.length) {
+    if (!currentLearnerOfferings.length && !currentLearnerNotes.length) {
       document.getElementById('learnerScheduleContainer').innerHTML =
         `<div style="text-align:center;padding:50px 20px;color:#bbb">
           <div style="font-size:40px;margin-bottom:10px">📭</div>
@@ -573,7 +572,9 @@ async function loadLearnerSchedule() {
 }
 
 function renderLearnerSchedule() {
-  const offs = currentLearnerOfferings;
+  const offs  = currentLearnerOfferings;
+  const notes = currentLearnerNotes;
+
   let html = `
     <div style="display:flex;justify-content:space-between;align-items:center;
       margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #e3f2fd">
@@ -591,14 +592,9 @@ function renderLearnerSchedule() {
       </tr></thead><tbody>`;
 
   TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<tr>
-        <td class="ls-time">${block.name}<br><span style="font-weight:normal;font-size:10px">${block.display}</span></td>
-        <td colspan="5" class="ls-lunch">Lunch Break · ${block.display}</td>
-      </tr>`;
-      return;
-    }
-    html += `<tr><td class="ls-time">${block.name}<br>
+    const isLunch = block.time === '11:35-12:05';
+    html += `<tr><td class="ls-time" style="${isLunch?'background:#fff9e6;color:#aaa':''}">
+      ${block.name}<br>
       <span style="font-weight:normal;font-size:10px">${block.display}</span></td>`;
 
     DAYS.forEach(day => {
@@ -607,7 +603,9 @@ function renderLearnerSchedule() {
         const times = (o.time || '').split(',').map(t => normTime(t.trim()));
         return days.includes(day) && times.includes(block.time);
       });
-      if (!matches.length) {
+      const note = notes.find(n => n.day === day && n.time === block.time);
+
+      if (!matches.length && !note) {
         html += `<td class="ls-cell"><div class="ls-empty">—</div></td>`;
       } else {
         html += `<td class="ls-cell">`;
@@ -628,6 +626,18 @@ function renderLearnerSchedule() {
               border-top:1px solid #c5d9f0;color:#444;line-height:1.4">${esc(o.description)}</div>` : ''}
           </div>`;
         });
+        if (note) {
+          const isPip  = note.type === 'pip';
+          const bg     = isPip ? '#e8f4fd' : '#fff9e6';
+          const border = isPip ? '#2196F3' : '#ffc107';
+          const label  = isPip ? '🔵 Personal Interest Project' : '🟡 Open Block';
+          const color  = isPip ? '#1565c0' : '#856404';
+          html += `<div style="background:${bg};border-left:3px solid ${border};border-radius:4px;
+            padding:7px 9px;margin-top:${matches.length?'6px':'0'}">
+            <div style="font-weight:700;font-size:11px;color:${color};margin-bottom:${note.note?'4px':'0'}">${label}</div>
+            ${note.note ? `<div style="font-size:12px;color:#555;line-height:1.4;font-style:italic">${esc(note.note)}</div>` : ''}
+          </div>`;
+        }
         html += `</td>`;
       }
     });
@@ -675,20 +685,9 @@ function printSessionSchedule() {
       <tbody>`;
 
   TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<tr>
-        <td class="ps-time" style="padding:2pt 3pt;font-size:6pt">
-          Lunch<br><span style="font-weight:normal;font-size:5.5pt">${block.display}</span>
-        </td>
-        <td colspan="5" class="ps-lunch" style="font-size:6pt;padding:2pt 3pt">
-          Lunch Break · ${block.display}
-        </td>
-      </tr>`;
-      return;
-    }
-
+    const isLunch = block.time === '11:35-12:05';
     html += `<tr>
-      <td class="ps-time" style="padding:2pt 3pt;font-size:6pt">
+      <td class="ps-time" style="padding:2pt 3pt;font-size:6pt${isLunch?';background:#f9f4e8':''}">
         ${block.name}<br><span style="font-weight:normal;font-size:5.5pt">${block.display}</span>
       </td>`;
 
@@ -755,14 +754,9 @@ function printLearnerSchedule() {
       </tr></thead><tbody>`;
 
   TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<tr>
-        <td class="ps-time">Lunch<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>
-        <td colspan="5" class="ps-lunch">Lunch Break · ${block.display}</td>
-      </tr>`;
-      return;
-    }
-    html += `<tr><td class="ps-time">${block.name}<br>
+    const isLunch = block.time === '11:35-12:05';
+    html += `<tr><td class="ps-time" style="${isLunch?'background:#f9f4e8;color:#aaa':''}">
+      ${block.name}<br>
       <span style="font-weight:normal;font-size:7pt">${block.display}</span></td>`;
     DAYS.forEach(day => {
       const matches = offs.filter(o => {
