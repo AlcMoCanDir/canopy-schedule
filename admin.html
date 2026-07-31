@@ -139,9 +139,110 @@ tr:hover td{background:#f0f7ff}
 .view-toggle button:hover:not(.active){background:#e0e0e0}
 
 @media(max-width:768px){
-  .toolbar{flex-direction:column;align-items:stretch}
-  .form-row{grid-template-columns:1fr}
-  .stats{grid-template-columns:1fr 1fr}
+  /* ── Base ──────────────────────────────────────────────── */
+  body{padding:8px;background:#f5f5f5}
+  .container{padding:12px;border-radius:6px}
+  h1{font-size:clamp(16px,5vw,24px)}
+
+  /* ── Tabs — scroll horizontally, don't wrap ────────────── */
+  .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    gap:3px;margin-bottom:14px;padding-bottom:2px;border-bottom:2px solid #ddd}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:9px 12px;font-size:12px;white-space:nowrap;flex-shrink:0}
+
+  /* ── Stat cards — 2 columns ────────────────────────────── */
+  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .stat-card{padding:14px 10px}
+  .stat-card h3{font-size:24px}
+  .stat-card p{font-size:11px}
+
+  /* ── Toolbar — stack vertically ────────────────────────── */
+  .toolbar{flex-direction:column;align-items:stretch;gap:8px;padding:10px}
+  .toolbar label{display:none}
+  .toolbar select,.toolbar input[type=text]{width:100%;font-size:16px;padding:10px}
+  .toolbar .view-toggle{width:100%}
+  .toolbar .view-toggle button{flex:1;padding:10px;font-size:13px}
+  .toolbar span[style*="margin-left:auto"]{display:none}
+
+  /* ── Buttons ────────────────────────────────────────────── */
+  .btn{padding:10px 14px;font-size:13px;-webkit-tap-highlight-color:transparent}
+  .btn-sm{padding:7px 10px;font-size:12px}
+
+  /* ── Tables — horizontal scroll ────────────────────────── */
+  table{font-size:12px}
+  th{padding:8px 6px;font-size:11px}
+  td{padding:7px 6px}
+  /* Wrap all tables in a scroll container via JS — pure CSS fallback */
+  #learnersContainer table,
+  #offeringsContainer table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
+
+  /* ── Offering table — hide less important columns ───────── */
+  /* Keep: Name, Enrolled, Actions. Hide: Instructor, Day, Block, Group, Type */
+  #offeringsContainer th:nth-child(2),
+  #offeringsContainer td:nth-child(2),
+  #offeringsContainer th:nth-child(3),
+  #offeringsContainer td:nth-child(3),
+  #offeringsContainer th:nth-child(4),
+  #offeringsContainer td:nth-child(4),
+  #offeringsContainer th:nth-child(5),
+  #offeringsContainer td:nth-child(5),
+  #offeringsContainer th:nth-child(6),
+  #offeringsContainer td:nth-child(6){ display:none }
+
+  /* ── Calendar grid — horizontal scroll ─────────────────── */
+  .cal-grid{min-width:520px}
+  #offeringsContainer>.cal-wrap,
+  #tab-offerings .cal-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── Schedule builder — horizontal scroll ───────────────── */
+  .builder-table{min-width:480px}
+  #tab-builder{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── Schedule viewer grid ───────────────────────────────── */
+  .sched-grid{min-width:400px;overflow-x:auto}
+  #schedModalBody .sched-grid{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── Modals — slide up from bottom like schedule.html ───── */
+  .modal{align-items:flex-end;padding:0}
+  .modal-box{
+    margin:0 auto;
+    border-radius:16px 16px 0 0;
+    width:100%;
+    max-width:100%;
+    max-height:92vh;
+  }
+  /* Wide modal (offering edit) also full width on mobile */
+  .modal-box.wide{max-width:100%}
+  .modal-head{border-radius:16px 16px 0 0}
+
+  /* ── Offering edit modal — stack the two panels ─────────── */
+  /* The two-panel grid becomes single column */
+  .modal-body>[style*="grid-template-columns"]{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  #enrolledPanel{
+    border-left:none!important;
+    border-top:1px solid #eee;
+  }
+
+  /* ── Form rows — single column ──────────────────────────── */
+  .form-row{grid-template-columns:1fr!important}
+
+  /* Larger touch targets for form inputs */
+  .fg input,.fg select,.fg textarea{font-size:16px;padding:10px}
+
+  /* ── Learner search ─────────────────────────────────────── */
+  #learnerSearch{font-size:16px;width:100%}
+
+  /* ── Settings tab ────────────────────────────────────────── */
+  #tab-settings>div{padding:0}
+  #tab-settings .fg input{font-size:16px}
+
+  /* ── Learner schedule builder dropdown/controls ─────────── */
+  #tab-builder .toolbar>div{width:100%}
+  #tab-builder .toolbar select,
+  #tab-builder #builderAdmin{width:100%;font-size:16px}
 }
 
 @media print{
@@ -240,8 +341,6 @@ tr:hover td{background:#f0f7ff}
     <div class="stats">
       <div class="stat-card stat-blue"><h3 id="st-total">—</h3><p>Total Learners</p></div>
       <div class="stat-card stat-green"><h3 id="st-scheduled">—</h3><p>Have a Schedule</p></div>
-      <div class="stat-card stat-orange"><h3 id="st-pending">—</h3><p>Total Enrolled</p></div>
-      <div class="stat-card stat-teal"><h3 id="st-offerings">—</h3><p>Active Offerings</p></div>
     </div>
     <div class="toolbar">
       <button class="btn btn-blue" onclick="refreshAll()">🔄 Refresh All</button>
@@ -318,6 +417,7 @@ tr:hover td{background:#f0f7ff}
       Click offerings to select them · Max 2 per time block · 🔗 = spans multiple blocks · Selected offerings are highlighted blue
     </p>
     <div id="builderStatus" style="display:none;padding:8px 12px;margin-bottom:10px;border-radius:4px;font-weight:600;font-size:13px"></div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
     <table class="builder-table" id="builderTable">
       <thead>
         <tr>
@@ -327,6 +427,7 @@ tr:hover td{background:#f0f7ff}
       </thead>
       <tbody id="builderBody"></tbody>
     </table>
+    </div>
   </div>
 
   <!-- ══ TAB 3 — SETTINGS ══════════════════════════════════ -->
@@ -399,6 +500,43 @@ tr:hover td{background:#f0f7ff}
   </div>
 </div>
 
+<!-- ══ MODAL — EDIT LEARNER ═══════════════════════════════════ -->
+<div class="modal" id="learnerModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head" style="background:#2196F3">
+      <h2 id="learnerModalTitle">Edit Learner</h2>
+      <button class="modal-close" onclick="closeModal('learnerModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="lEditId">
+      <div class="fg">
+        <label>Name *</label>
+        <input type="text" id="lEditName" placeholder="Full name">
+      </div>
+      <div class="fg">
+        <label>Group</label>
+        <select id="lEditGrade">
+          <option value="">— No group —</option>
+          <option value="EC">EC</option>
+          <option value="Saplings">Saplings</option>
+          <option value="Canopy">Canopy</option>
+          <option value="Acorns">Acorns</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Passcode (ID) <small style="font-weight:normal;color:#888">— leave blank to keep current</small></label>
+        <input type="text" id="lEditPasscode" placeholder="Student passcode / ID">
+      </div>
+      <div id="learnerModalMsg" style="display:none;padding:8px 12px;border-radius:4px;
+        font-size:13px;font-weight:600;margin-top:8px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-grey" onclick="closeModal('learnerModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLearner()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Dedicated print-only schedule ─────────────────────── -->
 <div id="adminPrintSheet"></div>
 
@@ -452,9 +590,10 @@ tr:hover td{background:#f0f7ff}
             </div>
             <div class="fg">
               <label>Blocks * <small style="font-weight:normal;color:#888">(Ctrl/Cmd = multi)</small></label>
-              <select id="fBlocks" multiple size="5">
+              <select id="fBlocks" multiple size="6">
                 <option value="10:00-10:45">Block 1 — 10:00–10:45</option>
                 <option value="10:50-11:35">Block 2 — 10:50–11:35</option>
+                <option value="11:35-12:05">🍽 Lunch — 11:35–12:05</option>
                 <option value="12:10-12:55">Block 3 — 12:10–12:55</option>
                 <option value="1:00-1:50">Block 4 — 1:00–1:50</option>
                 <option value="1:55-2:45">Block 5 — 1:55–2:45</option>
@@ -503,8 +642,16 @@ tr:hover td{background:#f0f7ff}
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-danger btn-sm" id="archiveFromEditBtn"
-        style="margin-right:auto;display:none" onclick="archiveFromEdit()">🗄 Archive</button>
+      <button class="btn btn-warning btn-sm" id="archiveFromEditBtn"
+        style="margin-right:auto;display:none" onclick="archiveFromEdit()"
+        title="Remove from schedule. Enrollment history preserved but won't show in learner schedules.">
+        🗄 Archive
+      </button>
+      <button class="btn btn-danger btn-sm" id="deleteFromEditBtn"
+        style="margin-right:6px;display:none" onclick="deleteFromEdit()"
+        title="Remove from schedule AND remove from all learner schedules going forward. Historical data preserved in archive.">
+        🗑 Delete
+      </button>
       <button class="btn btn-grey" onclick="closeModal('offeringModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveOffering()">💾 Save Changes</button>
     </div>
@@ -523,7 +670,7 @@ const API = 'https://script.google.com/macros/s/AKfycbwUV7DXx8J4p31M5jT5NjulaSdm
 const TIMES = [
   { label:'Block 1', time:'10:00-10:45' },
   { label:'Block 2', time:'10:50-11:35' },
-  { label:'🍽 LUNCH', time:'11:35-12:05', lunch:true },
+  { label:'🍽 Lunch', time:'11:35-12:05' },
   { label:'Block 3', time:'12:10-12:55' },
   { label:'Block 4', time:'1:00-1:50' },
   { label:'Block 5', time:'1:55-2:45' }
@@ -743,8 +890,6 @@ function updateStats() {
 
   setStat('st-total',     state.students.length);
   setStat('st-scheduled', enrolledNames.size);
-  setStat('st-pending',   totalEnrolled);
-  setStat('st-offerings', state.offerings.length);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -798,15 +943,21 @@ function renderLearners() {
       <td>${esc(s.grade || '—')}</td>
       <td>${classCount}</td>
       <td>${badge}</td>
-      <td>
+      <td style="white-space:nowrap">
         <button class="btn btn-blue btn-sm action-btn"
-          data-action="viewSchedule" data-name="${esc(s.name)}">📅 View Schedule</button>
+          data-action="viewSchedule" data-name="${esc(s.name)}">📅 Schedule</button>
+        <button class="btn btn-warning btn-sm action-btn"
+          data-action="editLearner"
+          data-name="${esc(s.name)}"
+          data-grade="${esc(s.grade||'')}"
+          data-id="${esc(s.id||'')}">✏️ Edit</button>
       </td>
     </tr>`;
   });
 
   html += '</tbody></table>';
-  document.getElementById('learnersContainer').innerHTML = html;
+  document.getElementById('learnersContainer').innerHTML =
+    `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">` + html + `</div>`;
 }
 
 // Individual load functions (for Refresh buttons on each tab)
@@ -864,20 +1015,18 @@ async function viewStudentSchedule(name) {
       ${DAYS.map(d => `<div class="sched-hdr">${d.charAt(0).toUpperCase()+d.slice(1)}</div>`).join('')}`;
 
     TIMES.forEach(block => {
-      html += `<div class="sched-time">${block.label}<br>
-        <small style="font-weight:normal">${block.time}</small></div>`;
-      if (block.lunch) {
-        html += `<div class="sched-lunch">Lunch Break</div>`;
-        return;
-      }
+      const isLunch = block.time === '11:35-12:05';
+      html += `<div class="sched-time" style="${isLunch?'background:#fff9e6;color:#888':''}">
+        ${block.label}<br><small style="font-weight:normal">${block.time}</small></div>`;
       DAYS.forEach(day => {
         const matches = offerings.filter(o => {
           const days  = (o.day  || '').split(',').map(d => d.trim().toLowerCase());
           const times = (o.time || '').split(',').map(t => normTime(t.trim()));
           return days.includes(day) && times.includes(block.time);
         });
+        const lunchBg = isLunch && !matches.length ? 'background:#fff9e6;color:#ccc;font-style:italic;' : '';
         if (matches.length) {
-          html += `<div class="sched-cell">`;
+          html += `<div class="sched-cell" style="${isLunch?'background:#fffbe6':''}">`;
           matches.forEach(o => {
             html += `<div class="sched-offering">${esc(o.name)}</div>
               <div class="sched-detail">👤 ${esc(o.instructor)}</div>
@@ -885,13 +1034,14 @@ async function viewStudentSchedule(name) {
           });
           html += `</div>`;
         } else {
-          html += `<div class="sched-cell empty">—</div>`;
+          html += `<div class="sched-cell empty" style="${lunchBg}">—</div>`;
         }
       });
     });
 
     html += '</div>';
-    document.getElementById('schedModalBody').innerHTML = html;
+    document.getElementById('schedModalBody').innerHTML =
+      `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">` + html + `</div>`;
   } catch(e) {
     document.getElementById('schedModalBody').innerHTML =
       `<div class="empty">⚠️<p>${esc(e.message)}</p></div>`;
@@ -930,16 +1080,9 @@ function printAdminSchedule() {
       <tbody>`;
 
   TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<tr>
-        <td class="ps-time">Lunch<br><span style="font-weight:normal;font-size:7pt">${block.time}</span></td>
-        <td colspan="5" class="ps-lunch">Lunch Break · ${block.time}</td>
-      </tr>`;
-      return;
-    }
-
+    const isLunch = block.time === '11:35-12:05';
     html += `<tr>
-      <td class="ps-time">${block.label}<br>
+      <td class="ps-time" style="${isLunch?'background:#f9f4e8':''}">${block.label}<br>
         <span style="font-weight:normal;font-size:7pt">${block.time}</span>
       </td>`;
 
@@ -1099,7 +1242,8 @@ function renderTable() {
   });
 
   html += '</tbody></table>';
-  document.getElementById('offeringsContainer').innerHTML = html;
+  document.getElementById('offeringsContainer').innerHTML =
+    `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">` + html + `</div>`;
 }
 
 // ── CALENDAR VIEW ─────────────────────────────────────────────
@@ -1132,13 +1276,9 @@ function renderCalendar() {
 
   // Time rows
   TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<div class="cal-lunch-time">🍽 Lunch</div>`;
-      DAYS.forEach(() => { html += `<div class="cal-lunch-cell">Lunch Break</div>`; });
-      return;
-    }
-
-    html += `<div class="cal-time">${block.label}<small>${block.time}</small></div>`;
+    const isLunch = block.time === '11:35-12:05';
+    html += `<div class="cal-time" style="${isLunch?'background:#fff9e6;':''}">
+      ${block.label}<small>${block.time}</small></div>`;
 
     DAYS.forEach(day => {
       const cellOfferings = list.filter(o => {
@@ -1188,7 +1328,7 @@ function renderCalendar() {
   });
 
   html += `</div>`;
-  document.getElementById('offeringsContainer').innerHTML = legend + html;
+  document.getElementById('offeringsContainer').innerHTML = legend + `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">` + html + `</div>`;
 }
 
 // ── Enrolled modal ────────────────────────────────────────────
@@ -1357,6 +1497,7 @@ function openCreateModal() {
   // Hide right panel for new offerings (no ID yet)
   document.getElementById('enrolledPanel').style.display = 'none';
   document.getElementById('archiveFromEditBtn').style.display = 'none';
+  document.getElementById('deleteFromEditBtn').style.display = 'none';
   document.getElementById('offeringModal').style.display = 'block';
 }
 
@@ -1385,6 +1526,7 @@ function openEditModal(id) {
   // Show right panel and populate it
   document.getElementById('enrolledPanel').style.display = 'flex';
   document.getElementById('archiveFromEditBtn').style.display = 'inline-block';
+  document.getElementById('deleteFromEditBtn').style.display = 'inline-block';
   populateEnrolledPanel(id);
   populateInlineAddList(id);
 
@@ -1528,8 +1670,48 @@ function archiveFromEdit() {
   const id   = Number(document.getElementById('editId').value);
   const name = document.getElementById('fName').value.trim();
   if (!id) return;
+  if (!confirm(
+    `Archive "${name}"?\n\n` +
+    `✅ Offering removed from the live schedule\n` +
+    `✅ Enrollment history preserved in student records\n` +
+    `⚠️ The offering ID will remain in StudentSchedules but won't resolve to a name\n\n` +
+    `Use Delete instead if you want it removed from all learner schedules too.`
+  )) return;
   closeModal('offeringModal');
   archiveOffering(id, name);
+}
+
+async function deleteFromEdit() {
+  const id   = Number(document.getElementById('editId').value);
+  const name = document.getElementById('fName').value.trim();
+  if (!id) return;
+
+  const enrolled = getEnrolledNames(id);
+  const enrolledNote = enrolled.length
+    ? `\n⚠️ ${enrolled.length} learner(s) currently have this in their schedule:\n  ${enrolled.join(', ')}`
+    : '\n✅ No learners currently enrolled.';
+
+  if (!confirm(
+    `Delete "${name}"?\n` +
+    enrolledNote + '\n\n' +
+    `This will:\n` +
+    `✅ Remove it from the live schedule\n` +
+    `✅ Remove it from all learner schedules going forward\n` +
+    `✅ Move it to ArchivedOfferings for audit\n` +
+    `✅ Preserve historical StudentSchedules rows (the ID is removed, not the row)\n\n` +
+    `This cannot be undone from the dashboard.`
+  )) return;
+
+  closeModal('offeringModal');
+  try {
+    const d = await post({ action: 'deleteOffering', offeringId: id });
+    if (d.success) {
+      showStatus(`🗑 "${name}" deleted — removed from ${d.removedFromCount} schedule(s)`, 'success');
+      await Promise.all([loadOfferings(), loadLearners()]);
+    } else {
+      showStatus('Error: ' + d.message, 'error');
+    }
+  } catch(e) { showStatus('Error: ' + e.message, 'error'); }
 }
 
 async function saveOffering() {
@@ -1570,7 +1752,13 @@ async function saveOffering() {
 }
 
 async function archiveOffering(id, name) {
-  if (!confirm(`Archive "${name}"?\n\nThis removes it from the live schedule. Student records are preserved.`)) return;
+  if (!confirm(
+    `Archive "${name}"?\n\n` +
+    `✅ Removes it from the live schedule\n` +
+    `✅ Enrollment history preserved in student records\n` +
+    `⚠️ Still appears as an ID in StudentSchedules (won't show a name)\n\n` +
+    `Use the Edit modal's Delete button to also remove it from learner schedules.`
+  )) return;
   try {
     const d = await post({ action:'archiveOffering', offeringId: id });
     if (d.success) {
@@ -1876,7 +2064,7 @@ const builder = {
 const BUILDER_TIMES = [
   { name:'Block 1', time:'10:00-10:45', display:'10:00–10:45 am' },
   { name:'Block 2', time:'10:50-11:35', display:'10:50–11:35 am' },
-  { name:'🍽 LUNCH', time:'11:35-12:05', display:'11:35–12:05 pm', lunch:true },
+  { name:'🍽 Lunch', time:'11:35-12:05', display:'11:35–12:05 pm' },
   { name:'Block 3', time:'12:10-12:55', display:'12:10–12:55 pm' },
   { name:'Block 4', time:'1:00-1:50',   display:'1:00–1:50 pm' },
   { name:'Block 5', time:'1:55-2:45',   display:'1:55–2:45 pm' }
@@ -2006,14 +2194,9 @@ function builderPrint() {
       <tbody>`;
 
   BUILDER_TIMES.forEach(block => {
-    if (block.lunch) {
-      html += `<tr>
-        <td class="ps-time">Lunch<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>
-        <td colspan="5" class="ps-lunch">Lunch Break · ${block.display}</td>
-      </tr>`;
-      return;
-    }
-    html += `<tr><td class="ps-time">${block.name}<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>`;
+    const isLunch = block.time === '11:35-12:05';
+    html += `<tr><td class="ps-time" style="${isLunch?'background:#f9f4e8':''}">
+      ${block.name}<br><span style="font-weight:normal;font-size:7pt">${block.display}</span></td>`;
     DAYS.forEach(day => {
       const ids     = builder.selected[`${day}-${block.time}`] || [];
       const matches = ids.map(id => state.offerings.find(o => o.id === id)).filter(Boolean);
@@ -2045,22 +2228,12 @@ function drawBuilder() {
     const tr = document.createElement('tr');
 
     // Time cell
+    const isLunch = block.time === '11:35-12:05';
     const timeCell = document.createElement('td');
     timeCell.className = 'builder-time';
-    timeCell.innerHTML = block.lunch
-      ? `<div>${block.name}</div><div style="font-size:10px;color:#999">${block.display}</div>`
-      : `<div>${block.name}</div><div style="font-size:10px;color:#999">${block.display}</div>`;
+    if (isLunch) timeCell.style.background = '#fff9e6';
+    timeCell.innerHTML = `<div>${block.name}</div><div style="font-size:10px;color:#999">${block.display}</div>`;
     tr.appendChild(timeCell);
-
-    if (block.lunch) {
-      const lunchCell = document.createElement('td');
-      lunchCell.colSpan = 5;
-      lunchCell.style.cssText = 'background:#fff9e6;text-align:center;color:#bbb;font-style:italic;font-size:12px;padding:8px';
-      lunchCell.textContent = 'Lunch Break';
-      tr.appendChild(lunchCell);
-      tbody.appendChild(tr);
-      return;
-    }
 
     DAYS.forEach(day => {
       const td = document.createElement('td');
@@ -2161,6 +2334,62 @@ function builderMsg(text, type) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// ══ LEARNER EDIT MODAL
+// ─────────────────────────────────────────────────────────────
+function openEditLearner(name, grade, id) {
+  document.getElementById('learnerModalTitle').textContent = 'Edit: ' + name;
+  document.getElementById('lEditId').value       = id   || '';
+  document.getElementById('lEditName').value     = name || '';
+  document.getElementById('lEditGrade').value    = grade || '';
+  document.getElementById('lEditPasscode').value = '';
+  document.getElementById('learnerModalMsg').style.display = 'none';
+  document.getElementById('learnerModal').style.display = 'block';
+}
+
+async function saveLearner() {
+  const oldName  = document.getElementById('learnerModalTitle').textContent.replace('Edit: ', '');
+  const newName  = document.getElementById('lEditName').value.trim();
+  const grade    = document.getElementById('lEditGrade').value;
+  const passcode = document.getElementById('lEditPasscode').value.trim();
+
+  if (!newName) { learnerModalMsg('Name cannot be empty', 'error'); return; }
+
+  try {
+    const d = await post({
+      action:     'updateLearner',
+      oldName,
+      newName,
+      grade,
+      passcode   // empty string = don't change
+    });
+
+    if (d.success) {
+      learnerModalMsg('✅ Saved!', 'success');
+      // Update local state immediately
+      const student = state.students.find(s => s.name === oldName);
+      if (student) { student.name = newName; student.grade = grade; if (passcode) student.id = passcode; }
+      const learner = state.learners.find(l => l.name === oldName);
+      if (learner) { learner.name = newName; learner.grade = grade; }
+      setTimeout(() => {
+        closeModal('learnerModal');
+        renderLearners();
+        updateStats();
+      }, 800);
+    } else {
+      learnerModalMsg('Error: ' + d.message, 'error');
+    }
+  } catch(e) { learnerModalMsg('Error: ' + e.message, 'error'); }
+}
+
+function learnerModalMsg(text, type) {
+  const el = document.getElementById('learnerModalMsg');
+  el.textContent = text;
+  el.style.display = 'block';
+  el.style.background = type === 'error' ? '#f8d7da' : '#d4edda';
+  el.style.color      = type === 'error' ? '#721c24' : '#155724';
+}
+
+// ─────────────────────────────────────────────────────────────
 // EVENT DELEGATION — handles all dynamically rendered buttons
 // using data-action attributes instead of inline onclick
 // ─────────────────────────────────────────────────────────────
@@ -2173,6 +2402,9 @@ document.addEventListener('click', e => {
     // Learners tab
     case 'viewSchedule':
       viewStudentSchedule(a.name);
+      break;
+    case 'editLearner':
+      openEditLearner(a.name, a.grade, a.id);
       break;
 
     // Enrolled panel (inside edit modal)
