@@ -28,14 +28,7 @@ h1{text-align:center;color:#2196F3;margin:0 0 4px}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:24px}
-.stat-card{padding:18px;border-radius:8px;text-align:center;color:white}
-.stat-card h3{margin:0;font-size:30px}
-.stat-card p{margin:4px 0 0;font-size:12px;opacity:.9}
-.stat-blue{background:linear-gradient(135deg,#667eea,#764ba2)}
-.stat-green{background:linear-gradient(135deg,#56ab2f,#a8e063)}
-.stat-orange{background:linear-gradient(135deg,#f093fb,#f5576c)}
-.stat-teal{background:linear-gradient(135deg,#11998e,#38ef7d)}
+
 
 .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 15px;background:#f8f9fa;border-radius:6px;margin-bottom:16px}
 .toolbar label{font-weight:600;font-size:13px;color:#444;white-space:nowrap}
@@ -151,10 +144,7 @@ tr:hover td{background:#f0f7ff}
   .tab{padding:9px 12px;font-size:12px;white-space:nowrap;flex-shrink:0}
 
   /* ── Stat cards — 2 columns ────────────────────────────── */
-  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-  .stat-card{padding:14px 10px}
-  .stat-card h3{font-size:24px}
-  .stat-card p{font-size:11px}
+
 
   /* ── Toolbar — stack vertically ────────────────────────── */
   .toolbar{flex-direction:column;align-items:stretch;gap:8px;padding:10px}
@@ -352,10 +342,6 @@ tr:hover td{background:#f0f7ff}
 
   <!-- ══ TAB 0 — LEARNERS ══════════════════════════════════ -->
   <div class="tab-content active" id="tab-learners">
-    <div class="stats">
-      <div class="stat-card stat-blue"><h3 id="st-total">—</h3><p>Total Learners</p></div>
-      <div class="stat-card stat-green"><h3 id="st-scheduled">—</h3><p>Have a Schedule</p></div>
-    </div>
     <div class="toolbar">
       <button class="btn btn-blue" onclick="refreshAll()">🔄 Refresh All</button>
       <input type="text" id="learnerSearch" placeholder="🔍 Search learners…"
@@ -773,10 +759,7 @@ function setLoad(id, msg = 'Loading…') {
   document.getElementById(id).innerHTML =
     `<div class="loading"><div class="spinner"></div><p>${msg}</p></div>`;
 }
-function setStat(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
+
 function switchTab(i) {
   document.querySelectorAll('.tab').forEach((t,idx) => t.classList.toggle('active', idx===i));
   document.querySelectorAll('.tab-content').forEach((t,idx) => t.classList.toggle('active', idx===i));
@@ -902,7 +885,6 @@ async function init() {
     }
 
     // ── Render all tabs ───────────────────────────────────
-    updateStats();
     renderLearners();
     renderOfferings();
 
@@ -923,22 +905,6 @@ async function refreshAll() {
   await init();
 }
 
-function updateStats() {
-  const enrolledNames = new Set();
-  state.learners.forEach(l => {
-    try {
-      const classes = typeof l.classes === 'string'
-        ? JSON.parse(l.classes || '[]') : (l.classes || []);
-      if (classes.length > 0) enrolledNames.add((l.name||'').toLowerCase());
-    } catch {}
-  });
-
-  // Total enrolled = sum of all enrollment counts (one learner can be in many offerings)
-  const totalEnrolled = Object.values(state.enrollCounts).reduce((sum, n) => sum + n, 0);
-
-  setStat('st-total',     state.students.length);
-  setStat('st-scheduled', enrolledNames.size);
-}
 
 // ─────────────────────────────────────────────────────────────
 // ══ TAB 0 — LEARNERS
@@ -1023,7 +989,6 @@ async function loadLearners() {
       state.students = state.learners.map(l => ({ id:l.id||'', name:l.name||'', grade:l.grade||'' }));
     }
 
-    updateStats();
     renderLearners();
     showStatus(`Loaded ${state.students.length} learners`, 'success');
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
@@ -1258,7 +1223,6 @@ async function loadOfferings() {
     ]);
     state.offerings    = offRes.offerings || [];
     state.enrollCounts = countsRes.counts || {};
-    updateStats();
     renderOfferings();
     showStatus(`Loaded ${state.offerings.length} offerings`, 'success');
   } catch(e) { showStatus('Error: ' + e.message, 'error'); }
@@ -1905,7 +1869,6 @@ async function loadPending() {
   try {
     const d = await get('getPendingRequests');
     state.pending = d.requests || [];
-    updateStats();
     renderPending();
     showStatus(`Loaded ${state.pending.length} pending item(s)`, 'success');
   } catch(e) {
@@ -2502,8 +2465,7 @@ async function saveLearner() {
       setTimeout(() => {
         closeModal('learnerModal');
         renderLearners();
-        updateStats();
-      }, 800);
+          }, 800);
     } else {
       learnerModalMsg('Error: ' + d.message, 'error');
     }
